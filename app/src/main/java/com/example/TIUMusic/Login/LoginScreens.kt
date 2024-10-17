@@ -1,4 +1,4 @@
-package com.example.se114.Login
+package com.example.TIUMusic.Login
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -39,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.se114.R
+import com.example.TIUMusic.R
 
 @Composable
 fun LoginScreen( navController: NavController) {

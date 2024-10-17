@@ -1,4 +1,4 @@
-package com.example.se114.ui.theme
+package com.example.TIUMusic.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

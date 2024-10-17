@@ -1,13 +1,13 @@
-package com.example.se114
+package com.example.TIUMusic
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.se114.Login.LoginScreen
-import com.example.se114.Login.RecoverPasswordScreen
-import com.example.se114.Login.RegisterScreen
-import com.example.se114.Login.ResetPasswordScreen
+import com.example.TIUMusic.Login.LoginScreen
+import com.example.TIUMusic.Login.RecoverPasswordScreen
+import com.example.TIUMusic.Login.RegisterScreen
+import com.example.TIUMusic.Login.ResetPasswordScreen
 
 @Composable
 fun NavHost() {

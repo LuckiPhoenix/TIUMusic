@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SE114</string>
+    <string name="app_name">TIUMusic</string>
     <string name="welcome_header">Welcome</string>
     <string name="welcome_description">Sign in to your account</string>
     <string name="sign_in_button">Sign In</string>

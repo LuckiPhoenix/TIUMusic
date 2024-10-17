@@ -1,4 +1,4 @@
-package com.example.se114.Login
+package com.example.TIUMusic.Login
 
 data class AuthInputs (
     var fullName: String = "",

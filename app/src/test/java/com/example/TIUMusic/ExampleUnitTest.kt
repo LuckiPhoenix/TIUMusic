@@ -1,4 +1,4 @@
-package com.example.se114
+package com.example.TIUMusic
 
 import org.junit.Test
 

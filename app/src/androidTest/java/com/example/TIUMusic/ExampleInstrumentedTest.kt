@@ -1,4 +1,4 @@
-package com.example.se114
+package com.example.TIUMusic
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

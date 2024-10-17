@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.se114"
+    namespace = "com.example.TIUMusic"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.se114"
+        applicationId = "com.example.TIUMusic"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

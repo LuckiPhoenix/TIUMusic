@@ -1,4 +1,4 @@
-package com.example.se114.ui.theme
+package com.example.TIUMusic.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
