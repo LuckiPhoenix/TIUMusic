@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SE114"
+rootProject.name = "TIUMusic"
 include(":app")
