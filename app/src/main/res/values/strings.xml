@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">SE114</string>
+    <string name="welcome_header">Welcome</string>
+    <string name="welcome_description">Sign in to your account</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="get_started_header">Get Started</string>
+    <string name="get_started_description">Create your account</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="email_label">Email Address</string>
+    <string name="password_label">Password</string>
+    <string name="sign_up_button">Sign Up</string>
+    <string name="forgot_password_header">Forgot Password?</string>
+    <string name="forgot_password_description">Enter email address to recover account!</string>
+    <string name="recover_button">Recover</string>
+    <string name="reset_password_header">Reset Password</string>
+    <string name="reset_password_description">Enter a new password for your account!</string>
+    <string name="new_password_label">New Password</string>
+    <string name="reset_button">Reset</string>
+</resources>
