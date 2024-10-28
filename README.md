@@ -5,13 +5,13 @@ The project is the result of the collabaration of University of Information Tech
 
 ## 🌟 Collaborators of the project 🌟
 
-| 👨‍💻 Collaborator   | ID        | Role     |
-|---------------------|--------------|-----------|
-| **Huỳnh Chí Hên**   | `23520455`      | *Leader & Fullstack Developer*|
-| **Đặng Trần Anh Hào**    | `23520444`      |*Backend Developer*|
-| **Nguyễn Quốc Hải**    | `23520419`      |*Backend API Developer*|
-| **Nguyễn Hữu Duy**    | `23520374`      |*Frontend Developer*|
-| **Nguyễn Văn Hào**    | `23520448`      |*Frontend Developer*|
+| 👨‍💻 Collaborator      | ID         | Role                               |
+|-------------------------|------------|------------------------------------|
+| **Huỳnh Chí Hên**       | `23520455` | *Leader & Fullstack Developer*     |
+| **Đặng Trần Anh Hào**   | `23520444` | *Backend Developer*                |
+| **Nguyễn Quốc Hải**     | `23520419` | *Backend SDK Developer*            |
+| **Nguyễn Hữu Duy**      | `23520374` | *UI Designer & Frontend Developer* |
+| **Nguyễn Văn Hào**      | `23520448` | *Frontend Developer*               |
 
 ## Materials
 **[Google Drive of the Team](https://drive.google.com/drive/folders/1qdDjAw2VQ9wsmv2D0wbnXL9PBu6ataJx)**
