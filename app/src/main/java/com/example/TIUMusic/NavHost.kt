@@ -34,7 +34,7 @@ fun NavHost() {
             RecoverPasswordScreen(navController)
         }
         composable("home") {
-
+            HomeScreen()
         }
     }
 }

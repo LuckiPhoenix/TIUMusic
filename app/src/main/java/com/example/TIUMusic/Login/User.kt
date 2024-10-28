@@ -10,3 +10,5 @@ data class User (
     var password: String ,
 )
 
+
+//TODO: playlist storage

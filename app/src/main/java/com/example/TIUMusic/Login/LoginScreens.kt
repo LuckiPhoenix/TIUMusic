@@ -11,19 +11,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,7 +42,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -81,6 +81,7 @@ fun LoginScreen(
             userViewModel.authenticate(user.email, user.password)
         },
         onTextClick = { navController.navigate("register") },
+        onForgot = {navController.navigate("reset")},
         modifier = Modifier.background(BackgroundColor)
     )
 }
@@ -189,6 +190,7 @@ fun reusableInputField(
     buttonText: String,
     onButtonClick: (User) -> Unit,
     onTextClick: (() -> Unit)? = null,
+    onForgot: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val myButtonColor = PrimaryColor
@@ -205,12 +207,12 @@ fun reusableInputField(
         ) {
             Text(
                 text = header,
-                fontSize = 32.sp,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
+                lineHeight = 60.sp,
                 modifier = Modifier.padding(start = 16.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = description,
                 fontSize = 12.sp,
@@ -244,6 +246,20 @@ fun reusableInputField(
                 )
             }
 
+            if(onForgot != null){
+                Text(
+                    text = "Forgot Password?",
+                    textAlign = TextAlign.End,
+                    color = PrimaryColor,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .align(Alignment.End)
+                        .clickable { onForgot() }
+                )
+            }
+            Spacer(modifier.height(16.dp))
+
             Button(
                 onClick = { onButtonClick(inputValues) },
                 colors = ButtonDefaults.buttonColors(
@@ -257,9 +273,16 @@ fun reusableInputField(
             ) {
                 Text(buttonText)
             }
+
         }
 
         if(onTextClick != null) {
+            var whatToSay = "Don't have an account? "
+            var whatToSay2 = "Create one!"
+            if (input1 != ""){
+                whatToSay = "Had an account already? "
+                whatToSay2 = "Sign in now!"
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -267,11 +290,12 @@ fun reusableInputField(
                     .padding(bottom = 64.dp)
                     .align(Alignment.BottomCenter)
             ) {
-                Text("Don't have an account? ", color = Color.White)
+                Text(whatToSay, color = Color.White)
                 Text(
-                    text = AnnotatedString("Create one"),
+                    text = whatToSay2,
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
                         color = PrimaryColor
                     ),
                     modifier = Modifier.clickable { onTextClick() }
