@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
