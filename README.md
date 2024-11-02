@@ -72,11 +72,11 @@ graph TD
     C -->|Local Storage| D[SQLite / Room]
     C -->|Network Requests| E[Music APIs]
     
-    style A fill:#c084fc,stroke:#4788c7
-    style B fill:#fca5a5,stroke:#f5a742
-    style C fill:#86efac,stroke:#47c747
-    style D fill:#93c5fd,stroke:#c74747
-    style E fill:#f0abfc,stroke:#4747c7
+    style A fill:#c084fc,stroke:#4788c7,color:#000000
+    style B fill:#fca5a5,stroke:#f5a742,color:#000000
+    style C fill:#86efac,stroke:#47c747,color:#000000
+    style D fill:#93c5fd,stroke:#c74747,color:#000000
+    style E fill:#f0abfc,stroke:#4747c7,color:#000000
 ```
 
 ## 👥 Team Members
