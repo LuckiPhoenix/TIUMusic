@@ -12,9 +12,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
-
-
+/*
+không phận sự cấm vào
+ */
 
 private val DarkColorPalette = darkColorScheme(
     primary = PrimaryColor,
@@ -36,4 +38,6 @@ fun TIUMusicTheme(
         typography = Typography, // Define your Typography if needed
         content = content
     )
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setSystemBarsColor(color = Color.Transparent)
 }

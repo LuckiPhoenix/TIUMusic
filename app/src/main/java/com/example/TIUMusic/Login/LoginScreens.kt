@@ -101,7 +101,7 @@ fun RegisterScreen(
 
     reusableInputField(
         header = stringResource(id = R.string.get_started_header),
-        description = stringResource(id = R.string.get_started_description),
+        description = stringResource(R.string.get_started_description),
         input1 = stringResource(id = R.string.full_name_label),
         input2 = stringResource(id = R.string.email_label),
         input3 = stringResource(id = R.string.password_label),
@@ -368,5 +368,15 @@ fun MyTextField(
 @Preview (showBackground = true)
 @Composable
 fun preview(){
-    RecoverPasswordScreen(navController  = NavController(LocalContext.current))
+    reusableInputField(
+        header = stringResource(id = R.string.get_started_header),
+        description = stringResource(R.string.get_started_description),
+        input2 = stringResource(id = R.string.email_label),
+        input3 = stringResource(id = R.string.password_label),
+        buttonText = stringResource(id = R.string.sign_up_button),
+        onButtonClick = {
+        },
+        onTextClick = {  },
+        modifier = Modifier.background(BackgroundColor)
+    )
 }

@@ -13,6 +13,10 @@ import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.HomeScreen
+import com.example.TIUMusic.Screens.LibraryScreen
+import com.example.TIUMusic.Screens.NewScreen
+import com.example.TIUMusic.Screens.PlaylistScreen
+import com.example.TIUMusic.Screens.SearchScreen
 
 @Composable
 fun NavHost() {
@@ -34,7 +38,39 @@ fun NavHost() {
             RecoverPasswordScreen(navController)
         }
         composable("home") {
-            HomeScreen()
+            HomeScreen(
+                navController = navController,
+                onTabSelected = { tabIndex ->
+                    when (tabIndex) {
+                        0 -> {} //Đang ở home ko quan tâm
+                        1 -> navController.navigate("new")
+                        2 -> navController.navigate("library")
+                        3 -> navController.navigate("search")
+                    }
+                },
+                onPlaylistClick = { musicItem ->
+                    navController.navigate("player/${musicItem.id}")
+                }
+            )
+            composable("new") {
+                NewScreen(navController = navController)
+            }
+            composable("search") {
+                SearchScreen(navController = navController)
+            }
+            composable("library") {
+                LibraryScreen(navController = navController)
+            }
+            composable(
+                route = "playlist/{playlistId}",
+                arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+            ) {
+                PlaylistScreen(
+                    navController = navController,
+                    playlistId = it.arguments?.getString("playlistId") ?: ""
+                )
+            }
+            //TODO: PlayScreen
         }
     }
 }
