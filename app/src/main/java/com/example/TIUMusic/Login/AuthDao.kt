@@ -81,9 +81,27 @@ abstract class RepositoryModule {
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository
 }
+
 sealed class Result<out T> {
     data class Success<out T>(val data: T) : Result<T>()
     data class Error(val exception: Exception) : Result<Nothing>()
     object Loading : Result<Nothing>()
-}
 
+    // User-friendly errors
+    fun getErrorMessage(): String {
+        return when (this) {
+            is Error -> {
+                when (exception) {
+                    is AuthenticationException -> "Incorrect email or password."
+                    is EmailNotFoundException -> "Email not found."
+                    is EmailExistsException -> "Email already exists."
+                    else -> exception.message ?: "Something went wrong :("
+                }
+            }
+            else -> ""
+        }
+    }
+}
+class AuthenticationException(message: String) : Exception(message)
+class EmailNotFoundException(message: String) : Exception(message)
+class EmailExistsException(message: String) : Exception(message)

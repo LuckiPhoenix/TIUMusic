@@ -1,5 +1,7 @@
 package com.example.TIUMusic.Login
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,7 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -34,17 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +51,7 @@ import androidx.navigation.NavController
 import com.example.TIUMusic.R
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -59,15 +59,21 @@ fun LoginScreen(
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val authStatus by userViewModel.userAuthStatus.observeAsState()
+    var shouldShake by remember { mutableStateOf(false) }
 
     LaunchedEffect(authStatus) {
         when (authStatus) {
-            is Result.Success -> navController.navigate("test")
-            is Result.Error -> {
-                // Handle error, e.g., show a Toast message
+
+            is Result.Success -> navController.navigate("home"){
+                popUpTo("home") { inclusive = true }
             }
-            Result.Loading -> {}
-            null -> {}
+
+            is Result.Error -> {
+                shouldShake = true
+                delay(300)
+                shouldShake = false
+            }
+            else -> {} //auth nhanh lắm nên khỏi loading indicator
         }
     }
 
@@ -81,8 +87,10 @@ fun LoginScreen(
             userViewModel.authenticate(user.email, user.password)
         },
         onTextClick = { navController.navigate("register") },
-        onForgot = {navController.navigate("reset")},
-        modifier = Modifier.background(BackgroundColor)
+        onForgot = { navController.navigate("reset") },
+        modifier = Modifier.background(BackgroundColor),
+        authStatus = authStatus,
+        shouldShake = shouldShake
     )
 }
 
@@ -92,10 +100,17 @@ fun RegisterScreen(
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val registerStatus by userViewModel.userAuthStatus.observeAsState()
+    var shouldShake by remember { mutableStateOf(false) }
 
     LaunchedEffect(registerStatus) {
-        if (registerStatus is Result.Success) {
-            navController.navigate("home")
+        when (registerStatus) {
+            is Result.Success -> navController.navigate("login")
+            is Result.Error -> {
+                shouldShake = true
+                delay(300)
+                shouldShake = false
+            }
+            else -> {}
         }
     }
 
@@ -110,7 +125,9 @@ fun RegisterScreen(
             userViewModel.insertUser(user)
         },
         onTextClick = { navController.navigate("login") },
-        modifier = Modifier.background(BackgroundColor)
+        modifier = Modifier.background(BackgroundColor),
+        authStatus = registerStatus,
+        shouldShake = shouldShake
     )
 }
 
@@ -120,6 +137,7 @@ fun ResetPasswordScreen(
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val resetStatus by userViewModel.resetPasswordStatus.observeAsState()
+    var shouldShake by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
 
     LaunchedEffect(resetStatus) {
@@ -128,6 +146,9 @@ fun ResetPasswordScreen(
                 navController.navigate("recover/$email")
             }
             is Result.Error -> {
+                shouldShake = true
+                delay(300)
+                shouldShake = false
             }
             else -> {}
         }
@@ -142,7 +163,9 @@ fun ResetPasswordScreen(
             email = user.email
             userViewModel.checkEmailExists(user.email)
         },
-        modifier = Modifier.background(BackgroundColor)
+        modifier = Modifier.background(BackgroundColor),
+        authStatusForReset = resetStatus,
+        shouldShake = shouldShake
     )
 }
 
@@ -152,6 +175,7 @@ fun RecoverPasswordScreen(
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val resetStatus by userViewModel.resetPasswordStatus.observeAsState()
+    var shouldShake by remember { mutableStateOf(false) }
     val email = navController.currentBackStackEntry
         ?.arguments?.getString("email") ?: ""
 
@@ -163,6 +187,9 @@ fun RecoverPasswordScreen(
                 }
             }
             is Result.Error -> {
+                shouldShake = true
+                delay(300)
+                shouldShake = false
             }
             else -> {}
         }
@@ -176,7 +203,9 @@ fun RecoverPasswordScreen(
         onButtonClick = { user ->
             userViewModel.updatePassword(email, user.password)
         },
-        modifier = Modifier.background(BackgroundColor)
+        modifier = Modifier.background(BackgroundColor),
+        authStatusForReset = resetStatus,
+        shouldShake = shouldShake
     )
 }
 
@@ -184,21 +213,38 @@ fun RecoverPasswordScreen(
 fun reusableInputField(
     header: String,
     description: String,
-    input1: String = "", // full name
-    input2: String = "", // email
-    input3: String = "", // password
-    buttonText: String,
+    input1: String = "", // Username
+    input2: String = "", // Email
+    input3: String = "", // Password
+    buttonText: String, // Button
     onButtonClick: (User) -> Unit,
-    onTextClick: (() -> Unit)? = null,
-    onForgot: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onTextClick: (() -> Unit)? = null, //Create Account
+    onForgot: (() -> Unit)? = null, // Forgot Password
+    modifier: Modifier = Modifier,
+    authStatus: Result<User?>? = null, // Authentication status
+    authStatusForReset: Result<Boolean>? = null, //workaround AuthStatus cho Reset la Boolean
+    shouldShake: Boolean = false // Shake animation
 ) {
     val myButtonColor = PrimaryColor
-
-    // State to hold user inputs
     var inputValues by remember { mutableStateOf(User("", "", "")) }
 
-    Box(modifier = modifier) {
+    // Clear Fields when auth fail
+    LaunchedEffect(authStatus) {
+        if (authStatus is Result.Error) {
+            inputValues = User("", "", "")
+        }
+    }
+
+    // Shake animation
+    val offsetX by animateFloatAsState(
+        targetValue = if (shouldShake) 10f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.3f,
+            stiffness = 500f
+        )
+    )
+
+    Box(modifier = modifier.fillMaxSize()) {
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
@@ -213,6 +259,7 @@ fun reusableInputField(
                 lineHeight = 60.sp,
                 modifier = Modifier.padding(start = 16.dp)
             )
+
             Text(
                 text = description,
                 fontSize = 12.sp,
@@ -220,9 +267,10 @@ fun reusableInputField(
                 color = Color.White,
                 modifier = Modifier.padding(start = 16.dp)
             )
+
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Dynamic Reusable Text Fields based on Screens
+            // Input fields
             if (input1.isNotEmpty()) {
                 MyTextField(
                     title = input1,
@@ -230,6 +278,7 @@ fun reusableInputField(
                     onValueChange = { inputValues = inputValues.copy(fullName = it) }
                 )
             }
+
             if (input2.isNotEmpty()) {
                 MyTextField(
                     title = input2,
@@ -237,6 +286,7 @@ fun reusableInputField(
                     onValueChange = { inputValues = inputValues.copy(email = it) }
                 )
             }
+
             if (input3.isNotEmpty()) {
                 MyTextField(
                     title = input3,
@@ -246,7 +296,7 @@ fun reusableInputField(
                 )
             }
 
-            if(onForgot != null){
+            if (onForgot != null) {
                 Text(
                     text = "Forgot Password?",
                     textAlign = TextAlign.End,
@@ -258,7 +308,7 @@ fun reusableInputField(
                         .clickable { onForgot() }
                 )
             }
-            Spacer(modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { onButtonClick(inputValues) },
@@ -270,8 +320,28 @@ fun reusableInputField(
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
+                    .offset(x = offsetX.dp)
             ) {
                 Text(buttonText)
+            }
+
+            // Error message
+            if (authStatus is Result.Error || authStatusForReset is Result.Error) {
+                val errorMessage = when {
+                    authStatus is Result.Error -> (authStatus).getErrorMessage()
+                    authStatusForReset is Result.Error -> (authStatusForReset).getErrorMessage()
+                    else -> "ERROR: You should never receive this message???" // khong bao gio xay ra
+                }
+
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    textAlign = TextAlign.Center
+                )
             }
 
         }
@@ -279,7 +349,7 @@ fun reusableInputField(
         if(onTextClick != null) {
             var whatToSay = "Don't have an account? "
             var whatToSay2 = "Create one!"
-            if (input1 != ""){
+            if (input1 != "") {
                 whatToSay = "Had an account already? "
                 whatToSay2 = "Sign in now!"
             }
@@ -313,7 +383,6 @@ fun MyTextField(
     hidden: Boolean = false,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf(value) }
 
     Column(modifier = Modifier.padding(8.dp)) {
         Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
@@ -333,11 +402,8 @@ fun MyTextField(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BasicTextField(
-                    value = text,
-                    onValueChange = { input: String ->
-                        text = input
-                        onValueChange(input)
-                    },
+                    value = value,
+                    onValueChange = onValueChange,
                     textStyle = TextStyle(color = Color.LightGray, fontSize = 16.sp),
                     cursorBrush = SolidColor(Color.LightGray),
                     singleLine = true,
