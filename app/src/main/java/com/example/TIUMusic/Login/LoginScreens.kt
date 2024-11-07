@@ -63,9 +63,11 @@ fun LoginScreen(
 
     LaunchedEffect(authStatus) {
         when (authStatus) {
+
             is Result.Success -> navController.navigate("home"){
                 popUpTo("home") { inclusive = true }
             }
+
             is Result.Error -> {
                 shouldShake = true
                 delay(300)
