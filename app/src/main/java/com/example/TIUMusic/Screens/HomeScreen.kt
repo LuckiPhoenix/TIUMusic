@@ -20,7 +20,8 @@ import com.example.TIUMusic.SongData.getTopPicks
 fun HomeScreen(
     navController: NavHostController,
     onTabSelected: (Int) -> Unit = {},
-    onPlaylistClick: (MusicItem) -> Unit = {}
+    onPlaylistClick: (MusicItem) -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     ScrollableScreen(
         title = "Home",
@@ -55,5 +56,4 @@ fun HomeScreen(
             )
         }
     }
-
 }

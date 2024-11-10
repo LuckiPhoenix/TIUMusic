@@ -170,12 +170,11 @@ fun ResetPasswordScreen(
 @Composable
 fun RecoverPasswordScreen(
     navController: NavController,
+    email: String,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val resetStatus by userViewModel.resetPasswordStatus.observeAsState()
     var shouldShake by remember { mutableStateOf(false) }
-    val email = navController.currentBackStackEntry
-        ?.arguments?.getString("email") ?: ""
 
     LaunchedEffect(resetStatus) {
         when (resetStatus) {

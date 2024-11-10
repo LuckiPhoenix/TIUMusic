@@ -86,7 +86,7 @@ fun AnimatedTopPlaylistBar(
 
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String) {
+fun PlaylistScreen(navController: NavController, playlistId: String, modifier: Modifier = Modifier) {
     Scaffold(
         topBar = { AnimatedTopPlaylistBar("Favourite") },
         bottomBar = {

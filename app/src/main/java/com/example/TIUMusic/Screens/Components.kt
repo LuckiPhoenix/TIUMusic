@@ -1,11 +1,24 @@
 package com.example.TIUMusic.Screens
 
+import android.content.Context
+import android.database.ContentObserver
+import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,22 +41,40 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,18 +83,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
+import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 /*
 các components reusable phải được declare ở đây
@@ -100,8 +142,9 @@ fun ScrollableScreen(
     val collapsedHeight = Dimensions.topBarCollapsedHeight()
     val expandedTitleSize = Dimensions.expandedTitleSize()
     val collapsedTitleSize = Dimensions.collapsedTitleSize()
+    val bottomNavHeight = 56.dp // Define bottom nav height
 
-    // Animate alpha and translation
+    // Animation values
     val alpha by transitionState.animateFloat(
         transitionSpec = { tween(durationMillis = 300) },
         label = "Alpha"
@@ -149,9 +192,7 @@ fun ScrollableScreen(
             ) {
                 content(
                     PaddingValues(
-                        bottom = 80.dp,
-                        start = Dimensions.contentPadding(),
-                        end = Dimensions.contentPadding()
+                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
                     )
                 )
             }
@@ -165,15 +206,18 @@ fun ScrollableScreen(
                 height = height
             )
 
+
             // Bottom navigation
-                CustomBottomNavigation(
-                    selectedTab = selectedTab,
-                    onTabSelected = onTabSelected,
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                )
+            CustomBottomNavigation(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
         }
     }
 }
+
 
 @Composable
 fun AnimatedTopAppBar(
@@ -191,7 +235,9 @@ fun AnimatedTopAppBar(
             .offset(x = translationX)
             .padding(
                 start = 32.dp,
-                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                top = WindowInsets.statusBars
+                    .asPaddingValues()
+                    .calculateTopPadding()
             ),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -310,7 +356,6 @@ fun HorizontalScrollableSection(
         SectionTitle(title)
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
-            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
             horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
             modifier = Modifier.height(calculatedSectionHeight)
         ) {
@@ -387,6 +432,389 @@ fun AlbumCard(
             modifier = Modifier.padding(horizontal = 4.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+@Composable
+fun NowPlayingSheet(
+    modifier: Modifier = Modifier,
+    playerViewModel: PlayerViewModel
+) {
+    val context = LocalContext.current
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val dragProgress = remember { mutableStateOf(0f) }
+    val scope = rememberCoroutineScope()
+
+    val springSpec = SpringSpec<Float>(
+        dampingRatio = 0.8f,
+        stiffness = Spring.StiffnessLow
+    )
+
+    val progress by animateFloatAsState(
+        targetValue = dragProgress.value,
+        animationSpec = springSpec,
+        label = "Sheet Progress"
+    )
+
+    val maxHeight = LocalConfiguration.current.screenHeightDp.dp
+    val minHeight = 80.dp
+    val height = lerp(minHeight, maxHeight, progress)
+
+    val dragState = rememberDraggableState { delta ->
+        val newProgress = (dragProgress.value - delta / maxHeight.value).coerceIn(0f, 1f)
+        dragProgress.value = newProgress
+    }
+
+
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .draggable(
+                state = dragState,
+                orientation = Orientation.Vertical,
+                onDragStopped = { velocity ->
+                    // toán thay đổi giữa NowPlaying nhỏ và lớn
+                    val targetValue = if (dragProgress.value > 0.5f || velocity < -500f) 1f else 0f
+                    scope.launch {
+                        animate(
+                            initialValue = dragProgress.value,
+                            targetValue = targetValue,
+                            animationSpec = springSpec
+                        ) { value, _ ->
+                            dragProgress.value = value
+                        }
+                    }
+                }
+            )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp
+            ),
+            color = Color(0xFF282828)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Crossfade(
+                    targetState = progress > 0.5f,
+                    label = "Player State"
+                ) { isExpanded ->
+                    if (!isExpanded) {
+                        MiniPlayer(
+                            isPlaying = isPlaying,
+                            onPlayPauseClick = { isPlaying = !isPlaying }
+                        )
+                    } else {
+                        ExpandedPlayer(
+                            isPlaying = isPlaying,
+                            onPlayPauseClick = { isPlaying = !isPlaying }
+                        )
+                    }
+                }
+
+                // cái tay cầm
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 12.dp)
+                        .width(40.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color.Gray.copy(alpha = progress))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MiniPlayer(
+    isPlaying: Boolean,
+    onPlayPauseClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Album art and info
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF404040))
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = "Song Title",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
+                )
+                Text(
+                    text = "Artist Name",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+        }
+
+        IconButton(
+            onClick = onPlayPauseClick,
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color(0xFF404040), CircleShape)
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Default.Star else Icons.Default.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpandedPlayer(
+    isPlaying: Boolean,
+    onPlayPauseClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Album art
+        Box(
+            modifier = Modifier
+                .size(280.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF404040))
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Title and artist
+        Text(
+            text = "Song Title",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Artist Name",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        PlaybackControls(
+            isPlaying = isPlaying,
+            onPlayPauseClick = onPlayPauseClick,
+            currentTime = 0f,
+            duration = 10f,
+            onSeek = {}
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+
+
+
+        VolumeControls()
+    }
+}
+
+@Composable
+fun PlaybackControls(
+    isPlaying: Boolean,
+    currentTime: Float,
+    duration: Float,
+    onPlayPauseClick: () -> Unit,
+    onSeek: (Float) -> Unit // user chỉnh time
+) {
+    Column {
+        Slider(
+            value = currentTime,
+            onValueChange = onSeek,
+            valueRange = 0f..duration,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+
+        // Time indicators
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(formatTime(currentTime), color = Color.Gray)
+            Text(formatTime(duration), color = Color.Gray)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { /* quay về stack trước */ }) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Previous",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            IconButton(
+                onClick = onPlayPauseClick,
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(Color(0xFF404040), CircleShape)
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Clear else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            IconButton(onClick = { /* nhạc tiếp theo */ }) {
+                Icon(
+                    Icons.Default.ArrowForward,
+                    contentDescription = "Next",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun formatTime(timeInSeconds: Float): String {
+    val minutes = (timeInSeconds / 60).toInt()
+    val seconds = (timeInSeconds % 60).toInt()
+    return String.format("%d:%02d", minutes, seconds)
+}
+
+@Composable
+fun VolumeControls(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
+    var currentVolume by remember {
+        mutableStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume)
+    }
+
+    // observe volume của system thấy thay đổi thì chỉnh theo
+    DisposableEffect(context) {
+        val volumeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume
+            }
+        }
+        context.contentResolver.registerContentObserver(
+            android.provider.Settings.System.CONTENT_URI,
+            true,
+            volumeObserver
+        )
+
+        onDispose {
+            context.contentResolver.unregisterContentObserver(volumeObserver)
+        }
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = { adjustVolume(audioManager, currentVolume - 0.1f, maxVolume) }) {
+            Icon(
+                Icons.Default.KeyboardArrowDown,
+                contentDescription = "Volume Down",
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Slider(
+            value = currentVolume,
+            onValueChange = {
+                currentVolume = it
+                adjustVolume(audioManager, it, maxVolume)
+            },
+            valueRange = 0f..1f,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp)
+        )
+        IconButton(onClick = { adjustVolume(audioManager, currentVolume + 0.1f, maxVolume) }) {
+            Icon(
+                Icons.Default.KeyboardArrowUp,
+                contentDescription = "Volume Up",
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+/*
+để fun chỉnh volume ra ngoài để sync với system, dùng observe để sync với system.
+chỉnh volume ko đc mượt tại system có volume theo từng nắc từ 0 đến 10, nên có 10 nắc
+(này chịu, lừa user nó mượt thì đc chứ volume chỉnh theo nấc)
+ */
+
+private fun adjustVolume(audioManager: AudioManager, newVolume: Float, maxVolume: Float) {
+    val adjustedVolume = (newVolume * maxVolume).coerceIn(0f, maxVolume).toInt()
+    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, adjustedVolume, 0)
+}
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    val navController = rememberNavController()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+            HomeScreen(
+                navController = navController,
+                onTabSelected = {},
+                onPlaylistClick = {}
+            )
+
+        NowPlayingSheet(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 86.dp),
+            playerViewModel = PlayerViewModel()
         )
     }
 }
