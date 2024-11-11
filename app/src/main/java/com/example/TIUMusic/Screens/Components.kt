@@ -981,7 +981,7 @@ fun DrawScope.drawSliderPath(
     val midPointHeight = size.height / 2
     val curveHeight = midPointHeight - offsetHeight
     val beyondBounds = size.width * 2
-    val ramp = 72.dp.toPx()
+    val ramp = 64.dp.toPx()
 
     path.moveTo(
         x = beyondBounds,
