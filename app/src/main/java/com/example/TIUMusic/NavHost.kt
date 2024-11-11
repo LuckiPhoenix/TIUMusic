@@ -66,13 +66,13 @@ fun NavHost() {
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {} // Currently on home
-                                1 -> navController.navigate("main/new")
-                                2 -> navController.navigate("main/library")
-                                3 -> navController.navigate("main/search")
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            navController.navigate("main/player/${musicItem.id}")
+                            navController.navigate("playlist/${musicItem.id}")
                         }
                     )
                 }
