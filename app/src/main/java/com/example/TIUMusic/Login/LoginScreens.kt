@@ -65,7 +65,7 @@ fun LoginScreen(
         when (authStatus) {
 
             is Result.Success -> navController.navigate("home"){
-                popUpTo("home") { inclusive = true }
+                popUpTo("login") { inclusive = true }
             }
 
             is Result.Error -> {

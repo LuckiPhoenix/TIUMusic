@@ -20,6 +20,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -380,11 +383,20 @@ fun HorizontalScrollableSection(
 
     Column {
         SectionTitle(title)
+        // Define the state first
+        val state = rememberLazyGridState()
+
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
             horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
-            modifier = Modifier.height(calculatedSectionHeight)
+            modifier = Modifier.height(calculatedSectionHeight),
+            state = state,
+            flingBehavior = rememberSnapFlingBehavior(
+                lazyGridState = state,
+                snapPosition = SnapPosition.End
+            )
         ) {
+            item { Spacer(modifier = Modifier.width(Dimensions.contentPadding())) }
             items(items) { item ->
                 AlbumCard(
                     item = item,
@@ -393,6 +405,7 @@ fun HorizontalScrollableSection(
                     onClick = { onItemClick(item) }
                 )
             }
+            item { Spacer(modifier = Modifier.width(Dimensions.contentPadding())) }
         }
     }
 }
@@ -469,8 +482,6 @@ fun NowPlayingSheet(
     playerViewModel: PlayerViewModel
 ) {
     val context = LocalContext.current
-    var isPlaying by remember { mutableStateOf(false) }
-
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
 
@@ -485,6 +496,11 @@ fun NowPlayingSheet(
         label = "Sheet Progress"
     )
 
+    // Update the expanded state based on progress
+    LaunchedEffect(progress) {
+        playerViewModel.setExpanded(progress > 0.5f)
+    }
+
     val maxHeight = LocalConfiguration.current.screenHeightDp.dp
     val minHeight = 80.dp
     val height = lerp(minHeight, maxHeight, progress)
@@ -494,8 +510,6 @@ fun NowPlayingSheet(
         dragProgress.value = newProgress
     }
 
-
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -504,7 +518,6 @@ fun NowPlayingSheet(
                 state = dragState,
                 orientation = Orientation.Vertical,
                 onDragStopped = { velocity ->
-                    // toán thay đổi giữa NowPlaying nhỏ và lớn
                     val targetValue = if (dragProgress.value > 0.5f || velocity < -500f) 1f else 0f
                     scope.launch {
                         animate(
@@ -523,8 +536,6 @@ fun NowPlayingSheet(
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 topEnd = 16.dp,
-                bottomStart = 16.dp,
-                bottomEnd = 16.dp
             ),
             color = Color(0xFF282828)
         ) {
@@ -535,23 +546,22 @@ fun NowPlayingSheet(
                 ) { isExpanded ->
                     if (!isExpanded) {
                         MiniPlayer(
-                            isPlaying = isPlaying,
-                            onPlayPauseClick = { isPlaying = !isPlaying }
+                            isPlaying = playerViewModel.isPlaying.value,
+                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
                         )
                     } else {
                         ExpandedPlayer(
-                            isPlaying = isPlaying,
-                            onPlayPauseClick = { isPlaying = !isPlaying }
+                            isPlaying = playerViewModel.isPlaying.value,
+                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
                         )
                     }
                 }
 
-                // cái tay cầm
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 12.dp)
-                        .width(40.dp)
+                        .padding(top = 64.dp)
+                        .width(64.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(Color.Gray.copy(alpha = progress))
