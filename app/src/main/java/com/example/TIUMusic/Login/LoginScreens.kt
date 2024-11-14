@@ -62,7 +62,7 @@ fun LoginScreen(
 
     LaunchedEffect(authStatus) {
         when (authStatus) {
-            is Result.Success -> navController.navigate("test")
+            is Result.Success -> navController.navigate("home")
             is Result.Error -> {
                 // Handle error, e.g., show a Toast message
             }
