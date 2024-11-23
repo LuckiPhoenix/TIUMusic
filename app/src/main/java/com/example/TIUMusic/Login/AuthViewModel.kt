@@ -53,7 +53,7 @@ class UserViewModel @Inject constructor(
     private val _userAuthStatus = MutableLiveData<Result<User?>>()
     val userAuthStatus: LiveData<Result<User?>> = _userAuthStatus
 
-    private val _userDetails = MutableLiveData<User?>()
+    private val _userDetails = MutableLiveData<User?>() //currently unused
     val userDetails: LiveData<User?> = _userDetails
 
     private val _resetPasswordStatus = MutableLiveData<Result<Boolean>>()
@@ -61,9 +61,15 @@ class UserViewModel @Inject constructor(
 
     fun insertUser(user: User) {
         viewModelScope.launch {
+            _userAuthStatus.postValue(Result.Loading)
             try {
-                userRepository.insertAuth(user)
-                _userDetails.postValue(user)
+                val existingUser = userRepository.getUserByEmail(user.email)
+                if (existingUser != null) {
+                    _userAuthStatus.postValue(Result.Error(EmailExistsException("Email already exists")))
+                } else {
+                    userRepository.insertAuth(user)
+                    _userAuthStatus.postValue(Result.Success(user))
+                }
             } catch (e: Exception) {
                 _userAuthStatus.postValue(Result.Error(e))
             }
@@ -78,7 +84,7 @@ class UserViewModel @Inject constructor(
                 if (user != null) {
                     _userAuthStatus.postValue(Result.Success(user))
                 } else {
-                    _userAuthStatus.postValue(Result.Error(Exception("Authentication failed")))
+                    _userAuthStatus.postValue(Result.Error(AuthenticationException("Incorrect Email and/or Password")))
                 }
             } catch (e: Exception) {
                 _userAuthStatus.postValue(Result.Error(e))
@@ -101,7 +107,7 @@ class UserViewModel @Inject constructor(
                 if (user != null) {
                     _resetPasswordStatus.postValue(Result.Success(true))
                 } else {
-                    _resetPasswordStatus.postValue(Result.Error(Exception("Email not found")))
+                    _resetPasswordStatus.postValue(Result.Error(EmailNotFoundException("Email not found")))
                 }
             } catch (e: Exception) {
                 _resetPasswordStatus.postValue(Result.Error(e))
@@ -126,5 +132,4 @@ class UserViewModel @Inject constructor(
             }
         }
     }
-
 }

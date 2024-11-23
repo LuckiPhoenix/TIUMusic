@@ -1,11 +1,24 @@
 package com.example.TIUMusic
 
+import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
+import androidx.navigation.Navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
@@ -15,62 +28,88 @@ import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen
+import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
+import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
 fun NavHost() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
-        composable("login") {
-            LoginScreen(navController = navController)
-        }
-        composable("register") {
-            RegisterScreen(navController = navController)
-        }
-        composable("reset") {
-            ResetPasswordScreen(navController)
-        }
-        composable(
-            route = "recover/{email}",
-            arguments = listOf(navArgument("email") { type = NavType.StringType })
+    val playerViewModel = PlayerViewModel()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    Log.d("NavHost", "Current route: $currentRoute")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(
+            navController = navController,
+            startDestination = "auth"
         ) {
-            RecoverPasswordScreen(navController)
-        }
-        composable("home") {
-            HomeScreen(
-                navController = navController,
-                onTabSelected = { tabIndex ->
-                    when (tabIndex) {
-                        0 -> {} //Đang ở home ko quan tâm
-                        1 -> navController.navigate("new")
-                        2 -> navController.navigate("library")
-                        3 -> navController.navigate("search")
-                    }
-                },
-                onPlaylistClick = { musicItem ->
-                    navController.navigate("player/${musicItem.id}")
+            navigation(startDestination = "login", route = "auth") {
+                composable("login") { LoginScreen(navController) }
+                composable("register") { RegisterScreen(navController) }
+                composable("reset") { ResetPasswordScreen(navController) }
+                composable(
+                    route = "recover/{email}",
+                    arguments = listOf(navArgument("email") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    RecoverPasswordScreen(
+                        navController,
+                        email = backStackEntry.arguments?.getString("email") ?: ""
+                    )
                 }
+            }
+
+            navigation(startDestination = "home", route = "main") {
+                composable("home") {
+                    HomeScreen(
+                        navController = navController,
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {} // Currently on home
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        onPlaylistClick = { musicItem ->
+                            navController.navigate("playlist/${musicItem.id}")
+                        }
+                    )
+                }
+                composable("new") { NewScreen(navController) }
+                composable("search") { SearchScreen(navController) }
+                composable("library") { LibraryScreen(navController) }
+                composable(
+                    route = "playlist/{playlistId}",
+                    arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    PlaylistScreen(
+                        navController = navController,
+                        playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
+                        onTabSelected ={ tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                    )
+                }
+            }
+        }
+
+        // Check if we're in any route within the main navigation
+        if (currentBackStackEntry?.destination?.parent?.route == "main") {
+            NowPlayingSheet(
+                playerViewModel = playerViewModel,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp)
             )
-            composable("new") {
-                NewScreen(navController = navController)
-            }
-            composable("search") {
-                SearchScreen(navController = navController)
-            }
-            composable("library") {
-                LibraryScreen(navController = navController)
-            }
-            composable(
-                route = "playlist/{playlistId}",
-                arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
-            ) {
-                PlaylistScreen(
-                    navController = navController,
-                    playlistId = it.arguments?.getString("playlistId") ?: ""
-                )
-            }
-            //TODO: PlayScreen
+            Log.d("NavHost", "Overlay shown")
         }
     }
 }
