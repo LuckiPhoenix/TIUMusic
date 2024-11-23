@@ -419,7 +419,9 @@ fun HorizontalScrollableSection(
         }
     }
 }
-
+/*
+làm 4 cái section giống nhau chi vậy ông nội
+ */
 @Composable
 fun HorizontalScrollableNewScreenSection(
     title: String? = null,
@@ -501,7 +503,7 @@ fun HorizontalScrollableNewScreenSection2(
         ) {
             items(items) { songList ->
                 Column(
-                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                    modifier = Modifier.width(itemWidth!! + 10.dp) // unsafe call gì đây???
                 ) {
                     songList.forEach {
                         SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
