@@ -1,6 +1,5 @@
 package com.example.TIUMusic.Screens
 
-
 import androidx.annotation.DrawableRes
 import android.content.Context
 import android.database.ContentObserver
@@ -11,7 +10,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animate
-
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -126,7 +124,6 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -231,7 +228,9 @@ fun ScrollableScreen(
             ) {
                 content(
                     PaddingValues(
-                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
+                        bottom = 80.dp,
+                        start = Dimensions.contentPadding(),
+                        end = Dimensions.contentPadding()
                     )
                 )
             }
@@ -252,7 +251,6 @@ fun ScrollableScreen(
                 onTabSelected = onTabSelected,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-
             )
         }
     }
@@ -351,7 +349,8 @@ fun NavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(
-                interactionSource = remember { MutableInteractionSource() }, indication = null
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
             ) { onSelect() }
             .padding(horizontal = 12.dp)
     ) {
@@ -398,6 +397,7 @@ fun HorizontalScrollableSection(
 
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
             horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
             modifier = Modifier.height(calculatedSectionHeight),
             state = state,
@@ -710,7 +710,6 @@ fun AlbumCard(
     }
 }
 
-
 @Composable
 fun AlbumCardNewScreen(
     item: MusicItem,
@@ -794,6 +793,64 @@ fun AlbumCardNewScreen(
                 )
             }
 
+        }
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenSelectionType3(
+    item: MusicItem,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        AsyncImage(
+            model = item.imageUrl,
+            contentDescription = "Album art for ${item.title}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .width(imageSize)
+                .height(imageSize)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF282828))
+        )
+
+        Text(
+            text = "New Album",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = ArtistNameColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenListVertical(
+    items: List<MusicItem>,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+
+}
 
 //cái này đặt ngoài navHost
 @Composable
@@ -943,54 +1000,11 @@ private fun MiniPlayer(
                 tint = Color.White,
                 modifier = Modifier.size(16.dp)
             )
-
         }
     }
 }
 
 @Composable
-fun AlbumCardNewScreenSelectionType3(
-    item: MusicItem,
-    modifier: Modifier = Modifier,
-    imageSize: Dp,
-    onClick: () -> Unit = {}
-) {
-    Column(
-        modifier = modifier
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-    ) {
-        AsyncImage(
-            model = item.imageUrl,
-            contentDescription = "Album art for ${item.title}",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .width(imageSize)
-                .height(imageSize)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF282828))
-        )
-
-        Text(
-            text = "New Album",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(
-            text = item.title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ArtistNameColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-=======
 private fun ExpandedPlayer(
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
@@ -1120,15 +1134,6 @@ fun PlaybackControls(
 }
 
 @Composable
-fun AlbumCardNewScreenListVertical(
-    items: List<MusicItem>,
-    modifier: Modifier = Modifier,
-    imageSize: Dp,
-    onClick: () -> Unit = {}
-) {
-
-}
-
 fun formatTime(timeInSeconds: Float): String {
     val minutes = (timeInSeconds / 60).toInt()
     val seconds = (timeInSeconds % 60).toInt()
