@@ -13,11 +13,12 @@ import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.getTopPicks
 
 @Composable
-fun NewScreen(navController: NavController) {
+fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlaylistClick: (MusicItem) -> Unit) {
 
     ScrollableScreen(
         title = "New",
         selectedTab = 1,
+        onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             HorizontalScrollableNewScreenSection(
@@ -273,11 +274,4 @@ fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
             ),
         )
     )
-}
-
-@Preview
-@Composable
-fun previewNew () {
-    val navController = rememberNavController()
-    NewScreen(navController)
 }

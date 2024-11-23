@@ -400,7 +400,7 @@ fun HorizontalScrollableSection(
             state = state,
             flingBehavior = rememberSnapFlingBehavior(
                 lazyGridState = state,
-                snapPosition = SnapPosition.End
+                snapPosition = SnapPosition.Start
             )
         ) {
             item { Spacer(modifier = Modifier.width(Dimensions.contentPadding())) }
@@ -1146,8 +1146,8 @@ fun VolumeControls(
     val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
 
     //2 cái tại volume theo nấc là OS, cái visual trick user nó mượt
-    var visualVolume by remember { mutableStateOf(0f) }
-    var systemVolume by remember { mutableStateOf(0f) }
+    var visualVolume by remember { mutableStateOf(0f) } //visual volume
+    var systemVolume by remember { mutableStateOf(0f) } //OS volume
 
     LaunchedEffect(Unit) {
         val initial = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume
