@@ -1,5 +1,6 @@
 package com.example.TIUMusic.Screens
 
+import androidx.annotation.DrawableRes
 import android.content.Context
 import android.database.ContentObserver
 import android.media.AudioManager
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -61,6 +63,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,6 +102,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -120,8 +125,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -410,6 +417,208 @@ fun HorizontalScrollableSection(
     }
 }
 
+@Composable
+fun HorizontalScrollableNewScreenSection(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<MusicItem>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier.height(calculatedSectionHeight)
+        ) {
+            items(items) { item ->
+                AlbumCardNewScreen(
+                    item = item,
+                    modifier = Modifier.width(calculatedItemWidth),
+                    imageSize = calculatedItemWidth,
+                    onClick = { onItemClick(item) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection2(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<List<MusicItem>>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+            items(items) { songList ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    songList.forEach {
+                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection3(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<MusicItem>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+            items(items) { item ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    AlbumCardNewScreenSelectionType3(
+                        item = item,
+                        modifier = Modifier.width(calculatedItemWidth),
+                        imageSize = calculatedItemWidth,
+                        onClick = { onItemClick(item) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection4(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<List<MusicItem>>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+
+            items(items) { songList ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    songList.forEach { item ->
+                        val paddingTop = if (songList.first() == item) {
+                            0.dp
+                        } else {
+                            10.dp
+                        }
+                        AlbumCardNewScreenSelectionType3(item = item,
+                            modifier = Modifier
+                                .width(calculatedItemWidth)
+                                .padding(top = paddingTop),
+                            imageSize = calculatedItemWidth,
+                            onClick = { onItemClick(item) })
+                    }
+                }
+            }
+        }
+    }
+}
+
 //này là tựa đề cho danh sách ở trên
 @Composable
 fun SectionTitle(title: String) {
@@ -425,6 +634,29 @@ fun SectionTitle(title: String) {
             bottom = 8.dp
         )
     )
+}
+
+@Composable
+fun SectionTitleWithIcon(title: String, icon: Int) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(
+                start = Dimensions.contentPadding()
+            )
+        )
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = "Detail type",
+            tint = Color.Gray
+        )
+    }
 }
 
 @Composable
@@ -473,6 +705,148 @@ fun AlbumCard(
             overflow = TextOverflow.Ellipsis
         )
     }
+}
+
+@Composable
+fun AlbumCardNewScreen(
+    item: MusicItem,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        Text(
+            text = "New Album",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.artist,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box {
+            AsyncImage(
+                model = item.imageUrl,
+                contentDescription = "Album art for ${item.title}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(imageSize)
+                    .height(imageSize - 60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF282828))
+            )
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(4.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .width(imageSize - 44.dp)
+                        .align(Alignment.CenterVertically),
+                    text = item.artist,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                AsyncImage(
+                    model = item.imageUrl,
+                    contentDescription = "Album art for ${item.title}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(0xFF282828))
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenSelectionType3(
+    item: MusicItem,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        AsyncImage(
+            model = item.imageUrl,
+            contentDescription = "Album art for ${item.title}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .width(imageSize)
+                .height(imageSize)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF282828))
+        )
+
+        Text(
+            text = "New Album",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = ArtistNameColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenListVertical(
+    items: List<MusicItem>,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+
 }
 
 //cái này đặt ngoài navHost
