@@ -49,7 +49,7 @@ import com.example.TIUMusic.ui.theme.SecondaryColor
 @Composable
 fun AlbumListScreen(navController: NavController, playlistId: String) {
     Scaffold(
-        topBar = { AnimatedTopPlaylistBar("Favourite") },
+        topBar = { TopPlaylistBar("Favourite", navController) },
         bottomBar = {
             CustomBottomNavigation(
                 selectedTab = 2,
