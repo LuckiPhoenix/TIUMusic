@@ -8,19 +8,12 @@ import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
-import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
 interface MediaNotificationSeek {
     fun onSeek(seekTime : Float);
@@ -61,16 +54,14 @@ object YoutubeSettings {
     var NotificationEnabled = false;
 }
 
-class YoutubeViewModel(context : Context) : ViewModel() {
-    private val _mediaSession = MutableStateFlow(MediaSession(context, "MusicService"));
-    val mediaSession : StateFlow<MediaSession> = _mediaSession.asStateFlow();
-
-    private val _ytHelper = MutableStateFlow(YoutubePlayerHelper());
-    val ytHelper : StateFlow<YoutubePlayerHelper> = _ytHelper.asStateFlow();
+class YoutubeHelper {
+    var mediaSession : MediaSession? = null;
+    var ytPlayerHelper : YoutubePlayerHelper = YoutubePlayerHelper();
 
     val NotificationID = 0;
 
     companion object {
+        var ___ran : Boolean = false;
         val availableActions : Long =
             (PlaybackState.ACTION_SEEK_TO
                     or PlaybackState.ACTION_PAUSE
@@ -92,14 +83,21 @@ class YoutubeViewModel(context : Context) : ViewModel() {
         }
     }
 
-    init {
-
+    fun init(context: Context) {
+        if (___ran)
+            return;
+        mediaSession = MediaSession(context, "MusicService");
+        println("ran");
+        assert(!___ran) {
+            error("YoutubeViewModel should only run once");
+        }
+        ___ran = true;
         if (YoutubeSettings.NotificationEnabled) {
             var builder = Notification.Builder(context, Notification.CATEGORY_MESSAGE)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle("it's not litter if you bin it")
                 .setContentText("Niko B - dog eats dog food world")
-                .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.value.sessionToken))
+                .setStyle(Notification.MediaStyle().setMediaSession(mediaSession!!.sessionToken))
             with(NotificationManagerCompat.from(context)) {
                 if (ActivityCompat.checkSelfPermission(
                         context,
@@ -113,37 +111,25 @@ class YoutubeViewModel(context : Context) : ViewModel() {
                 notify(NotificationID, builder.build())
             }
 
-            _mediaSession.value.setCallback(object : MediaSession.Callback() {
+            mediaSession!!.setCallback(object : MediaSession.Callback() {
                 override fun onPlay() {
-                    _ytHelper.update { current ->
-                        current.play();
-                        current;
-                    }
+                    ytPlayerHelper.play();
                 }
 
                 override fun onPause() {
-                    _ytHelper.update { current ->
-                        current.pause();
-                        current;
-                    }
+                    ytPlayerHelper.pause();
                 }
 
                 override fun onSeekTo(pos: Long) {
-                    _ytHelper.update { current ->
-                        current.seekTo(pos / 1000f);
-                        current;
-                    }
+                    ytPlayerHelper.seekTo(pos / 1000f);
                 }
             })
         }
     }
 
     fun updateYoutubePlayer(ytPlayer : YouTubePlayer) {
-        _ytHelper.update { it ->
-            it.ytPlayer = ytPlayer;
-            it.ytPlayer?.addListener(it.ytVideoTracker);
-            it;
-        }
+        ytPlayerHelper.ytPlayer = ytPlayer;
+        ytPlayerHelper.ytPlayer?.addListener(ytPlayerHelper.ytVideoTracker);
     }
 
     fun updateMediaMetadata(metadata: YoutubeMetadata, durationMs: Long) {
@@ -183,54 +169,40 @@ class YoutubeViewModel(context : Context) : ViewModel() {
             // Add any other fields you have for your data as well
         }
         // println("wtf");
-        _mediaSession.update { it ->
-            it.setMetadata(metadataBuilder.build());
-            it;
-        }
+        mediaSession?.setMetadata(metadataBuilder.build());
     }
 
     fun updatePlaybackState(state : PlayerConstants.PlayerState, position : Long, playbackSpeed : Float) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
-        _mediaSession.update { it ->
-            it.setPlaybackState(
-                PlaybackState.Builder()
-                    .setActions(availableActions)
-                    .setState(getState(state), position, playbackSpeed)
-                    .build()
-            )
-            it;
-        }
+        mediaSession?.setPlaybackState(
+            PlaybackState.Builder()
+                .setActions(availableActions)
+                .setState(getState(state), position, playbackSpeed)
+                .build()
+        )
     }
 
     fun updatePlaybackState(state : Int, position : Long, playbackSpeed : Float) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
-        _mediaSession.update { it ->
-            it.setPlaybackState(
-                PlaybackState.Builder()
-                    .setActions(availableActions)
-                    .setState(state, position, playbackSpeed)
-                    .build()
-            )
-            it;
-        }
+        mediaSession?.setPlaybackState(
+            PlaybackState.Builder()
+                .setActions(availableActions)
+                .setState(state, position, playbackSpeed)
+                .build()
+        )
     }
 
     fun setMediaSessionActive(active : Boolean) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
-        _mediaSession.update { it ->
-            it.isActive = true;
-            it;
-        }
+        if (mediaSession != null)
+            mediaSession!!.isActive = true;
     }
 
     fun addMediaNotificationSeekListener(listener: MediaNotificationSeek) {
-        _ytHelper.update { it ->
-            it.addMediaNotificationSeekListener(listener);
-            it;
-        }
+        ytPlayerHelper.addMediaNotificationSeekListener(listener);
     }
 
 }

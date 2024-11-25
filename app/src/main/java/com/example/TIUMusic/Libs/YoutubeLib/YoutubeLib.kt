@@ -12,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -104,11 +103,9 @@ fun YoutubeView(
     onSecond: (YouTubePlayer, Float) -> Unit,
     onDurationLoaded: (YouTubePlayer, Float) -> Unit,
     onState: (YouTubePlayer, PlayerConstants.PlayerState) -> Unit,
-    ytViewModel: YoutubeViewModel = YoutubeViewModel(LocalContext.current)
+    ytHelper : YoutubeHelper
 ) {
     var ytPlayerView : YouTubePlayerView? by remember { mutableStateOf(null) }
-    val mediaSession by ytViewModel.mediaSession.collectAsState()
-    val ytHelper by ytViewModel.ytHelper.collectAsState()
     DisposableEffect(LocalContext.current) {
         onDispose {
             ytPlayerView?.release();
@@ -124,21 +121,21 @@ fun YoutubeView(
 
                 addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
                     override fun onReady(youTubePlayer: YouTubePlayer) {
-                        ytViewModel.updateYoutubePlayer(youTubePlayer);
+                        ytHelper.updateYoutubePlayer(youTubePlayer);
                         youTubePlayer.loadVideo(youtubeVideoId, 0f);
                     }
 
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                         onDurationLoaded(youTubePlayer, duration);
-                        if (!mediaSession.isActive)
+                        if (ytHelper.mediaSession != null && !ytHelper.mediaSession!!.isActive)
                         {
-                            ytViewModel.updateMediaMetadata(
+                            ytHelper.updateMediaMetadata(
                                 metadata = youtubeMetadata,
                                 durationMs = duration.toLong() * 1000L
                             );
-                            ytViewModel.setMediaSessionActive(true);
+                            ytHelper.setMediaSessionActive(true);
                             // println("Playing");
-                            ytViewModel.updatePlaybackState(
+                            ytHelper.updatePlaybackState(
                                 state = PlayerConstants.PlayerState.PLAYING,
                                 position = 0,
                                 playbackSpeed = 1.0f
@@ -157,9 +154,9 @@ fun YoutubeView(
                         onState(youTubePlayer, state);
                         if (state == PlayerConstants.PlayerState.UNSTARTED)
                             return;
-                        ytViewModel.updatePlaybackState(
+                        ytHelper.updatePlaybackState(
                             state = state,
-                            position = ytHelper.seekToTime.toLong() * 1000L,
+                            position = ytHelper.ytPlayerHelper.seekToTime.toLong() * 1000L,
                             playbackSpeed = 1.0f
                         );
                     }

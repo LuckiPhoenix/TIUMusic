@@ -77,12 +77,6 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
-@Preview
-@Composable
-fun test() {
-    ExpandedPlayer(true, 2f, 5f) { }
-}
-
 @Composable
 public fun ExpandedPlayer(
     isPlaying: Boolean,

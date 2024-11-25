@@ -18,8 +18,19 @@ class PlayerViewModel : ViewModel() {
     private val _duration = mutableFloatStateOf(0.0f);
     val duration: State<Float> = _duration;
 
+    private val _currentTime = mutableFloatStateOf(0.0f);
+    val currentTime : State<Float> = _currentTime;
+
+    init {
+        println("lmao");
+    }
+
+    fun setCurrentTime(currTime : Float) {
+        _currentTime.floatValue = currTime;
+    }
+
     fun setDuration(duration : Float) {
-        _duration.value = duration;
+        _duration.floatValue = duration;
     }
 
     fun setPlaying(playing: Boolean) {

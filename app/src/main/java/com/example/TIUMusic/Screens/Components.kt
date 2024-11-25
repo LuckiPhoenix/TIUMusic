@@ -77,6 +77,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -134,9 +135,11 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.res.painterResource
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeHelper
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.R
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 
 /*
 các components reusable phải được declare ở đây
@@ -486,6 +489,9 @@ fun NowPlayingSheet(
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
+    val ytHelper by remember {
+        mutableStateOf(YoutubeHelper())
+    }
 
     val springSpec = SpringSpec<Float>(
         dampingRatio = 0.8f,
@@ -497,6 +503,8 @@ fun NowPlayingSheet(
         animationSpec = springSpec,
         label = "Sheet Progress"
     )
+
+    ytHelper.init(LocalContext.current);
 
     // Update the expanded state based on progress
     LaunchedEffect(progress) {
@@ -514,20 +522,28 @@ fun NowPlayingSheet(
 
 
     YoutubeView(
-        "Zgd1corMdnk",
-        YoutubeMetadata(
+        youtubeVideoId = "Zgd1corMdnk",
+        youtubeMetadata = YoutubeMetadata(
             title = "it's not litter if you bin it",
             artist = "Niko B",
         ),
         onSecond = { ytPlayer, second ->
-
+            playerViewModel.setCurrentTime(second);
         },
         onDurationLoaded = { ytPlayer, dur ->
             playerViewModel.setDuration(dur);
         },
         onState =  { ytPlayer, state ->
-
-        }
+            when(state) {
+                PlayerConstants.PlayerState.PLAYING -> playerViewModel.setPlaying(true);
+                PlayerConstants.PlayerState.PAUSED, PlayerConstants.PlayerState.ENDED -> playerViewModel.setPlaying(false);
+                PlayerConstants.PlayerState.BUFFERING -> {} // Set Loading
+                else -> {
+                    // Set Loading
+                }
+            }
+        },
+        ytHelper = ytHelper
     )
     Box(
         modifier = modifier
@@ -566,14 +582,24 @@ fun NowPlayingSheet(
                     if (!isExpanded) {
                         MiniPlayer(
                             isPlaying = playerViewModel.isPlaying.value,
-                            duration = playerViewModel.duration.value,
-                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) },
+                            onPlayPauseClick = {
+                                if (playerViewModel.isPlaying.value)
+                                    ytHelper.ytPlayerHelper.pause();
+                                else
+                                    ytHelper.ytPlayerHelper.play();
+                            },
                         )
                     } else {
                         ExpandedPlayer(
                             isPlaying = playerViewModel.isPlaying.value,
                             duration = playerViewModel.duration.value,
-                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) },
+                            currentTime = playerViewModel.currentTime.value,
+                            onPlayPauseClick = {
+                                if (playerViewModel.isPlaying.value)
+                                    ytHelper.ytPlayerHelper.pause();
+                                else
+                                    ytHelper.ytPlayerHelper.play();
+                           },
                         )
                     }
                 }
@@ -595,7 +621,6 @@ fun NowPlayingSheet(
 @Composable
 private fun MiniPlayer(
     isPlaying: Boolean,
-    duration : Float,
     onPlayPauseClick: () -> Unit
 ) {
     Row(
