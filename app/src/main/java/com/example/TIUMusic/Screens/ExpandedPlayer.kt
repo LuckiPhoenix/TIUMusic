@@ -89,7 +89,7 @@ public fun ExpandedPlayer(
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(128.dp))
 
         // Album art
         AsyncImage(
@@ -97,7 +97,7 @@ public fun ExpandedPlayer(
             contentDescription = "Song Image",
             modifier = Modifier
                 .size(320.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(160.dp))
                 .background(Color(0xFF404040))
                 .align(Alignment.CenterHorizontally)
         )
