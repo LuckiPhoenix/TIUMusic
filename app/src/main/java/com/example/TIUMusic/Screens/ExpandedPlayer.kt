@@ -89,7 +89,7 @@ public fun ExpandedPlayer(
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(128.dp))
 
         // Album art
         AsyncImage(
@@ -97,7 +97,7 @@ public fun ExpandedPlayer(
             contentDescription = "Song Image",
             modifier = Modifier
                 .size(320.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(160.dp))
                 .background(Color(0xFF404040))
                 .align(Alignment.CenterHorizontally)
         )
@@ -144,12 +144,21 @@ fun PlaybackControls(
     currentTime: Float,
     duration: Float,
     onPlayPauseClick: () -> Unit,
-    onSeek: (Float) -> Unit // user chỉnh time
+    onSeek: (Float) -> Unit // User changes the time
 ) {
+    // Local state for handling slider interactions
+    var sliderPosition by remember { mutableStateOf(currentTime) }
+
     Column {
         Slider(
-            value = currentTime,
-            onValueChange = onSeek,
+            value = sliderPosition,
+            onValueChange = { newPosition ->
+                sliderPosition = newPosition
+                onSeek(newPosition) // Notify the wrapper about the change
+            },
+            onValueChangeFinished = {
+                // change xong lam gi
+            },
             valueRange = 0f..duration,
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,7 +172,7 @@ fun PlaybackControls(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatTime(currentTime), color = Color.Gray)
+            Text(formatTime(sliderPosition), color = Color.Gray)
             Text(formatTime(duration), color = Color.Gray)
         }
 
@@ -174,7 +183,7 @@ fun PlaybackControls(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* quay về stack trước */ }) {
+            IconButton(onClick = { /* Handle previous action */ }) {
                 Icon(
                     painter = painterResource(R.drawable.prev_song),
                     contentDescription = "Previous",
@@ -190,14 +199,16 @@ fun PlaybackControls(
                     .background(Color(0xFF404040), CircleShape)
             ) {
                 Icon(
-                    painter = painterResource( if (isPlaying) R.drawable.pause else R.drawable.play_solid),
+                    painter = painterResource(
+                        if (isPlaying) R.drawable.pause else R.drawable.play_solid
+                    ),
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
             }
 
-            IconButton(onClick = { /* nhạc tiếp theo */ }) {
+            IconButton(onClick = { /* Handle next action */ }) {
                 Icon(
                     painter = painterResource(R.drawable.next_song),
                     contentDescription = "Next",
