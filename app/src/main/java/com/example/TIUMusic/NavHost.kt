@@ -91,7 +91,16 @@ fun NavHost() {
                         navController.navigate("playlist/${musicItem.id}")
                     }
                     ) }
-                composable("search") { SearchScreen(navController) }
+                composable("search") { SearchScreen(onTabSelected = { tabIndex ->
+                    when (tabIndex) {
+                        0 -> {navController.navigate("home")}
+                        1 -> {}
+                        2 -> navController.navigate("library")
+                        3 -> navController.navigate("search")
+                    }
+                     },
+                    navController)
+                }
                 composable("library") { LibraryScreen(navController) }
                 composable(
                     route = "playlist/{playlistId}",
