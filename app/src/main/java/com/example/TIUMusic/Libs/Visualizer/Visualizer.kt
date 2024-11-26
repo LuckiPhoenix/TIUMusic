@@ -112,6 +112,8 @@ fun VisualizerCircleRGB(
     minHertz : Float = 20f,
     maxHertz : Float = 15000f,
 ) {
+    if (!VisualizerSettings.VisualizerEnabled)
+        return;
     var prevTime = remember { System.currentTimeMillis() };
     val visualizerHelper : VisualizerHelper = remember {
         VisualizerHelper();
@@ -241,6 +243,8 @@ fun VisualizerCircle(
     minHertz : Float = 20f,
     maxHertz : Float = 15000f,
 ) {
+    if (!VisualizerSettings.VisualizerEnabled)
+        return;
     var prevTime = remember { System.currentTimeMillis() };
     val visualizerHelper: VisualizerHelper = remember {
         VisualizerHelper();

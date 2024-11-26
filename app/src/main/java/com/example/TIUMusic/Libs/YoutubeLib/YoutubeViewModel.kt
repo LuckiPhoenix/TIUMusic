@@ -39,12 +39,12 @@ class YoutubePlayerHelper {
         mediaNotificationSeekListeners.add(listener);
     }
 
-    public fun seekTo(time : Float) {
+    public fun seekTo(second : Float) {
         if (ytPlayer != null) {
-            seekToTime = time;
+            seekToTime = second;
             ytPlayer!!.seekTo(seekToTime);
             for (listener in mediaNotificationSeekListeners)
-                listener.onSeek(time);
+                listener.onSeek(second);
         }
     }
 

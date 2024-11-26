@@ -84,6 +84,7 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.painterResource
+import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
@@ -440,6 +441,11 @@ fun NowPlayingSheet(
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
     val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
+    // Su dung de check user dang seek hay khong
+    // Set true tai onSeek khi user dang keo slider
+    // Set false khi !isPlaying khi chuyen tu state paused sang playing
+    // Still very retarded way to do this
+    var isSeeking by remember { mutableStateOf(false) }
 
     val springSpec = SpringSpec<Float>(
         dampingRatio = 0.8f,
@@ -451,7 +457,7 @@ fun NowPlayingSheet(
         animationSpec = springSpec,
         label = "Sheet Progress"
     )
-
+    
     // Update the expanded state based on progress
     LaunchedEffect(progress) {
         playerViewModel.setExpanded(progress > 0.5f)
@@ -473,17 +479,27 @@ fun NowPlayingSheet(
             artist = "Niko B",
         ),
         onSecond = { ytPlayer, second ->
-            // playerViewModel.setCurrentTime(second);
+            if (!isSeeking)
+                playerViewModel.setCurrentTime(second);
         },
         onDurationLoaded = { ytPlayer, dur ->
             playerViewModel.setDuration(dur);
         },
         onState =  { ytPlayer, state ->
             when(state) {
-                PlayerConstants.PlayerState.PLAYING -> playerViewModel.setPlaying(true);
-                PlayerConstants.PlayerState.PAUSED, PlayerConstants.PlayerState.ENDED -> playerViewModel.setPlaying(false);
-                PlayerConstants.PlayerState.BUFFERING -> {} // Set Loading
+                PlayerConstants.PlayerState.PLAYING -> {
+                    if (!playerViewModel.isPlaying.value)
+                        isSeeking = false;
+                    playerViewModel.setPlaying(true);
+                }
+                PlayerConstants.PlayerState.PAUSED, PlayerConstants.PlayerState.ENDED -> {
+                    playerViewModel.setPlaying(false)
+                };
+                PlayerConstants.PlayerState.BUFFERING -> {
+                    playerViewModel.setPlaying(false);
+                } // Set Loading
                 else -> {
+                    playerViewModel.setPlaying(false);
                     // Set Loading
                 }
             }
@@ -545,6 +561,14 @@ fun NowPlayingSheet(
                                 else
                                     ytPlayerHelper.play();
                            },
+                            onSeek = { newPosition ->
+                                isSeeking = true;
+                            },
+                            onSeekFinished = { newPosition ->
+                                playerViewModel.setPlaying(false);
+                                playerViewModel.setCurrentTime(newPosition);
+                                ytPlayerHelper.seekTo(newPosition);
+                            }
                         )
                     }
                 }

@@ -83,6 +83,8 @@ public fun ExpandedPlayer(
     currentTime: Float,
     duration : Float,
     onPlayPauseClick: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onSeekFinished: (Float) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -127,7 +129,8 @@ public fun ExpandedPlayer(
             onPlayPauseClick = onPlayPauseClick,
             currentTime = currentTime,
             duration = duration,
-            onSeek = {}
+            onSeek = onSeek,
+            onSeekFinished = onSeekFinished
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -144,20 +147,30 @@ fun PlaybackControls(
     currentTime: Float,
     duration: Float,
     onPlayPauseClick: () -> Unit,
-    onSeek: (Float) -> Unit // User changes the time
+    onSeek: (Float) -> Unit, // User changes the time
+    onSeekFinished: (Float) -> Unit
 ) {
     // Local state for handling slider interactions
     var sliderPosition by remember { mutableStateOf(currentTime) }
+    var isSeeking by remember { mutableStateOf(false) }
+
+    if (!isSeeking)
+        sliderPosition = currentTime; // Really stupid
 
     Column {
         Slider(
             value = sliderPosition,
             onValueChange = { newPosition ->
+                isSeeking = true;
                 sliderPosition = newPosition
-                onSeek(newPosition) // Notify the wrapper about the change
+                // Notify the wrapper about the change
+                // to disable slider sync when seeking
+                onSeek(sliderPosition)
             },
             onValueChangeFinished = {
-                // change xong lam gi
+                isSeeking = false;
+                // Change here
+                onSeekFinished(sliderPosition)
             },
             valueRange = 0f..duration,
             modifier = Modifier
