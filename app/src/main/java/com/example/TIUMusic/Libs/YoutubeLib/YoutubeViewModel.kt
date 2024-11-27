@@ -8,12 +8,32 @@ import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchResponse
+import com.example.TIUMusic.Libs.YoutubeLib.models.VideoInfo
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.components.SingletonComponent
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
 interface MediaNotificationSeek {
     fun onSeek(seekTime : Float);
@@ -206,3 +226,100 @@ class YoutubeHelper {
     }
 
 }
+
+@HiltViewModel
+class YtmusicViewModel @Inject constructor(
+    private val ytmusic: Ytmusic // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
+) : ViewModel() {
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> get() = _loading
+
+    fun performSearch(query: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val client = YouTubeClient.WEB_REMIX // Sử dụng client phù hợp
+                val response = ytmusic.search(client = client, query).bodyAsText()
+                // Lấy danh sách kết quả
+                    // Cấu hình JSON parser
+                val json = Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                }
+                    // Parse JSON
+                val parsedResponse = json.decodeFromString<SearchResponse>(response)
+
+                // Trích xuất thông tin video
+                val videoInfos = extractVideoInfo(parsedResponse)
+
+                Log.d("viewModelTest","Count: ${videoInfos.size}")
+                if (videoInfos.isNotEmpty()) {
+                    videoInfos.forEach { video ->
+                        // In kết quả
+                        Log.d("viewModelTest","ID: ${video.videoId}")
+                        Log.d("viewModelTest","Title: ${video.title}")
+                    }
+                } else {
+                    println("No videos found.")
+                }
+
+
+
+            } catch (e: Exception) {
+                // Handle lỗi (nếu cần)
+                e.printStackTrace()
+                Log.d("viewModelTest", "Error occurred: ${e.message}")
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+    // Hàm trích xuất thông tin video ID
+    fun extractVideoInfo(response: SearchResponse): List<VideoInfo> {
+        // Lấy tabs đầu tiên
+        val firstTab = response.contents.tabbedSearchResultsRenderer.tabs.firstOrNull()
+            ?: throw Exception("No tabs found")
+
+        // Duyệt qua từng tab và lấy thông tin video
+        val videoInfos = mutableListOf<VideoInfo>()
+
+        // Lấy musicCardShelfRenderer
+        val musicShelf = firstTab.tabRenderer.content.sectionListRenderer.contents.firstOrNull()?.musicCardShelfRenderer
+            ?: throw Exception("No music card shelf found")
+
+
+        //Lấy các run
+        val runs = musicShelf.title.runs
+        Log.d("viewModelTest","Count RUNS: ${runs.size}")
+        for (run in runs){
+            // Tìm tiêu đề
+            val title = run.text
+            // Tìm video ID từ navigation endpoint
+            val videoId = run.navigationEndpoint?.watchEndpoint?.videoId
+                ?: run.navigationEndpoint?.browseEndpoint?.browseId
+            videoInfos.add(
+                VideoInfo(
+                    videoId = videoId,
+                    title = title
+                )
+            )
+        }
+
+        return videoInfos
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object YtmusicModule {
+    @Provides
+    fun provideYtmusic(): Ytmusic {
+        return Ytmusic()
+    }
+}
+
+
+
+
+

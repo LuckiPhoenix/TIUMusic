@@ -45,7 +45,7 @@ fun NavHost() {
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = "auth"
+            startDestination = "main"
         ) {
             navigation(startDestination = "login", route = "auth") {
                 composable("login") { LoginScreen(navController) }
@@ -80,7 +80,7 @@ fun NavHost() {
                     )
                 }
                 composable("new") { NewScreen(navController) }
-                composable("search") { SearchScreen(navController) }
+                composable("search") { SearchScreen(navController = navController) }
                 composable("library") { LibraryScreen(navController) }
                 composable(
                     route = "playlist/{playlistId}",

@@ -12,6 +12,7 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
+kotlinxSerializationJson = "1.6.3"
 ktorVersion = "2.2.4"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
@@ -52,6 +53,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-storage = { group = "androidx.test.services", name = "storage", version.ref = "storage" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktorVersion" }
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktorVersion" }
 ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktorVersion" }
