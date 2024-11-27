@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         ensurePlayerNotificationPermissionAllowed(this);
         createNotificationChannel(this);
         val playerViewModel = PlayerViewModel() // Could be a bad idea
-        val visualizerViewModel = VisualizerViewModel(captureSize = 256)
+        val visualizerViewModel = VisualizerViewModel()
         val youtubeViewModel = YoutubeViewModel(this)
         setContent {
             TIUMusicTheme {
