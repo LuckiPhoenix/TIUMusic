@@ -123,6 +123,9 @@ fun VisualizerCircleRGB(
         if (___ran > 0)
             return@LaunchedEffect;
         println("INIT");
+        Thread(Runnable {
+
+        }).start();
         launch {
             ___ran++;
             while (true) {
