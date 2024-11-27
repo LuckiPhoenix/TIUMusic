@@ -111,32 +111,31 @@ fun VisualizerCircleRGB(
     lineHeight: Float = 600f,
     minHertz : Float = 20f,
     maxHertz : Float = 15000f,
+    visualizerViewModel: VisualizerViewModel
 ) {
     if (!VisualizerSettings.VisualizerEnabled)
         return;
-    var prevTime = remember { System.currentTimeMillis() };
-    val visualizerHelper : VisualizerHelper = remember {
-        VisualizerHelper();
-    }
-    var fft by remember {
-        mutableStateOf(doubleArrayOf())
-    }
+    var ___ran by remember { mutableStateOf(0) }
+    var prevTime by remember { mutableStateOf(System.currentTimeMillis()) };
+    var fft by remember { mutableStateOf(doubleArrayOf()) }
     // INIT sa
     LaunchedEffect(Unit) {
+        if (___ran > 0)
+            return@LaunchedEffect;
         println("INIT");
         launch {
+            ___ran++;
             while (true) {
-                fft = visualizerHelper.GetTransformedFFT(0, 22050).copyOf();
-                println(fft.toList());
+                fft = visualizerViewModel.GetTransformedFFT(0, 22050).copyOf();
                 delay(16);
             }
         }
     }
-    Canvas(modifier = modifier.fillMaxSize().background(Color.Black)) {
+    Canvas(modifier = modifier.background(Color.Transparent)) {
         // FPS COUNTER
 
         val deltaTime : Float = 1 / ((System.currentTimeMillis() - prevTime) / 1000f);
-        println("Delta Time : $deltaTime")
+        //println("Delta Time : $deltaTime")
         prevTime = System.currentTimeMillis();
 
         val center: Size = size / 2f;
@@ -165,7 +164,7 @@ fun VisualizerCircleRGB(
             val xOffset: Float = barDistance * i - barDistance * COUNT / 2;
             val angle = i.toFloat() / COUNT.toFloat() * 1.0f * Math.PI;
             barHeight = (barHeight + lineHeight *
-                    ((visualizerHelper.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
+                    ((visualizerViewModel.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
                             * lerp(0.3f, maxVal, Easing( i.toFloat() / COUNT.toFloat(), EasingType.OutQuad)))
                     / 5) / 2;
             // Right
@@ -200,13 +199,6 @@ fun VisualizerCircleRGB(
             beginOffset.x,
             beginOffset.y
         )
-        val brush = radialGradient(
-            0.0f to Color(0xFF020024),
-            0.4f to Color(0xFF090979),
-            1.0f to Color(0xFF00d4ff),
-            center = Offset(center.width, center.height),
-            radius = radius + lineHeight / 10f
-        );
         val resultPath = Path.combine(PathOperation.Union, pathLeft, pathRight);
         val blendMode = BlendMode.Lighten; // BlendMode.Multiply for white background, BlendMode.Lighten for black background
         rotate(degrees = 0.5f) {
@@ -242,33 +234,33 @@ fun VisualizerCircle(
     lineHeight: Float = 600f,
     minHertz : Float = 20f,
     maxHertz : Float = 15000f,
+    visualizerViewModel: VisualizerViewModel
 ) {
     if (!VisualizerSettings.VisualizerEnabled)
         return;
-    var prevTime = remember { System.currentTimeMillis() };
-    val visualizerHelper: VisualizerHelper = remember {
-        VisualizerHelper();
-    }
-    var fft by remember {
-        mutableStateOf(doubleArrayOf())
-    }
+    var ___ran by remember { mutableStateOf(0) }
+    var prevTime by remember { mutableStateOf(System.currentTimeMillis()) };
+    var fft by remember { mutableStateOf(doubleArrayOf()) }
     // INIT sa
     LaunchedEffect(Unit) {
         println("INIT");
         launch {
+            ___ran++;
             while (true) {
-                fft = visualizerHelper.GetTransformedFFT(0, 22050).copyOf();
-                println(fft.toList());
+                fft = visualizerViewModel.GetTransformedFFT(0, 22050).copyOf();
+                val deltaTime: Float = 1 / ((System.currentTimeMillis() - prevTime) / 1000f);
+                //println(fft.toList());
+                //println("Delta Time : $deltaTime")
                 delay(16);
             }
         }
     }
-    Canvas(modifier = modifier.fillMaxSize().background(Color.Black)) {
+    Canvas(modifier = modifier.background(Color.Transparent)) {
         // FPS COUNTER
 
 
         val deltaTime: Float = 1 / ((System.currentTimeMillis() - prevTime) / 1000f);
-        println("Delta Time : $deltaTime")
+        //println("Delta Time : $deltaTime")
         prevTime = System.currentTimeMillis();
 
         val center: Size = size / 2f;
@@ -306,7 +298,7 @@ fun VisualizerCircle(
             val xOffset: Float = barDistance * i - barDistance * COUNT / 2;
             val angle = i.toFloat() / COUNT.toFloat() * 1.0f * Math.PI;
             barHeight = (barHeight + lineHeight *
-                    ((visualizerHelper.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
+                    ((visualizerViewModel.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
                             * lerp(
                         0.3f,
                         maxVal,

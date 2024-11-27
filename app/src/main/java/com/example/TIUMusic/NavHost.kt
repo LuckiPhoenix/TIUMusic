@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
@@ -38,11 +39,13 @@ import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
-fun NavHost() {
+fun NavHost(
+    playerViewModel: PlayerViewModel,
+    visualizerViewModel: VisualizerViewModel,
+    youtubeViewModel: YoutubeViewModel
+) {
     val context = LocalContext.current;
     val navController = rememberNavController()
-    val playerViewModel = remember { PlayerViewModel() } // Could be a bad idea
-    val youtubeViewModel = remember { YoutubeViewModel(context) }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
     Log.d("NavHost", "Current route: $currentRoute")
@@ -112,6 +115,7 @@ fun NavHost() {
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
                 youtubeViewModel = youtubeViewModel,
+                visualizerViewModel = visualizerViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp),

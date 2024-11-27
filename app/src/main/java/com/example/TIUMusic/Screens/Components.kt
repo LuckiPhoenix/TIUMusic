@@ -84,6 +84,8 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.painterResource
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
@@ -436,6 +438,7 @@ fun NowPlayingSheet(
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
     youtubeViewModel: YoutubeViewModel,
+    visualizerViewModel: VisualizerViewModel
 ) {
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
@@ -568,7 +571,8 @@ fun NowPlayingSheet(
                                 playerViewModel.setPlaying(false);
                                 playerViewModel.setCurrentTime(newPosition);
                                 ytPlayerHelper.seekTo(newPosition);
-                            }
+                            },
+                            visualizerViewModel = visualizerViewModel
                         )
                     }
                 }

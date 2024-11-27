@@ -70,6 +70,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.R
@@ -84,8 +87,15 @@ public fun ExpandedPlayer(
     duration : Float,
     onPlayPauseClick: () -> Unit,
     onSeek: (Float) -> Unit,
-    onSeekFinished: (Float) -> Unit
+    onSeekFinished: (Float) -> Unit,
+    visualizerViewModel: VisualizerViewModel
 ) {
+    VisualizerCircleRGB(
+        visualizerViewModel = visualizerViewModel,
+        radius = 330.dp.value,
+        lineHeight = 550.dp.value,
+        modifier = Modifier.fillMaxSize().padding(bottom = 230.dp)
+    );
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -98,8 +108,9 @@ public fun ExpandedPlayer(
             model = "",
             contentDescription = "Song Image",
             modifier = Modifier
-                .size(320.dp)
-                .clip(RoundedCornerShape(160.dp))
+                .padding(top = 40.dp)
+                .size(240.dp)
+                .clip(RoundedCornerShape(140.dp))
                 .background(Color(0xFF404040))
                 .align(Alignment.CenterHorizontally)
         )
