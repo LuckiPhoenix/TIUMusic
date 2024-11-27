@@ -35,7 +35,7 @@ fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, mo
             Row {
                 Box(
                     modifier = Modifier
-                        .padding(20.dp, 70.dp, 6.dp, 0.dp)
+                        .padding(20.dp, 50.dp, 6.dp, 0.dp)
                         .width(0.dp)
                         .weight(1F)
                         .height(heightItemCategorySearch)
@@ -64,7 +64,7 @@ fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, mo
                 }
                 Box(
                     modifier = Modifier
-                        .padding(6.dp, 70.dp, 20.dp, 0.dp)
+                        .padding(6.dp, 50.dp, 20.dp, 0.dp)
                         .width(0.dp)
                         .weight(1F)
                         .height(heightItemCategorySearch)
@@ -250,6 +250,7 @@ fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, mo
                         .padding(6.dp, 20.dp, 20.dp, 0.dp)
                         .width(0.dp)
                         .weight(1F)
+                        .padding(bottom = 80.dp)
                         .height(heightItemCategorySearch)
                 ) {
 

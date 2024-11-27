@@ -277,8 +277,8 @@ fun ScrollableSearchScreen(
     val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
 
     // Calculate dynamic values
-    val expandedHeight = 60.dp
-    val collapsedHeight = 30.dp
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
     val expandedTitleSize = Dimensions.expandedTitleSize()
     val collapsedTitleSize = Dimensions.collapsedTitleSize()
     val bottomNavHeight = 56.dp // Define bottom nav height
@@ -348,7 +348,7 @@ fun ScrollableSearchScreen(
                 )
             }
 
-            Column(
+            Box(
                 modifier = Modifier
                     .background(BackgroundColor)
             ) {
@@ -361,10 +361,14 @@ fun ScrollableSearchScreen(
                     height = height
                 )
 
-                Box {
+                Box(
+                    modifier = Modifier
+                        .padding(top = height - 60.dp, bottom = 10.dp)
+                ) {
                     Card(
                         modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = expandedHeight / 2 + 10.dp)
+                            .padding(top = 40.dp)
+                            .padding(horizontal = 20.dp)
                             .fillMaxWidth()
                             .height(36.dp)
                             .border(
