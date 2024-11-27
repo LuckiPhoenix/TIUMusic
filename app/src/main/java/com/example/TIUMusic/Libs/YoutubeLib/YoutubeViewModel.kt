@@ -235,7 +235,9 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    fun performSearch(query: String) {
+    fun performSearch(query: String) : List<VideoInfo>?{
+        var videoInfos : List<VideoInfo> ? = null
+
         viewModelScope.launch {
             _loading.value = true
             try {
@@ -251,29 +253,31 @@ class YtmusicViewModel @Inject constructor(
                 val parsedResponse = json.decodeFromString<SearchResponse>(response)
 
                 // Trích xuất thông tin video
-                val videoInfos = extractVideoInfo(parsedResponse)
-
-                Log.d("viewModelTest","Count: ${videoInfos.size}")
-                if (videoInfos.isNotEmpty()) {
-                    videoInfos.forEach { video ->
-                        // In kết quả
-                        Log.d("viewModelTest","ID: ${video.videoId}")
-                        Log.d("viewModelTest","Title: ${video.title}")
-                    }
-                } else {
-                    println("No videos found.")
+                if(videoInfos != null){
+                    videoInfos = null
                 }
-
-
-
+                videoInfos = extractVideoInfo(parsedResponse)
+//
+//                Log.d("viewModelTest","Count: ${videoInfos.size}")
+//                if (videoInfos.isNotEmpty()) {
+//                    videoInfos.forEach { video ->
+//                        // In kết quả
+//                        Log.d("viewModelTest","ID: ${video.videoId}")
+//                        Log.d("viewModelTest","Title: ${video.title}")
+//                    }
+//                } else {
+//                    println("No videos found.")
+//                }
             } catch (e: Exception) {
                 // Handle lỗi (nếu cần)
                 e.printStackTrace()
+                videoInfos = null
                 Log.d("viewModelTest", "Error occurred: ${e.message}")
             } finally {
                 _loading.value = false
             }
         }
+        return videoInfos
     }
     // Hàm trích xuất thông tin video ID
     fun extractVideoInfo(response: SearchResponse): List<VideoInfo> {

@@ -1097,7 +1097,6 @@ fun NowPlayingSheet(
     val scope = rememberCoroutineScope()
 
 
-
     val springSpec = SpringSpec<Float>(
         dampingRatio = 0.8f,
         stiffness = Spring.StiffnessLow
