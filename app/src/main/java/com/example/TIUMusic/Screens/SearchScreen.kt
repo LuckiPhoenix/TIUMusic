@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -27,8 +28,13 @@ import coil.compose.AsyncImage
 val heightItemCategorySearch = 140.dp
 
 @Composable
-fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun SearchScreen(
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ScrollableSearchScreen (
+        searchViewModel = hiltViewModel(),
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
@@ -40,7 +46,6 @@ fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, mo
                         .weight(1F)
                         .height(heightItemCategorySearch)
                 ) {
-
                     AsyncImage(
                         model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
                         contentDescription = "Album art for",

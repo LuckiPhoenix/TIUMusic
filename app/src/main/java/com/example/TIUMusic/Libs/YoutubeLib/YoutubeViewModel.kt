@@ -26,10 +26,13 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -235,42 +238,23 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    fun performSearch(query: String) : List<VideoInfo>?{
-        var videoInfos : List<VideoInfo> ? = null
-
+    fun performSearch(query: String) : List<VideoInfo>? {
+        var videoInfos: List<VideoInfo>? = null
+        Log.d("viewModelTest", "RUN")
         viewModelScope.launch {
             _loading.value = true
             try {
-                val client = YouTubeClient.WEB_REMIX // Sử dụng client phù hợp
-                val response = ytmusic.search(client = client, query).bodyAsText()
-                // Lấy danh sách kết quả
-                    // Cấu hình JSON parser
-                val json = Json {
-                    ignoreUnknownKeys = true
-                    isLenient = true
+                withContext(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+                    Log.e("viewModelTest", "Lỗi trong coroutine: ${throwable.message}")
+                }) {
+                    Log.d("viewModelTest", "RUNinside-1")
+                    val client = YouTubeClient.WEB_REMIX
+                    val response = ytmusic.search(client = client, "ade").bodyAsText()
+                    Log.d("viewModelTest", "RUNinside-1.5")
+                    // Phần còn lại của mã
                 }
-                    // Parse JSON
-                val parsedResponse = json.decodeFromString<SearchResponse>(response)
-
-                // Trích xuất thông tin video
-                if(videoInfos != null){
-                    videoInfos = null
-                }
-                videoInfos = extractVideoInfo(parsedResponse)
-//
-//                Log.d("viewModelTest","Count: ${videoInfos.size}")
-//                if (videoInfos.isNotEmpty()) {
-//                    videoInfos.forEach { video ->
-//                        // In kết quả
-//                        Log.d("viewModelTest","ID: ${video.videoId}")
-//                        Log.d("viewModelTest","Title: ${video.title}")
-//                    }
-//                } else {
-//                    println("No videos found.")
-//                }
             } catch (e: Exception) {
-                // Handle lỗi (nếu cần)
-                e.printStackTrace()
+                // Xử lý ngoại lệ ở đây
                 videoInfos = null
                 Log.d("viewModelTest", "Error occurred: ${e.message}")
             } finally {
@@ -278,6 +262,10 @@ class YtmusicViewModel @Inject constructor(
             }
         }
         return videoInfos
+    }
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("viewModelTest", "ViewModel is cleared")
     }
     // Hàm trích xuất thông tin video ID
     fun extractVideoInfo(response: SearchResponse): List<VideoInfo> {
