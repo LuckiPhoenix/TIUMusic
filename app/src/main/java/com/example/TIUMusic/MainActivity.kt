@@ -9,12 +9,16 @@ import androidx.compose.runtime.remember
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.Visualizer.ensureVisualizerPermissionAllowed
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.Ytmusic
 import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
 import com.example.TIUMusic.Libs.YoutubeLib.ensurePlayerNotificationPermissionAllowed
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.ktor.client.call.body
+import kotlinx.coroutines.runBlocking
 
 
 @AndroidEntryPoint
