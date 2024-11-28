@@ -53,7 +53,7 @@ class VisualizerViewModel(captureSize : Int = Visualizer.getCaptureSizeRange()[1
         if (!VisualizerSettings.VisualizerEnabled)
             return ByteArray(0);
         visualizer.value.getFft(fftBytes);
-        return fftBytes;
+        return fftBytes.copyOf();
     }
 
     public fun GetTransformedFFT(start : Int = 0, end : Int = 0) : DoubleArray{
@@ -62,7 +62,7 @@ class VisualizerViewModel(captureSize : Int = Visualizer.getCaptureSizeRange()[1
         GetFFT();
         transformFftMagnitude();
         if (start <= end)
-            return fftM.value;
+            return fftM.value.copyOf();
         return fftM.value.copyOfRange(HZToFftIndex(start, visualizer.value.captureSize, visualizer.value.samplingRate),
             HZToFftIndex(end, visualizer.value.captureSize, visualizer.value.samplingRate)
         );

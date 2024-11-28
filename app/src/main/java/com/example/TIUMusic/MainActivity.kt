@@ -32,19 +32,6 @@ class MainActivity : ComponentActivity() {
         val playerViewModel = PlayerViewModel() // Could be a bad idea
         val visualizerViewModel = VisualizerViewModel()
         val youtubeViewModel = YoutubeViewModel(this)
-        val ytMusic = Ytmusic();
-        runBlocking  {
-            val message = ytMusic.search(YouTubeClient.WEB_REMIX, "fusion jazz").body<String>();
-            // val message = ytMusic.browse(YouTubeClient.WEB_REMIX, "UCoZ16I1S9TANAK--fAyUQCA").body<String>();
-            val maxLogSize = 1000;
-            for (i in 0..message.length / maxLogSize) {
-                val start = i * maxLogSize;
-                var end = (i + 1) * maxLogSize;
-                end = if (end > message.length) message.length else end;
-                println(message.substring(start, end));
-            }
-            println("here");
-        }
         setContent {
             TIUMusicTheme {
                 NavHost(
