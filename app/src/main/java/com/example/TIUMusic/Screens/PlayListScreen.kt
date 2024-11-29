@@ -4,6 +4,7 @@ import android.content.ClipData.Item
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
@@ -46,13 +47,14 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
-fun AnimatedTopPlaylistBar(
-    title: String
+fun TopPlaylistBar(
+    title: String,
+    navController: NavController
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(82.dp)
             .padding(
                 start = 8.dp,
                 top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -63,7 +65,8 @@ fun AnimatedTopPlaylistBar(
         Icon(
             painter = painterResource(R.drawable.arrow_left_buttom),
             contentDescription = "Return Button",
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp)
+                .clickable { navController.popBackStack()},
             tint = PrimaryColor
         )
         Row(
@@ -86,13 +89,13 @@ fun AnimatedTopPlaylistBar(
 
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String, modifier: Modifier = Modifier) {
+fun PlaylistScreen(navController: NavController, playlistId: String, onTabSelected: (Int) -> Unit , modifier: Modifier = Modifier) {
     Scaffold(
-        topBar = { AnimatedTopPlaylistBar("Favourite") },
+        topBar = { TopPlaylistBar("Favourite", navController) },
         bottomBar = {
             CustomBottomNavigation(
                 selectedTab = 2,
-                onTabSelected = {},
+                onTabSelected = onTabSelected,
                 modifier = Modifier
             )
         },
@@ -344,5 +347,4 @@ fun SongInPlaylist(title: String, artist: String, albumCover: String) {
 @Composable
 fun preview () {
     val navController = rememberNavController()
-    PlaylistScreen(navController, "8901")
 }

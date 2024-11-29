@@ -1,6 +1,7 @@
 package com.example.TIUMusic
 
 import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.Navigation
@@ -76,16 +78,46 @@ fun NavHost() {
                         }
                     )
                 }
-                composable("new") { NewScreen(navController) }
-                composable("search") { SearchScreen(navController) }
-                composable("library") { LibraryScreen(navController, onTabSelected = {}) }
+
+                composable("new") { NewScreen(
+                    navController,
+                    onTabSelected = { tabIndex ->
+                    when (tabIndex) {
+                        0 -> {navController.navigate("home")}
+                        1 -> {}
+                        2 -> navController.navigate("library")
+                        3 -> navController.navigate("search")
+                    }
+                    },onPlaylistClick = { musicItem ->
+                        navController.navigate("playlist/${musicItem.id}")
+                    }
+                    ) }
+                composable("search") { SearchScreen(
+                    navController,
+                    onTabSelected = { tabIndex ->
+                        when (tabIndex) {
+                            0 -> navController.navigate("home")
+                            1 -> navController.navigate("new")
+                            2 -> navController.navigate("library")
+                            3 -> navController.navigate("search")
+                        }
+                    }) }
+                composable("library") { LibraryScreen(navController) }
                 composable(
                     route = "playlist/{playlistId}",
                     arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     PlaylistScreen(
                         navController = navController,
-                        playlistId = backStackEntry.arguments?.getString("playlistId") ?: ""
+                        playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
+                        onTabSelected ={ tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
                     )
                 }
             }
@@ -97,7 +129,7 @@ fun NavHost() {
                 playerViewModel = playerViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 82.dp)
+                    .padding(bottom = 80.dp)
             )
             Log.d("NavHost", "Overlay shown")
         }

@@ -1,5 +1,6 @@
 package com.example.TIUMusic.Screens
 
+import androidx.annotation.DrawableRes
 import android.content.Context
 import android.database.ContentObserver
 import android.media.AudioManager
@@ -16,10 +17,13 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +34,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,13 +44,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -58,13 +66,18 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarColors
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
@@ -78,6 +91,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -96,6 +110,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -117,8 +133,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -132,6 +150,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.res.painterResource
 import com.example.TIUMusic.R
+import com.example.TIUMusic.ui.theme.SurfaceColor
 
 /*
 các components reusable phải được declare ở đây
@@ -244,6 +263,238 @@ fun ScrollableScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScrollableSearchScreen(
+    onTabSelected: (Int) -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val scrollState = rememberScrollState()
+    val windowSize = rememberWindowSize()
+
+    // Transition variables
+    var isScrolled by remember { mutableStateOf(false) }
+    val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
+
+    // Calculate dynamic values
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
+    val expandedTitleSize = Dimensions.expandedTitleSize()
+    val collapsedTitleSize = Dimensions.collapsedTitleSize()
+    val bottomNavHeight = 56.dp // Define bottom nav height
+
+    // Animation values
+    val alpha by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "Alpha"
+    ) { state -> if (state) 0.9f else 1f }
+
+    val translationX by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = "TranslationX"
+    ) { state ->
+        if (state) {
+            when (windowSize) {
+                WindowSize.COMPACT -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 52.dp
+                WindowSize.MEDIUM -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 48.dp
+            }
+        } else 0.dp
+    }
+
+    val titleSize by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "TextSize"
+    ) { state ->
+        if (state) collapsedTitleSize.value else expandedTitleSize.value
+    }
+
+    val height by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "height"
+    ) { state -> if (state) collapsedHeight else expandedHeight }
+
+    LaunchedEffect(scrollState.value) {
+        isScrolled = scrollState.value > expandedHeight.value
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BackgroundColor
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main content area
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .background(BackgroundColor)
+                    .padding(top = expandedHeight)
+            ) {
+                content(
+                    PaddingValues(
+                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
+                    )
+                )
+            }
+
+            var text by remember { mutableStateOf("") }
+            var active by remember { mutableStateOf(false) }
+
+            val resultSearch = remember {
+                mutableStateListOf(
+                    "Result 1",
+                    "Result 2",
+                    "Result 3",
+                    "Result 4",
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .background(BackgroundColor)
+            ) {
+                // Top app bar
+                AnimatedTopAppBar(
+                    title = "Search",
+                    alpha = alpha,
+                    translationX = translationX,
+                    titleSize = titleSize.sp,
+                    height = height
+                )
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = height - 60.dp, bottom = 10.dp)
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 40.dp)
+                            .padding(horizontal = 20.dp)
+                            .fillMaxWidth()
+                            .height(36.dp)
+                            .border(
+                                width = 1.dp,
+                                color = SurfaceColor,
+                                shape = RoundedCornerShape(20.dp)
+                            ),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text(
+                            "", modifier = Modifier
+                                .background(SurfaceColor)
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                        )
+                    }
+
+                    SearchBar(
+                        query = text,
+                        onQueryChange = {
+                            text = it
+                        },
+                        onSearch = {
+                            active = false
+                        },
+                        active = active,
+                        onActiveChange = {
+                            active = it
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Artists, Songs, Lyrics, and More",
+                                fontSize = 14.sp
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Icon"
+                            )
+                        },
+                        colors = SearchBarDefaults.colors(
+                            containerColor = Color.Transparent,
+                            dividerColor = BackgroundColor,
+                            inputFieldColors = SearchBarDefaults.inputFieldColors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+
+                                focusedLeadingIconColor = Color.Gray,
+                                unfocusedLeadingIconColor = Color.Gray,
+
+                                focusedPlaceholderColor = Color.Gray,
+                                unfocusedPlaceholderColor = Color.Gray,
+                            )
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 23.dp)
+                    ) {
+                        resultSearch.forEach {
+                            Column {
+                                Row(modifier = Modifier.padding(all = 10.dp)) {
+
+                                    AsyncImage(
+                                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+                                        contentDescription = "Album art for",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .width(50.dp)
+                                            .height(50.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF282828))
+                                    )
+
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(start = 10.dp)
+                                            .width(0.dp)
+                                            .weight(1F)
+                                    ) {
+                                        Text(
+                                            text = it,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.padding(all = 4.dp)
+                                        )
+                                        Text(
+                                            text = "Song - Vũ & Binz",
+                                            fontSize = 14.sp,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(4.dp)
+                                        )
+                                    }
+
+                                    Icon(
+                                        modifier = Modifier.padding(all = 10.dp),
+                                        painter = painterResource(R.drawable.baseline_more_vert_24),
+                                        contentDescription = "Suggestion Icon",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(top = 10.dp, bottom = 4.dp)
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(Color.Gray)
+                                ) {}
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom navigation
+            CustomBottomNavigation(
+                selectedTab = 3,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
 
 @Composable
 fun AnimatedTopAppBar(
@@ -380,11 +631,20 @@ fun HorizontalScrollableSection(
 
     Column {
         SectionTitle(title)
+        // Define the state first
+        val state = rememberLazyGridState()
+
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
             horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
-            modifier = Modifier.height(calculatedSectionHeight)
+            modifier = Modifier.height(calculatedSectionHeight),
+            state = state,
+            flingBehavior = rememberSnapFlingBehavior(
+                lazyGridState = state,
+                snapPosition = SnapPosition.Start
+            )
         ) {
+            item { Spacer(modifier = Modifier.width(Dimensions.contentPadding())) }
             items(items) { item ->
                 AlbumCard(
                     item = item,
@@ -392,6 +652,209 @@ fun HorizontalScrollableSection(
                     imageSize = calculatedItemWidth,
                     onClick = { onItemClick(item) }
                 )
+            }
+            item { Spacer(modifier = Modifier.width(Dimensions.contentPadding())) }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<MusicItem>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier.height(calculatedSectionHeight)
+        ) {
+            items(items) { item ->
+                AlbumCardNewScreen(
+                    item = item,
+                    modifier = Modifier.width(calculatedItemWidth),
+                    imageSize = calculatedItemWidth,
+                    onClick = { onItemClick(item) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection2(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<List<MusicItem>>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+            items(items) { songList ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    songList.forEach {
+                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection3(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<MusicItem>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+            items(items) { item ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    AlbumCardNewScreenSelectionType3(
+                        item = item,
+                        modifier = Modifier.width(calculatedItemWidth),
+                        imageSize = calculatedItemWidth,
+                        onClick = { onItemClick(item) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollableNewScreenSection4(
+    title: String? = null,
+    @DrawableRes iconHeader: Int? = null,
+    items: List<List<MusicItem>>,
+    itemWidth: Dp? = null,
+    sectionHeight: Dp? = null,
+    onItemClick: (MusicItem) -> Unit = {}  // Add click handler
+) {
+    val windowSize = rememberWindowSize()
+
+    val calculatedItemWidth = itemWidth ?: when (windowSize) {
+        WindowSize.COMPACT -> 160.dp
+        WindowSize.MEDIUM -> 180.dp
+    }
+
+    val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
+
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        if (title?.isNotEmpty() == true) {
+            if (iconHeader == null) {
+                SectionTitle(title)
+            } else {
+                SectionTitleWithIcon(title, iconHeader)
+            }
+        }
+        LazyHorizontalGrid(
+            state = rememberLazyGridState(),
+            rows = GridCells.Fixed(1),
+            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+            modifier = Modifier
+                .height(calculatedSectionHeight)
+                .padding(top = 14.dp)
+        ) {
+
+            items(items) { songList ->
+                Column(
+                    modifier = Modifier.width(itemWidth!! + 10.dp)
+                ) {
+                    songList.forEach { item ->
+                        val paddingTop = if (songList.first() == item) {
+                            0.dp
+                        } else {
+                            10.dp
+                        }
+                        AlbumCardNewScreenSelectionType3(item = item,
+                            modifier = Modifier
+                                .width(calculatedItemWidth)
+                                .padding(top = paddingTop),
+                            imageSize = calculatedItemWidth,
+                            onClick = { onItemClick(item) })
+                    }
+                }
             }
         }
     }
@@ -412,6 +875,29 @@ fun SectionTitle(title: String) {
             bottom = 8.dp
         )
     )
+}
+
+@Composable
+fun SectionTitleWithIcon(title: String, icon: Int) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(
+                start = Dimensions.contentPadding()
+            )
+        )
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = "Detail type",
+            tint = Color.Gray
+        )
+    }
 }
 
 @Composable
@@ -462,6 +948,148 @@ fun AlbumCard(
     }
 }
 
+@Composable
+fun AlbumCardNewScreen(
+    item: MusicItem,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        Text(
+            text = "New Album",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.artist,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box {
+            AsyncImage(
+                model = item.imageUrl,
+                contentDescription = "Album art for ${item.title}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(imageSize)
+                    .height(imageSize - 60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF282828))
+            )
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(4.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .width(imageSize - 44.dp)
+                        .align(Alignment.CenterVertically),
+                    text = item.artist,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                AsyncImage(
+                    model = item.imageUrl,
+                    contentDescription = "Album art for ${item.title}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(0xFF282828))
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenSelectionType3(
+    item: MusicItem,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        AsyncImage(
+            model = item.imageUrl,
+            contentDescription = "Album art for ${item.title}",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .width(imageSize)
+                .height(imageSize)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF282828))
+        )
+
+        Text(
+            text = "New Album",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = ArtistNameColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun AlbumCardNewScreenListVertical(
+    items: List<MusicItem>,
+    modifier: Modifier = Modifier,
+    imageSize: Dp,
+    onClick: () -> Unit = {}
+) {
+
+}
+
 //cái này đặt ngoài navHost
 @Composable
 fun NowPlayingSheet(
@@ -469,8 +1097,6 @@ fun NowPlayingSheet(
     playerViewModel: PlayerViewModel
 ) {
     val context = LocalContext.current
-    var isPlaying by remember { mutableStateOf(false) }
-
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
 
@@ -485,6 +1111,11 @@ fun NowPlayingSheet(
         label = "Sheet Progress"
     )
 
+    // Update the expanded state based on progress
+    LaunchedEffect(progress) {
+        playerViewModel.setExpanded(progress > 0.5f)
+    }
+
     val maxHeight = LocalConfiguration.current.screenHeightDp.dp
     val minHeight = 80.dp
     val height = lerp(minHeight, maxHeight, progress)
@@ -494,8 +1125,6 @@ fun NowPlayingSheet(
         dragProgress.value = newProgress
     }
 
-
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -504,7 +1133,6 @@ fun NowPlayingSheet(
                 state = dragState,
                 orientation = Orientation.Vertical,
                 onDragStopped = { velocity ->
-                    // toán thay đổi giữa NowPlaying nhỏ và lớn
                     val targetValue = if (dragProgress.value > 0.5f || velocity < -500f) 1f else 0f
                     scope.launch {
                         animate(
@@ -523,8 +1151,6 @@ fun NowPlayingSheet(
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 topEnd = 16.dp,
-                bottomStart = 16.dp,
-                bottomEnd = 16.dp
             ),
             color = Color(0xFF282828)
         ) {
@@ -535,23 +1161,22 @@ fun NowPlayingSheet(
                 ) { isExpanded ->
                     if (!isExpanded) {
                         MiniPlayer(
-                            isPlaying = isPlaying,
-                            onPlayPauseClick = { isPlaying = !isPlaying }
+                            isPlaying = playerViewModel.isPlaying.value,
+                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
                         )
                     } else {
                         ExpandedPlayer(
-                            isPlaying = isPlaying,
-                            onPlayPauseClick = { isPlaying = !isPlaying }
+                            isPlaying = playerViewModel.isPlaying.value,
+                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
                         )
                     }
                 }
 
-                // cái tay cầm
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 12.dp)
-                        .width(40.dp)
+                        .padding(top = 64.dp)
+                        .width(64.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(Color.Gray.copy(alpha = progress))
@@ -762,8 +1387,8 @@ fun VolumeControls(
     val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
 
     //2 cái tại volume theo nấc là OS, cái visual trick user nó mượt
-    var visualVolume by remember { mutableStateOf(0f) }
-    var systemVolume by remember { mutableStateOf(0f) }
+    var visualVolume by remember { mutableStateOf(0f) } //visual volume
+    var systemVolume by remember { mutableStateOf(0f) } //OS volume
 
     LaunchedEffect(Unit) {
         val initial = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume
