@@ -87,8 +87,30 @@ fun NavHost(
                         }
                     )
                 }
-                composable("new") { NewScreen(navController) }
-                composable("search") { SearchScreen(navController) }
+
+                composable("new") { NewScreen(
+                    navController,
+                    onTabSelected = { tabIndex ->
+                    when (tabIndex) {
+                        0 -> {navController.navigate("home")}
+                        1 -> {}
+                        2 -> navController.navigate("library")
+                        3 -> navController.navigate("search")
+                    }
+                    },onPlaylistClick = { musicItem ->
+                        navController.navigate("playlist/${musicItem.id}")
+                    }
+                    ) }
+                composable("search") { SearchScreen(
+                    navController,
+                    onTabSelected = { tabIndex ->
+                        when (tabIndex) {
+                            0 -> navController.navigate("home")
+                            1 -> navController.navigate("new")
+                            2 -> navController.navigate("library")
+                            3 -> navController.navigate("search")
+                        }
+                    }) }
                 composable("library") { LibraryScreen(navController) }
                 composable(
                     route = "playlist/{playlistId}",
