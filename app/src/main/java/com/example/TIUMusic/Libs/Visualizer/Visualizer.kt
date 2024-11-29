@@ -38,7 +38,10 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
+fun ensureVisualizerPermissionAllowed(
+    activity : ComponentActivity,
+    visualizerViewModel: VisualizerViewModel
+) {
     var successCounter : Int = 0;
     val requestPermissionLauncher =
         activity.registerForActivityResult(
@@ -55,6 +58,9 @@ fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
                 // settings in an effort to convince the user to change their
                 // decision.
             }
+            VisualizerSettings.VisualizerEnabled = successCounter >= 2;
+            if (VisualizerSettings.VisualizerEnabled)
+                visualizerViewModel.init();
         }
     when {
         ContextCompat.checkSelfPermission(
@@ -102,7 +108,6 @@ fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
                 Manifest.permission.MODIFY_AUDIO_SETTINGS)
         }
     }
-    VisualizerSettings.VisualizerEnabled = successCounter >= 2;
 }
 
 // Drawer

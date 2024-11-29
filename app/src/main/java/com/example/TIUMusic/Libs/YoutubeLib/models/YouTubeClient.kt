@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YoutubeLib.models
+package com.example.TIUMusic.Libs.YTMusicScrapper.models
 
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
@@ -23,7 +23,7 @@ data class YouTubeClient(
             hl = locale.hl,
             visitorData = visitorData,
             osVersion = osVersion,
-        )
+            )
     )
 
     companion object {

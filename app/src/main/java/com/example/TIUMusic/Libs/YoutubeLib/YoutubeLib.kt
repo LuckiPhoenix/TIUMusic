@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject
-import com.example.TIUMusic.Libs.YoutubeLib.models.Line
-import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
+import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject2
+import com.example.TIUMusic.Libs.YoutubeLib.models.Line2
+import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics2
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -169,8 +169,8 @@ fun YoutubeView(
     )
 }
 
-fun parseSyncedLyrics(syncedLyrics : String) : List<Line> {
-    var lines : MutableList<Line> = mutableListOf();
+fun parseSyncedLyrics(syncedLyrics : String) : List<Line2> {
+    var line2s : MutableList<Line2> = mutableListOf();
     syncedLyrics.split('\n').forEach { it ->
         // retarded certified
         var i : Int = 1;
@@ -190,34 +190,34 @@ fun parseSyncedLyrics(syncedLyrics : String) : List<Line> {
             multiplierCount++;
             i++;
         }
-        lines.add(Line(startSeconds = seconds, words = it.substring(i + 1)))
+        line2s.add(Line2(startSeconds = seconds, words = it.substring(i + 1)))
     };
 
-    return lines;
+    return line2s;
 }
 
-fun parsePlainLyrics(plainLyrics : String) : List<Line> {
-    var lines : MutableList<Line> = mutableListOf();
+fun parsePlainLyrics(plainLyrics : String) : List<Line2> {
+    var line2s : MutableList<Line2> = mutableListOf();
     plainLyrics.split('\n').forEach{ it ->
-        lines.add(Line(startSeconds = 0f, words = it));
+        line2s.add(Line2(startSeconds = 0f, words = it));
     };
-    return lines;
+    return line2s;
 }
 
-suspend fun getLyrics(ytMusic : Ytmusic, track : String, artist : String) : Lyrics {
-    var lines : List<Line> = emptyList();
+suspend fun getLyrics(ytMusic : Ytmusic, track : String, artist : String) : Lyrics2 {
+    var line2s : List<Line2> = emptyList();
     var isSynced = false;
-    val lyricsList = ytMusic.searchLrclibLyrics("it's not litter if you bin it", "Niko B").body<List<LRCLIBObject>>();
+    val lyricsList = ytMusic.searchLrclibLyrics("it's not litter if you bin it", "Niko B").body<List<LRCLIBObject2>>();
     if (lyricsList.isNotEmpty()) {
         val lrclibObj = lyricsList.first();
         if (lrclibObj.syncedLyrics != null) {
-            lrclibObj.syncedLyrics.let { lines = parseSyncedLyrics(it) };
+            lrclibObj.syncedLyrics.let { line2s = parseSyncedLyrics(it) };
             isSynced = true;
         }
         else if (lrclibObj.plainLyrics != null) {
-            lrclibObj.plainLyrics.let { lines = parsePlainLyrics(it) };
+            lrclibObj.plainLyrics.let { line2s = parsePlainLyrics(it) };
             isSynced = false;
         }
     }
-    return Lyrics(lines = lines, isSynced = true);
+    return Lyrics2(line2s = line2s, isSynced = true);
 }

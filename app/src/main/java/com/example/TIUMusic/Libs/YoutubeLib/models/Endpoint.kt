@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YoutubeLib.models
+package com.example.TIUMusic.Libs.YTMusicScrapper.models
 
-import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ALBUM
-import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ARTIST
+import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ALBUM
+import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ARTIST
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -63,4 +63,41 @@ data class BrowseEndpoint(
             }
         }
     }
+}
+
+@Serializable
+data class SearchEndpoint(
+    val params: String?,
+    val query: String,
+) : Endpoint()
+
+@Serializable
+data class QueueAddEndpoint(
+    val queueInsertPosition: String,
+    val queueTarget: QueueTarget,
+) : Endpoint() {
+    @Serializable
+    data class QueueTarget(
+        val videoId: String? = null,
+        val playlistId: String? = null,
+    )
+}
+
+@Serializable
+data class ShareEntityEndpoint(
+    val serializedShareEntity: String,
+) : Endpoint()
+
+@Serializable
+data class PlaylistEditEndpoint(
+    val playlistId: String,
+    val actions: List<Action>,
+) : Endpoint() {
+    @Serializable
+    data class Action(
+        val addedVideoId: String? = null,
+        val action: String,
+        val removedVideoId: String? = null,
+        val setVideoId: String? = null,
+    )
 }

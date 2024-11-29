@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YoutubeLib.encoder
+package com.example.TIUMusic.Libs.YTMusicScrapper.encoder
 
 import io.ktor.client.plugins.compression.ContentEncoder
 import io.ktor.client.plugins.compression.ContentEncoding

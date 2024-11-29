@@ -1,5 +1,7 @@
 package com.example.TIUMusic.Libs.YoutubeLib.models
 
+import com.example.TIUMusic.Libs.YTMusicScrapper.models.Context
+import com.example.TIUMusic.Libs.YTMusicScrapper.models.WatchEndpoint
 import kotlinx.serialization.Serializable
 
 @Serializable
