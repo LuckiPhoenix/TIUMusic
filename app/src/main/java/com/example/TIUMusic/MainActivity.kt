@@ -17,6 +17,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
+import com.example.TIUMusic.Login.YoutubeLogin
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,26 +59,26 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-        runBlocking {
-            val response = YouTube.ytMusic.search(client = WEB_REMIX, "it's not litter if you bin it").bodyAsText()
-            // Parse JSON
-            val parsedResponse = response
-            val parsedResponseString = parsedResponse.toString()
-            // Phần còn lại của mã
-            val maxLogSize = 1000
-            for (i in 0..parsedResponseString.length / maxLogSize) {
-                val start = i * maxLogSize
-                var end = (i + 1) * maxLogSize
-                end =
-                    if (end < parsedResponseString.length) end else parsedResponseString.length
-                if (i == parsedResponseString.length / maxLogSize / 2) {
-                    delay(200);
-                }
-                println(parsedResponseString.substring(start, end))
-            }
-            Log.d("messageReturn", "ENDJSON")
-
-        }
+//        runBlocking {
+//            val response = YouTube.ytMusic.browse(client = WEB_REMIX, "").bodyAsText()
+//            // Parse JSON
+//            val parsedResponse = response
+//            val parsedResponseString = parsedResponse.toString()
+//            // Phần còn lại của mã
+//            val maxLogSize = 1000
+//            for (i in 0..parsedResponseString.length / maxLogSize) {
+//                val start = i * maxLogSize
+//                var end = (i + 1) * maxLogSize
+//                end =
+//                    if (end < parsedResponseString.length) end else parsedResponseString.length
+//                if (i == parsedResponseString.length / maxLogSize / 2) {
+//                    delay(200);
+//                }
+//                println(parsedResponseString.substring(start, end))
+//            }
+//            Log.d("messageReturn", "ENDJSON")
+//
+//        }
         createNotificationChannel(this);
         setContent {
             TIUMusicTheme {

@@ -25,6 +25,7 @@ import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
+import com.example.TIUMusic.Login.YoutubeLogin
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen
@@ -51,7 +52,8 @@ fun NavHost(
             navController = navController,
             startDestination = "auth"
         ) {
-            navigation(startDestination = "login", route = "auth") {
+            navigation(startDestination = "youtubeLogin", route = "auth") {
+                composable("youtubeLogin") { YoutubeLogin(navController) }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
