@@ -15,7 +15,7 @@
 
 ## 📖 Project Overview
 
-TIU Music is an innovative Android music streaming application developed by students at UIT (University of Information Technology, Vietnam National University - Ho Chi Minh City). Inspired by Apple Music's design, this native Android app leverages YouTube Music's API to provide seamless music searching, storing, and streaming
+TIU Music is an innovative Android music streaming application developed by students at UIT (University of Information Technology, Vietnam National University - Ho Chi Minh City). Inspired by Apple Music's design, this native Android app leverages YouTube Music's API to provide seamless music searching, storing, and streaming.
 
 
 ## 📚 Academic Project
