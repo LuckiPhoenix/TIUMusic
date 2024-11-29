@@ -17,6 +17,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -33,6 +34,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +53,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -66,11 +69,15 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarColors
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
@@ -84,6 +91,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -142,6 +150,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.res.painterResource
 import com.example.TIUMusic.R
+import com.example.TIUMusic.ui.theme.SurfaceColor
 
 /*
 các components reusable phải được declare ở đây
@@ -254,6 +263,238 @@ fun ScrollableScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScrollableSearchScreen(
+    onTabSelected: (Int) -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val scrollState = rememberScrollState()
+    val windowSize = rememberWindowSize()
+
+    // Transition variables
+    var isScrolled by remember { mutableStateOf(false) }
+    val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
+
+    // Calculate dynamic values
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
+    val expandedTitleSize = Dimensions.expandedTitleSize()
+    val collapsedTitleSize = Dimensions.collapsedTitleSize()
+    val bottomNavHeight = 56.dp // Define bottom nav height
+
+    // Animation values
+    val alpha by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "Alpha"
+    ) { state -> if (state) 0.9f else 1f }
+
+    val translationX by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = "TranslationX"
+    ) { state ->
+        if (state) {
+            when (windowSize) {
+                WindowSize.COMPACT -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 52.dp
+                WindowSize.MEDIUM -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 48.dp
+            }
+        } else 0.dp
+    }
+
+    val titleSize by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "TextSize"
+    ) { state ->
+        if (state) collapsedTitleSize.value else expandedTitleSize.value
+    }
+
+    val height by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "height"
+    ) { state -> if (state) collapsedHeight else expandedHeight }
+
+    LaunchedEffect(scrollState.value) {
+        isScrolled = scrollState.value > expandedHeight.value
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BackgroundColor
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main content area
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .background(BackgroundColor)
+                    .padding(top = expandedHeight)
+            ) {
+                content(
+                    PaddingValues(
+                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
+                    )
+                )
+            }
+
+            var text by remember { mutableStateOf("") }
+            var active by remember { mutableStateOf(false) }
+
+            val resultSearch = remember {
+                mutableStateListOf(
+                    "Result 1",
+                    "Result 2",
+                    "Result 3",
+                    "Result 4",
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .background(BackgroundColor)
+            ) {
+                // Top app bar
+                AnimatedTopAppBar(
+                    title = "Search",
+                    alpha = alpha,
+                    translationX = translationX,
+                    titleSize = titleSize.sp,
+                    height = height
+                )
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = height - 60.dp, bottom = 10.dp)
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 40.dp)
+                            .padding(horizontal = 20.dp)
+                            .fillMaxWidth()
+                            .height(36.dp)
+                            .border(
+                                width = 1.dp,
+                                color = SurfaceColor,
+                                shape = RoundedCornerShape(20.dp)
+                            ),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text(
+                            "", modifier = Modifier
+                                .background(SurfaceColor)
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                        )
+                    }
+
+                    SearchBar(
+                        query = text,
+                        onQueryChange = {
+                            text = it
+                        },
+                        onSearch = {
+                            active = false
+                        },
+                        active = active,
+                        onActiveChange = {
+                            active = it
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Artists, Songs, Lyrics, and More",
+                                fontSize = 14.sp
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Icon"
+                            )
+                        },
+                        colors = SearchBarDefaults.colors(
+                            containerColor = Color.Transparent,
+                            dividerColor = BackgroundColor,
+                            inputFieldColors = SearchBarDefaults.inputFieldColors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+
+                                focusedLeadingIconColor = Color.Gray,
+                                unfocusedLeadingIconColor = Color.Gray,
+
+                                focusedPlaceholderColor = Color.Gray,
+                                unfocusedPlaceholderColor = Color.Gray,
+                            )
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 23.dp)
+                    ) {
+                        resultSearch.forEach {
+                            Column {
+                                Row(modifier = Modifier.padding(all = 10.dp)) {
+
+                                    AsyncImage(
+                                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+                                        contentDescription = "Album art for",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .width(50.dp)
+                                            .height(50.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF282828))
+                                    )
+
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(start = 10.dp)
+                                            .width(0.dp)
+                                            .weight(1F)
+                                    ) {
+                                        Text(
+                                            text = it,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.padding(all = 4.dp)
+                                        )
+                                        Text(
+                                            text = "Song - Vũ & Binz",
+                                            fontSize = 14.sp,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(4.dp)
+                                        )
+                                    }
+
+                                    Icon(
+                                        modifier = Modifier.padding(all = 10.dp),
+                                        painter = painterResource(R.drawable.baseline_more_vert_24),
+                                        contentDescription = "Suggestion Icon",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(top = 10.dp, bottom = 4.dp)
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(Color.Gray)
+                                ) {}
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom navigation
+            CustomBottomNavigation(
+                selectedTab = 3,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
 
 @Composable
 fun AnimatedTopAppBar(
