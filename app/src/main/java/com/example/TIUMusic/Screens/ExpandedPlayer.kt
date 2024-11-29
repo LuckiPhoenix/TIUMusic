@@ -76,12 +76,14 @@ import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
 @Composable
 public fun ExpandedPlayer(
+    musicItem: MusicItem,
     isPlaying: Boolean,
     currentTime: Float,
     duration : Float,
@@ -105,8 +107,8 @@ public fun ExpandedPlayer(
 
         // Album art
         AsyncImage(
-            model = "",
-            contentDescription = "Song Image",
+            model = musicItem.imageUrl,
+            contentDescription = "${musicItem.title} by ${musicItem.artist} Image",
             modifier = Modifier
                 .padding(top = 40.dp)
                 .size(240.dp)
@@ -120,14 +122,14 @@ public fun ExpandedPlayer(
         // Title and artist
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
-                text = "Song Title",
+                text = musicItem.title,
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Artist Name",
+                text = musicItem.artist,
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center

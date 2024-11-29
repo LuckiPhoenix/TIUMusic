@@ -1,10 +1,10 @@
 package com.example.TIUMusic.SongData
 
 data class MusicItem(
-    val id: String?,
-    val title: String?,
-    val artist: String?,
-    val imageUrl: String?
+    val id: String,
+    val title: String,
+    val artist: String,
+    val imageUrl: String
 )
 //data class không hoàn thiện, Hải chỉnh lại theo file Json hoặc CSV của spotify API
 // các file API/SDK logic viết tại folder này

@@ -93,6 +93,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -1041,6 +1042,7 @@ fun AlbumCardNewScreenListVertical(
 //cái này đặt ngoài navHost
 @Composable
 fun NowPlayingSheet(
+    musicItem: MusicItem,
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
     youtubeViewModel: YoutubeViewModel,
@@ -1082,10 +1084,10 @@ fun NowPlayingSheet(
     }
 
     YoutubeView(
-        youtubeVideoId = "Zgd1corMdnk",
+        youtubeVideoId = musicItem.id,
         youtubeMetadata = YoutubeMetadata(
-            title = "it's not litter if you bin it",
-            artist = "Niko B",
+            title = musicItem.title,
+            artist = musicItem.artist,
         ),
         onSecond = { ytPlayer, second ->
             if (!isSeeking)
@@ -1151,6 +1153,7 @@ fun NowPlayingSheet(
                 ) { isExpanded ->
                     if (!isExpanded) {
                         MiniPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             onPlayPauseClick = {
                                 if (playerViewModel.isPlaying.value)
@@ -1161,6 +1164,7 @@ fun NowPlayingSheet(
                         )
                     } else {
                         ExpandedPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             duration = playerViewModel.duration.value,
                             currentTime = playerViewModel.currentTime.value,
@@ -1199,6 +1203,7 @@ fun NowPlayingSheet(
 
 @Composable
 private fun MiniPlayer(
+    musicItem: MusicItem,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit
 ) {
@@ -1225,12 +1230,12 @@ private fun MiniPlayer(
 
             Column {
                 Text(
-                    text = "Song Title",
+                    text = musicItem.title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
                 Text(
-                    text = "Artist Name",
+                    text = musicItem.artist,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )

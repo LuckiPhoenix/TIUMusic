@@ -31,6 +31,7 @@ import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
+import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
@@ -78,7 +79,8 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            navController.navigate("playlist/${musicItem.id}")
+                            youtubeViewModel.loadAndPlayVideo(musicItem.id);
+                            // navController.navigate("playlist/${musicItem.id}")
                         }
                     )
                 }
@@ -129,6 +131,7 @@ fun NavHost(
         // Check if we're in any route within the main navigation
         if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
+                musicItem = MusicItem("", "", "" , ""),
                 playerViewModel = playerViewModel,
                 youtubeViewModel = youtubeViewModel,
                 visualizerViewModel = visualizerViewModel,

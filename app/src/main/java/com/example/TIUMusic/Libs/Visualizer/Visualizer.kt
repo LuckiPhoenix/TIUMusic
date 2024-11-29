@@ -40,38 +40,43 @@ import kotlin.math.sin
 
 fun ensureVisualizerPermissionAllowed(
     activity : ComponentActivity,
-    visualizerViewModel: VisualizerViewModel
+    onPermissionAccepted: () -> Unit,
+    onFinish: () -> Unit
 ) {
-    var successCounter : Int = 0;
     val requestPermissionLauncher =
         activity.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                successCounter++;
+                VisualizerSettings.VisualizerEnabled = true;
                 // Permission is granted. Continue the action or workflow in your
                 // app.
             } else {
+                VisualizerSettings.VisualizerEnabled = false;
                 // Explain to the user that the feature is unavailable because the
                 // feature requires a permission that the user has denied. At the
                 // same time, respect the user's decision. Don't link to system
                 // settings in an effort to convince the user to change their
                 // decision.
             }
-            VisualizerSettings.VisualizerEnabled = successCounter >= 2;
             if (VisualizerSettings.VisualizerEnabled)
-                visualizerViewModel.init();
+                onPermissionAccepted();
+            onFinish();
         }
     when {
         ContextCompat.checkSelfPermission(
             activity,
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED -> {
-            successCounter++;
+            VisualizerSettings.VisualizerEnabled = true;
+            onPermissionAccepted();
+            onFinish();
             // You can use the API that requires the permission.
         }
         ActivityCompat.shouldShowRequestPermissionRationale(
             activity, Manifest.permission.RECORD_AUDIO) -> {
+            VisualizerSettings.VisualizerEnabled = false;
+            onFinish();
             // In an educational UI, explain to the user why your app requires this
             // permission for a specific feature to behave as expected, and what
             // features are disabled if it's declined. In this UI, include a
@@ -83,29 +88,6 @@ fun ensureVisualizerPermissionAllowed(
             // The registered ActivityResultCallback gets the result of this request.
             requestPermissionLauncher.launch(
                 Manifest.permission.RECORD_AUDIO)
-        }
-    }
-    when {
-        ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.MODIFY_AUDIO_SETTINGS
-        ) == PackageManager.PERMISSION_GRANTED -> {
-            successCounter++;
-            // You can use the API that requires the permission.
-        }
-        ActivityCompat.shouldShowRequestPermissionRationale(
-            activity, Manifest.permission.MODIFY_AUDIO_SETTINGS) -> {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected, and what
-            // features are disabled if it's declined. In this UI, include a
-            // "cancel" or "no thanks" button that lets the user continue
-            // using your app without granting the permission.
-        }
-        else -> {
-            // You can directly ask for the permission.
-            // The registered ActivityResultCallback gets the result of this request.
-            requestPermissionLauncher.launch(
-                Manifest.permission.MODIFY_AUDIO_SETTINGS)
         }
     }
 }

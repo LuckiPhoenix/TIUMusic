@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.IntentSender.OnFinished
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -31,6 +32,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import io.ktor.client.call.body
+import okhttp3.internal.notify
 
 fun createNotificationChannel(context: Context) {
     // Create the NotificationChannel, but only on API 26+ because
@@ -49,7 +51,11 @@ fun createNotificationChannel(context: Context) {
     }
 }
 
-fun ensurePlayerNotificationPermissionAllowed(activity : ComponentActivity) {
+fun ensurePlayerNotificationPermissionAllowed(
+    activity : ComponentActivity,
+    onPermissionAccepted: () -> Unit,
+    onFinished: () -> Unit
+) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
         return;
 
@@ -69,6 +75,9 @@ fun ensurePlayerNotificationPermissionAllowed(activity : ComponentActivity) {
                 // decision.
                 YoutubeSettings.NotificationEnabled = false;
             }
+            if (YoutubeSettings.NotificationEnabled)
+                onPermissionAccepted();
+            onFinished();
         }
     when {
         ContextCompat.checkSelfPermission(
@@ -76,11 +85,14 @@ fun ensurePlayerNotificationPermissionAllowed(activity : ComponentActivity) {
             Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED -> {
             YoutubeSettings.NotificationEnabled = true;
+            onPermissionAccepted();
+            onFinished();
             // You can use the API that requires the permission.
         }
         ActivityCompat.shouldShowRequestPermissionRationale(
             activity, Manifest.permission.POST_NOTIFICATIONS) -> {
             YoutubeSettings.NotificationEnabled = false;
+            onFinished();
             // In an educational UI, explain to the user why your app requires this
             // permission for a specific feature to behave as expected, and what
             // features are disabled if it's declined. In this UI, include a
@@ -130,7 +142,7 @@ fun YoutubeView(
 
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                         onDurationLoaded(youTubePlayer, duration);
-                        if (!mediaSession.isActive)
+                        if (mediaSession != null && !mediaSession!!.isActive)
                         {
                             youtubeViewModel.updateMediaMetadata(
                                 metadata = youtubeMetadata,
