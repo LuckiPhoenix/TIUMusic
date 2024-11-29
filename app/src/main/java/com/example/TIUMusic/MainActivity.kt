@@ -9,19 +9,87 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.Visualizer.ensureVisualizerPermissionAllowed
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
-import com.example.TIUMusic.Libs.YoutubeLib.ensurePlayerNotificationPermissionAllowed
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.ktor.client.request.request
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        val playerViewModel = PlayerViewModel() // Could be a bad idea
+        val visualizerViewModel = VisualizerViewModel()
+        val youtubeViewModel = YoutubeViewModel(this)
+        requestPermissions(
+            activity = this,
+            onAccepted = { name ->
+                when (name) {
+                    Manifest.permission.RECORD_AUDIO -> {
+                        VisualizerSettings.VisualizerEnabled = true;
+                        visualizerViewModel.init();
+                    }
+                    Manifest.permission.POST_NOTIFICATIONS -> {
+                        YoutubeSettings.NotificationEnabled = true;
+                        youtubeViewModel.init(this);
+                    }
+                }
+            },
+            onDenied = { name ->
+                when (name) {
+                    Manifest.permission.RECORD_AUDIO -> {
+                        VisualizerSettings.VisualizerEnabled = false;
+                    }
+                    Manifest.permission.POST_NOTIFICATIONS -> {
+                        YoutubeSettings.NotificationEnabled = false;
+                    }
+                }
+            }
+        )
+        runBlocking {
+            val response = YouTube.ytMusic.search(client = WEB_REMIX, "it's not litter if you bin it").bodyAsText()
+            // Parse JSON
+            val parsedResponse = response
+            val parsedResponseString = parsedResponse.toString()
+            // Phần còn lại của mã
+            val maxLogSize = 1000
+            for (i in 0..parsedResponseString.length / maxLogSize) {
+                val start = i * maxLogSize
+                var end = (i + 1) * maxLogSize
+                end =
+                    if (end < parsedResponseString.length) end else parsedResponseString.length
+                if (i == parsedResponseString.length / maxLogSize / 2) {
+                    delay(200);
+                }
+                println(parsedResponseString.substring(start, end))
+            }
+            Log.d("messageReturn", "ENDJSON")
+
+        }
+        createNotificationChannel(this);
+        setContent {
+            TIUMusicTheme {
+                NavHost(
+                    playerViewModel = playerViewModel,
+                    visualizerViewModel = visualizerViewModel,
+                    youtubeViewModel = youtubeViewModel
+                )
+            }
+        }
+    }
+}
 
 fun hasPermissions(activity: ComponentActivity, permissions : Array<String>) : Boolean {
     for (permission in permissions) {
@@ -73,52 +141,5 @@ fun requestPermissions(
     }
     else {
         requestPermissionLauncher.launch(permissions);
-    }
-}
-
-
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        val playerViewModel = PlayerViewModel() // Could be a bad idea
-        val visualizerViewModel = VisualizerViewModel()
-        val youtubeViewModel = YoutubeViewModel(this)
-        com.example.TIUMusic.requestPermissions(
-            activity = this,
-            onAccepted = { name ->
-                when (name) {
-                    Manifest.permission.RECORD_AUDIO -> {
-                        VisualizerSettings.VisualizerEnabled = true;
-                        visualizerViewModel.init();
-                    }
-                    Manifest.permission.POST_NOTIFICATIONS -> {
-                        YoutubeSettings.NotificationEnabled = true;
-                        youtubeViewModel.init(this);
-                    }
-                }
-            },
-            onDenied = { name ->
-                when (name) {
-                    Manifest.permission.RECORD_AUDIO -> {
-                        VisualizerSettings.VisualizerEnabled = false;
-                    }
-                    Manifest.permission.POST_NOTIFICATIONS -> {
-                        YoutubeSettings.NotificationEnabled = false;
-                    }
-                }
-            }
-        )
-        createNotificationChannel(this);
-        setContent {
-            TIUMusicTheme {
-                NavHost(
-                    playerViewModel = playerViewModel,
-                    visualizerViewModel = visualizerViewModel,
-                    youtubeViewModel = youtubeViewModel
-                )
-            }
-        }
     }
 }

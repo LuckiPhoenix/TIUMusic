@@ -10,6 +10,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
 import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
@@ -17,8 +18,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.parseSongArtists
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
-import com.example.TIUMusic.Libs.YoutubeLib.models.old.SearchResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.old.SearchingInfo
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
 import dagger.Module
@@ -26,6 +26,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -75,27 +76,27 @@ class YtmusicViewModel @Inject constructor(
                     Log.e("viewModelTest", "Lỗi trong coroutine: ${throwable.message}")
                 }) {
                     val client = YouTubeClient.WEB_REMIX
-                    val response = ytmusic.search(client = client, query).bodyAsText()
-                    // Cấu hình JSON parser
-                    val json = Json {
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                    }
-                    // Parse JSON
-                    val parsedResponse = json.decodeFromString<SearchResponse>(response)
-                    val parsedResponseString = parsedResponse.toString()
-                    // Phần còn lại của mã
-                    val maxLogSize = 1000
-                    for (i in 0..parsedResponseString.length / maxLogSize) {
-                        val start = i * maxLogSize
-                        var end = (i + 1) * maxLogSize
-                        end =
-                            if (end < parsedResponseString.length) end else parsedResponseString.length
-                        Log.d("messageReturn", parsedResponseString.substring(start, end))
-                    }
-                    Log.d("messageReturn", "ENDJSON")
+                    val response = ytmusic.search(client = client, query).body<SearchResponse>()
+//                    // Cấu hình JSON parser
+//                    val json = Json {
+//                        ignoreUnknownKeys = true
+//                        isLenient = true
+//                    }
+//                    // Parse JSON
+//                    val parsedResponse = json.decodeFromString<SearchResponse>(response)
+//                    val parsedResponseString = parsedResponse.toString()
+//                    // Phần còn lại của mã
+//                    val maxLogSize = 1000
+//                    for (i in 0..parsedResponseString.length / maxLogSize) {
+//                        val start = i * maxLogSize
+//                        var end = (i + 1) * maxLogSize
+//                        end =
+//                            if (end < parsedResponseString.length) end else parsedResponseString.length
+//                        Log.d("messageReturn", parsedResponseString.substring(start, end))
+//                    }
+//                    Log.d("messageReturn", "ENDJSON")
 
-                    videoInfos = extractVideoInfo(parsedResponse)
+                    videoInfos = extractVideoInfo(response)
 
                     // Chuyển đổi dữ liệu để phù hợp với định dạng mong muốn
                     val formattedResults = videoInfos.map { videoInfo ->
@@ -123,12 +124,12 @@ class YtmusicViewModel @Inject constructor(
         val searchInfos = mutableListOf<SearchingInfo>()
 
         // Lấy tabs đầu tiên
-        val listShelfRender = response.contents.tabbedSearchResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents
+        val listShelfRender = response.contents?.tabbedSearchResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents
             ?:throw Exception(" No renderer")
 
         // Duyệt
         for (renderer in listShelfRender.take(3)){
-            if(renderer.musicCardShelfRender == null && renderer.musicShelfRenderer != null){
+            if(renderer.musicCardShelfRenderer == null && renderer.musicShelfRenderer != null){
                 val contents = renderer.musicShelfRenderer.contents
                     ?: throw Exception(" - No content in Renderer found")
                 Log.d(
