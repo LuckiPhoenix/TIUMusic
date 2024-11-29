@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models
+package com.example.TIUMusic.Libs.YoutubeLib.models
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ALBUM
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ARTIST
+import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ALBUM
+import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_ARTIST
 import kotlinx.serialization.Serializable
 
 @Serializable

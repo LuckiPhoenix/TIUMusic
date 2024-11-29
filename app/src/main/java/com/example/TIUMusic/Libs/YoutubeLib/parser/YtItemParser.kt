@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.parser
+package com.example.TIUMusic.Libs.YoutubeLib.parser
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Badges
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.Badges
+import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 
 fun List<Badges>.toSongBadges(): List<SongItem.SongBadges> =
     this.mapNotNull {

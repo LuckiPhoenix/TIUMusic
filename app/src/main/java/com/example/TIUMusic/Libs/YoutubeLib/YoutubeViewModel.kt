@@ -13,9 +13,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.YouTubeClient
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
+import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
+import com.example.TIUMusic.Libs.YoutubeLib.models.old.SearchResponse
+import com.example.TIUMusic.Libs.YoutubeLib.models.old.SearchingInfo
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -358,6 +359,39 @@ class YtmusicViewModel @Inject constructor(
             }
         }
         return searchInfos
+    }
+
+    suspend fun getHomeScreen() {
+        runCatching {
+            YouTube.customQuery(browseId = "FEmusic_home")
+                .onSuccess {
+                    runCatching {
+                        YouTube.customQuery(browseId = "FEmusic_home")
+                            .onSuccess { result ->
+                                val data =
+                                    result.contents?.
+                                        singleColumnBrowseResultsRenderer?.
+                                        tabs?.
+                                        get(0)?.
+                                        tabRenderer?.
+                                        content?.
+                                        sectionListRenderer?.
+                                        contents;
+
+                            }
+                    }
+                }
+                .onFailure { error ->
+                    Log.e("YoutubeViewModel", error.message.toString());
+                }
+        }
+    }
+
+    fun parseHomeScreen(
+        data : List<SectionListRenderer.Content>?,
+        context: com.example.TIUMusic.Libs.YoutubeLib.models.Context
+    ) {
+
     }
 }
 

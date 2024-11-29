@@ -1,8 +1,7 @@
 package com.example.TIUMusic.Screens
 
-import androidx.annotation.DrawableRes
 import android.media.AudioManager
-import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -65,7 +64,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,8 +75,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -89,27 +87,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
-import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.ui.theme.ArtistNameColor
-import com.example.TIUMusic.SongData.PlayerViewModel
-import com.example.TIUMusic.ui.theme.BackgroundColor
-import com.example.TIUMusic.ui.theme.PrimaryColor
-import kotlinx.coroutines.launch
-import androidx.compose.ui.res.painterResource
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.PlayerViewModel
+import com.example.TIUMusic.ui.theme.ArtistNameColor
+import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SurfaceColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 
 /*
 các components reusable phải được declare ở đây

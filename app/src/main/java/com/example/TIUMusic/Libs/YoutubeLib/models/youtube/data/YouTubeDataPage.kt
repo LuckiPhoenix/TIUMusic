@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.youtube.data
+package com.example.TIUMusic.Libs.YoutubeLib.models.youtube.data
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.NavigationEndpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.NavigationEndpoint
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -152,7 +152,7 @@ data class YouTubeDataPage(
                                     @Serializable
                                     data class Thumbnail(
                                         @SerialName("thumbnails")
-                                        val thumbnails: List<com.example.TIUMusic.Libs.YTMusicScrapper.models.Thumbnail>? = null
+                                        val thumbnails: List<com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail>? = null
                                     )
                                     @Serializable
                                     data class SubscriberCountText(

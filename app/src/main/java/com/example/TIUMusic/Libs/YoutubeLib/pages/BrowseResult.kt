@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.YTItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.YTItem
 
 data class BrowseResult(
     val title: String?,

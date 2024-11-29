@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models
+package com.example.TIUMusic.Libs.YoutubeLib.models
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.response.BrowseResponse
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames

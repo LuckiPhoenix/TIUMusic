@@ -1,8 +1,7 @@
-package com.example.TIUMusic.Libs.YoutubeLib.models
+package com.example.TIUMusic.Libs.YoutubeLib.models.old
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.WatchEndpoint
-import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer.Content
+import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 

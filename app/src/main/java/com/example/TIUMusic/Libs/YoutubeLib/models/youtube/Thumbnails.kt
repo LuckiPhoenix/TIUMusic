@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.youtube
+package com.example.TIUMusic.Libs.YoutubeLib.models.youtube
 
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Thumbnail
+import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

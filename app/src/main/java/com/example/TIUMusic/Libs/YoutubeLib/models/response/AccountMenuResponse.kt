@@ -1,8 +1,8 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.response
+package com.example.TIUMusic.Libs.YoutubeLib.models.response
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.AccountInfo
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Runs
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Thumbnails
+import com.example.TIUMusic.Libs.YoutubeLib.models.AccountInfo
+import com.example.TIUMusic.Libs.YoutubeLib.models.Runs
+import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnails
 import kotlinx.serialization.Serializable
 
 @Serializable

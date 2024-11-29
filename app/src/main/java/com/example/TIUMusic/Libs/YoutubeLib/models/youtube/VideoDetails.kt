@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.youtube
+package com.example.TIUMusic.Libs.YoutubeLib.models.youtube
 
 
 import kotlinx.serialization.SerialName

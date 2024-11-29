@@ -1,15 +1,15 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Album
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.AlbumItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Artist
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.ArtistItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicResponsiveListItemRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SongItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.VideoItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.YTItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.oddElements
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.splitBySeparator
+import com.example.TIUMusic.Libs.YoutubeLib.models.Album
+import com.example.TIUMusic.Libs.YoutubeLib.models.AlbumItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
+import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicResponsiveListItemRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.YTItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
+import com.example.TIUMusic.Libs.YoutubeLib.models.splitBySeparator
 
 object SearchSuggestionPage {
     fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): YTItem? {

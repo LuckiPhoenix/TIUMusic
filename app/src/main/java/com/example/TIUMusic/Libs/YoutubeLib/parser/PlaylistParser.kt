@@ -1,12 +1,12 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.parser
+package com.example.TIUMusic.Libs.YoutubeLib.parser
 
 import android.util.Log
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicResponsiveListItemRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicShelfRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SongItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.getContinuation
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.response.BrowseResponse
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.response.LikeStatus
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicResponsiveListItemRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.getContinuation
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.LikeStatus
 
 fun BrowseResponse.fromPlaylistToTrack(): List<SongItem> =
     (

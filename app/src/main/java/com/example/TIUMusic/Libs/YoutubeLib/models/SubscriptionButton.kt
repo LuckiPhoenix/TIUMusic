@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models
+package com.example.TIUMusic.Libs.YoutubeLib.models
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.subscriptionButton.SubscribeButtonRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.subscriptionButton.SubscribeButtonRenderer
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models
+package com.example.TIUMusic.Libs.YoutubeLib.models
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.response.LikeStatus
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.LikeStatus
 
 sealed class YTItem {
     abstract val id: String

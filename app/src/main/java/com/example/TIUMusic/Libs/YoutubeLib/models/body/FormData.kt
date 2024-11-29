@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.body
+package com.example.TIUMusic.Libs.YoutubeLib.models.body
 
 import kotlinx.serialization.Serializable
 

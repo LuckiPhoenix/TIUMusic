@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.extension
+package com.example.TIUMusic.Libs.YoutubeLib.extension
 
 import java.security.MessageDigest
 import kotlin.random.Random

@@ -1,6 +1,6 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 
 data class PlaylistContinuationPage(
     val songs: List<SongItem>,

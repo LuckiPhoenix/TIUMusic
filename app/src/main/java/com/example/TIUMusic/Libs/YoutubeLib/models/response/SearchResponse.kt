@@ -1,9 +1,9 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.response
+package com.example.TIUMusic.Libs.YoutubeLib.models.response
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Continuation
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicResponsiveListItemRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicShelfRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Tabs
+import com.example.TIUMusic.Libs.YoutubeLib.models.Continuation
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicResponsiveListItemRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.Tabs
 import kotlinx.serialization.Serializable
 
 @Serializable

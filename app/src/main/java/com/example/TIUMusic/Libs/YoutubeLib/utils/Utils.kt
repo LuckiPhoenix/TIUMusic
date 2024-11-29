@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.utils
+package com.example.TIUMusic.Libs.YoutubeLib.utils
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.YouTube
-import com.example.TIUMusic.Libs.YTMusicScrapper.pages.PlaylistPage
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
+import com.example.TIUMusic.Libs.YoutubeLib.pages.PlaylistPage
 import java.security.MessageDigest
 
 suspend fun Result<PlaylistPage>.completed() = runCatching {

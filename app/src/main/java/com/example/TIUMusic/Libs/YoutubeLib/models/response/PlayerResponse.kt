@@ -1,8 +1,8 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.response
+package com.example.TIUMusic.Libs.YoutubeLib.models.response
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.ResponseContext
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Thumbnails
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.youtube.YouTubeInitialPage
+import com.example.TIUMusic.Libs.YoutubeLib.models.ResponseContext
+import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnails
+import com.example.TIUMusic.Libs.YoutubeLib.models.youtube.YouTubeInitialPage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

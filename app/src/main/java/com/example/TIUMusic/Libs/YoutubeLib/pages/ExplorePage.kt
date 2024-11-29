@@ -1,7 +1,7 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.PlaylistItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.VideoItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 
 data class ExplorePage(
     val released: List<PlaylistItem>,

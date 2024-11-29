@@ -1,20 +1,20 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Album
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.AlbumItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Artist
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.ArtistItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicCarouselShelfRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicResponsiveListItemRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicShelfRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicTwoRowItemRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.PlaylistItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SectionListRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SongItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.VideoItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.YTItem
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.oddElements
+import com.example.TIUMusic.Libs.YoutubeLib.models.Album
+import com.example.TIUMusic.Libs.YoutubeLib.models.AlbumItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
+import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicCarouselShelfRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicResponsiveListItemRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicTwoRowItemRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.YTItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 
 data class ArtistSection(
     val title: String,

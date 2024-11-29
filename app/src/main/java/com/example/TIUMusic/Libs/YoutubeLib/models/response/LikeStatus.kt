@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.response
+package com.example.TIUMusic.Libs.YoutubeLib.models.response
 
 enum class LikeStatus {
     LIKE,

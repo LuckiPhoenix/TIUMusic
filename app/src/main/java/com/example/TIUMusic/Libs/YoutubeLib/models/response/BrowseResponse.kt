@@ -1,15 +1,15 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.response
+package com.example.TIUMusic.Libs.YoutubeLib.models.response
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Button
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Continuation
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Menu
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicShelfRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.ResponseContext
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Runs
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SectionListRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SubscriptionButton
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.Tabs
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.ThumbnailRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.Button
+import com.example.TIUMusic.Libs.YoutubeLib.models.Continuation
+import com.example.TIUMusic.Libs.YoutubeLib.models.Menu
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.ResponseContext
+import com.example.TIUMusic.Libs.YoutubeLib.models.Runs
+import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.SubscriptionButton
+import com.example.TIUMusic.Libs.YoutubeLib.models.Tabs
+import com.example.TIUMusic.Libs.YoutubeLib.models.ThumbnailRenderer
 import kotlinx.serialization.Serializable
 
 @Serializable

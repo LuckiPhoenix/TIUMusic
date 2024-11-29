@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.config
+package com.example.TIUMusic.Libs.YoutubeLib.config
 
 object Constants {
 

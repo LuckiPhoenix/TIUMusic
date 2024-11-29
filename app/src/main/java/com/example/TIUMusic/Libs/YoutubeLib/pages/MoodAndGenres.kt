@@ -1,9 +1,9 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.pages
+package com.example.TIUMusic.Libs.YoutubeLib.pages
 
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.BrowseEndpoint
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.GridRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.MusicNavigationButtonRenderer
-import com.example.TIUMusic.Libs.YTMusicScrapper.models.SectionListRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.GridRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicNavigationButtonRenderer
+import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
 
 data class MoodAndGenres(
     val title: String,

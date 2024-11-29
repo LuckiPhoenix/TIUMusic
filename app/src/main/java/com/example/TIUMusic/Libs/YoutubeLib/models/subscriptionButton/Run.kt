@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Libs.YTMusicScrapper.models.subscriptionButton
+package com.example.TIUMusic.Libs.YoutubeLib.models.subscriptionButton
 
 
 import kotlinx.serialization.SerialName
