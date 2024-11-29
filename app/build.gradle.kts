@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization") version "2.0.20"
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
 
@@ -13,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.TIUMusic"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -63,6 +64,34 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.accompanist.systemuicontroller.v0270)
+
+
+    // YoutubeLib
+
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.fragment.compose)
+
+
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.1")
+    // https://mvnrepository.com/artifact/org.brotli/dec
+    implementation(libs.brotli.dec)
+    implementation(libs.google.gson)
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.encoding)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.xml)
+    implementation(libs.ktor.serialization.kotlinx.protobuf)
+    implementation(libs.ktor.server.compression)
+    implementation(libs.ktor.io)
+    implementation(libs.ktor.utils)
 
     // Room
     implementation(libs.androidx.room.runtime)

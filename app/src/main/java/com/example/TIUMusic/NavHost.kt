@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
@@ -34,9 +39,13 @@ import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
-fun NavHost() {
+fun NavHost(
+    playerViewModel: PlayerViewModel,
+    visualizerViewModel: VisualizerViewModel,
+    youtubeViewModel: YoutubeViewModel
+) {
+    val context = LocalContext.current;
     val navController = rememberNavController()
-    val playerViewModel = PlayerViewModel()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
     Log.d("NavHost", "Current route: $currentRoute")
@@ -127,9 +136,11 @@ fun NavHost() {
         if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
+                youtubeViewModel = youtubeViewModel,
+                visualizerViewModel = visualizerViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp)
+                    .padding(bottom = 80.dp),
             )
             Log.d("NavHost", "Overlay shown")
         }
