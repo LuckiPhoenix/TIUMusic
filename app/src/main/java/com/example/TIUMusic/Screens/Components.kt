@@ -52,9 +52,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -111,6 +108,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.ui.theme.SurfaceColor
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 /*
@@ -1262,66 +1260,6 @@ private fun MiniPlayer(
         }
     }
 }
-
-@Composable
-private fun ExpandedPlayer(
-    isPlaying: Boolean,
-    onPlayPauseClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Spacer(modifier = Modifier.height(64.dp))
-
-        // Album art
-        AsyncImage(
-            model = "",
-            contentDescription = "Song Image",
-            modifier = Modifier
-                .size(320.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF404040))
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Title and artist
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            Text(
-                text = "Song Title",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Artist Name",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-
-        PlaybackControls(
-            isPlaying = isPlaying,
-            onPlayPauseClick = onPlayPauseClick,
-            currentTime = 0f,
-            duration = 10f,
-            onSeek = {}
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        VolumeControls()
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-
 
 /*
 để fun chỉnh volume ra ngoài để sync với system, dùng observe để sync với system.
