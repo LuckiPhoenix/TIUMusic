@@ -108,7 +108,7 @@ public fun ExpandedPlayer(
         ) {
             VisualizerCircle(
                 visualizerViewModel = visualizerViewModel,
-                radius = 330.dp.value,
+                radius = 360.dp.value,
                 lineHeight = 550.dp.value,
             );
             AsyncImage(

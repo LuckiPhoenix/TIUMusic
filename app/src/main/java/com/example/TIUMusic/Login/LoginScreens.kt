@@ -2,6 +2,7 @@ package com.example.TIUMusic.Login
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,7 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -245,11 +248,18 @@ fun reusableInputField(
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
+            Image(
+                painter = painterResource(R.drawable.tiumusicfulllogo),
+                contentDescription = "TIU Music Logo",
+                modifier = Modifier.padding(start = 16.dp, top = 64.dp)
+                    .size(128.dp)
+            )
+            Spacer(modifier = Modifier.height(64.dp))
             Text(
                 text = header,
                 fontSize = 64.sp,
