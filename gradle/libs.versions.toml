@@ -12,11 +12,13 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
+kotlinxSerializationJson = "1.6.3"
 ktorVersion = "2.2.4"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
 lifecycleViewmodelCompose = "2.8.7"
+logbackClassic = "1.2.11"
 navigationCompose = "2.8.3"
 roomRuntime = "2.6.1"
 runtimeLivedata = "1.7.4"
@@ -52,6 +54,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-storage = { group = "androidx.test.services", name = "storage", version.ref = "storage" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktorVersion" }
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktorVersion" }
 ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktorVersion" }
@@ -63,6 +66,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktorVersion" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

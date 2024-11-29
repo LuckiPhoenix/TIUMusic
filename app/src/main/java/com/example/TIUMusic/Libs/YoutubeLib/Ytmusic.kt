@@ -1,11 +1,14 @@
 package com.example.TIUMusic.Libs.YoutubeLib
 
+import android.util.Log
 import com.example.TIUMusic.Libs.YoutubeLib.encoder.brotli
 import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseBody
 import com.example.TIUMusic.Libs.YoutubeLib.models.Context
 import com.example.TIUMusic.Libs.YoutubeLib.models.FormData
+import com.example.TIUMusic.Libs.YoutubeLib.models.GetSearchSuggestionsBody
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlayerBody
 import com.example.TIUMusic.Libs.YoutubeLib.models.SearchBody
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeLocale
 import com.example.TIUMusic.Libs.YoutubeLib.utils.parseCookieString
@@ -13,6 +16,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.utils.sha1
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.cache.HttpCache
@@ -28,6 +32,7 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
@@ -258,23 +263,23 @@ class Ytmusic {
         parameter("prettyPrint", false)
     }
 
-    // Tihs is the youtube search bar
+    // This is the youtube search bar
     suspend fun search(
         client: YouTubeClient,
         query: String? = null,
         params: String? = null,
         continuation: String? = null,
     ) = httpClient.post("search") {
-        ytClient(client, true)
-        setBody(
-            SearchBody(
-                context = client.toContext(locale, visitorData),
-                query = query,
-                params = params,
-            ),
-        )
-        parameter("continuation", continuation)
-        parameter("ctoken", continuation)
+            ytClient(client, true)
+            setBody(
+                SearchBody(
+                    context = client.toContext(locale, visitorData),
+                    query = query,
+                    params = params,
+                ),
+            )
+            parameter("continuation", continuation)
+            parameter("ctoken", continuation)
     }
 
     suspend fun returnYouTubeDislike(videoId: String) =
@@ -549,18 +554,18 @@ class Ytmusic {
 //        )
 //    }
 //
-//    suspend fun getSearchSuggestions(
-//        client: YouTubeClient,
-//        input: String,
-//    ) = httpClient.post("music/get_search_suggestions") {
-//        ytClient(client)
-//        setBody(
-//            GetSearchSuggestionsBody(
-//                context = client.toContext(locale, visitorData),
-//                input = input,
-//            ),
-//        )
-//    }
+    suspend fun getSearchSuggestions(
+        client: YouTubeClient,
+        input: String,
+    ) = httpClient.post("music/get_search_suggestions") {
+        ytClient(client)
+        setBody(
+            GetSearchSuggestionsBody(
+                context = client.toContext(locale, visitorData),
+                input = input,
+            ),
+        )
+    }
 
 //    suspend fun getQueue(
 //        client: YouTubeClient,

@@ -13,6 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -22,6 +26,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchResponse
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.components.SingletonComponent
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
 interface MediaNotificationSeek {
     fun onSeek(seekTime : Float);
@@ -240,3 +265,123 @@ class YoutubeViewModel(context : Context) : ViewModel() {
     }
 
 }
+
+@HiltViewModel
+class YtmusicViewModel @Inject constructor(
+    private val ytmusic: Ytmusic // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
+) : ViewModel() {
+
+    private val _searchResults = MutableStateFlow<List<SearchingInfo>>(emptyList())
+    val searchResults: StateFlow<List<SearchingInfo>> = _searchResults
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> get() = _loading
+
+    fun performSearch(query: String){
+        var videoInfos: List<SearchingInfo>
+        Log.d("viewModelTest", "RUN")
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                withContext(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+                    Log.e("viewModelTest", "Lỗi trong coroutine: ${throwable.message}")
+                }) {
+                    val client = YouTubeClient.WEB_REMIX
+                    val response = ytmusic.search(client = client, query).bodyAsText()
+                    // Cấu hình JSON parser
+                    val json = Json {
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                    }
+                    // Parse JSON
+                    val parsedResponse = json.decodeFromString<SearchResponse>(response)
+                    val parsedResponseString = parsedResponse.toString()
+                    // Phần còn lại của mã
+                    val maxLogSize = 1000
+                    for(i in 0 .. parsedResponseString.length / maxLogSize){
+                        val start = i * maxLogSize
+                        var end = (i + 1) * maxLogSize
+                        end = if (end < parsedResponseString.length) end else parsedResponseString.length
+                        Log.d("messageReturn", parsedResponseString.substring(start, end))
+                    }
+                    Log.d("messageReturn", "ENDJSON")
+
+                    videoInfos = extractVideoInfo(parsedResponse)
+
+                    // Chuyển đổi dữ liệu để phù hợp với định dạng mong muốn
+                    val formattedResults = videoInfos.map { videoInfo ->
+                        SearchingInfo(
+                            title = videoInfo.title ?: "Unknown Title",
+                            videoId = videoInfo.videoId ?: "Unknown ID",
+                            artist = videoInfo.artist ?: "Unknown Artist",
+                            artistId = videoInfo.artistId ?: "Unknown Artist ID"
+                        )
+                    }
+                    // Gán giá trị mới cho _searchResults
+                    _searchResults.value = formattedResults
+                }
+            } catch (e: Exception) {
+                // Xử lý ngoại lệ ở đây
+                Log.d("viewModelTest", "Error occurred: ${e.message}")
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+    // Hàm trích xuất thông tin video ID
+    fun extractVideoInfo(response: SearchResponse): List<SearchingInfo> {
+        // Thông tin trả về
+        val searchInfos = mutableListOf<SearchingInfo>()
+
+        // Lấy tabs đầu tiên
+        val listShelfRender = response.contents.tabbedSearchResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents
+            ?:throw Exception(" No renderer")
+
+        // Duyệt
+        for (renderer in listShelfRender.take(3)){
+            if(renderer.musicCardShelfRender == null && renderer.musicShelfRenderer != null){
+                val contents = renderer.musicShelfRenderer.contents
+                    ?: throw Exception(" - No content in Renderer found")
+                Log.d("viewModelTest","Count musicResponsiveListItemRenderer size: ${renderer.musicShelfRenderer.contents.size}")
+                for(content in contents) {
+                    val item = content.musicResponsiveListItemRenderer?.flexColumns
+                        ?: throw Exception(" - No musicResponsiveListItemFlexColumnRenderer found")
+
+                    val songRender =
+                        item[0].musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()
+                            ?: throw Exception(" - No songRenderer found")
+                    val artistRender = item[1].musicResponsiveListItemFlexColumnRenderer.text?.runs
+                        ?: throw Exception(" - No artistRenderer found")
+
+                    var i = artistRender.indexOfFirst { it.navigationEndpoint != null }
+                    if (i == -1){
+                        i = 0
+                    }
+                    searchInfos.add(
+                        SearchingInfo(
+                            title = songRender.text,
+                            videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId,
+                            artist = artistRender[i].text,
+                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId
+                        )
+                    )
+                }
+            }
+        }
+        return searchInfos
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object YtmusicModule {
+    @Provides
+    fun provideYtmusic(): Ytmusic {
+        return Ytmusic()
+    }
+}
+
+
+
+
+
