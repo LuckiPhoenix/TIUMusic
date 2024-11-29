@@ -17,6 +17,7 @@ import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,10 +50,12 @@ class YoutubePlayerHelper {
     }
 
     public fun play() {
+        seekToTime = currentSecond;
         ytPlayer?.play();
     }
 
     public fun pause() {
+        seekToTime = currentSecond;
         ytPlayer?.pause();
     }
 }
@@ -67,6 +70,10 @@ class YoutubeViewModel(context : Context) : ViewModel() {
 
     private val _ytHelper = MutableStateFlow(YoutubePlayerHelper());
     val ytHelper : StateFlow<YoutubePlayerHelper> = _ytHelper.asStateFlow();
+
+    private var _ytPlayerView : MutableStateFlow<YouTubePlayerView?> = MutableStateFlow(null);
+    val ytPlayerView : StateFlow<YouTubePlayerView?> = _ytPlayerView.asStateFlow();
+
 
     val NotificationID = 0;
 
@@ -140,6 +147,10 @@ class YoutubeViewModel(context : Context) : ViewModel() {
                 }
             }
         })
+    }
+
+    fun updateYoutubePlayerView(youTubePlayerView: YouTubePlayerView) {
+        _ytPlayerView.update { youTubePlayerView }
     }
 
     fun updateYoutubePlayer(ytPlayer : YouTubePlayer) {
