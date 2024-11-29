@@ -165,7 +165,7 @@ class YtmusicViewModel @Inject constructor(
     }
 
     fun GetContinuation(context: Context) {
-        _homeContinuation.intValue = 10;
+        _homeContinuation.intValue = 2;
         viewModelScope.launch {
             getHomeScreen(context).collect {
                 _homeItems.value = it;
