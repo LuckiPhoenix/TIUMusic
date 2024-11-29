@@ -121,7 +121,15 @@ fun NavHost(
                             3 -> navController.navigate("search")
                         }
                     }) }
-                composable("library") { LibraryScreen(navController) }
+                composable("library") { LibraryScreen(navController,
+                    onTabSelected = { tabIndex ->
+                        when (tabIndex) {
+                            0 -> navController.navigate("home")
+                            1 -> navController.navigate("new")
+                            2 -> {}
+                            3 -> navController.navigate("search")
+                        }
+                    }) }
                 composable(
                     route = "playlist/{playlistId}",
                     arguments = listOf(navArgument("playlistId") { type = NavType.StringType })

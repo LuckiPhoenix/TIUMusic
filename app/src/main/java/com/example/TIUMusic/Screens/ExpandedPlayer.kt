@@ -5,6 +5,7 @@ import android.database.ContentObserver
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -92,12 +93,6 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
-    VisualizerCircleRGB(
-        visualizerViewModel = visualizerViewModel,
-        radius = 330.dp.value,
-        lineHeight = 550.dp.value,
-        modifier = Modifier.fillMaxSize().padding(bottom = 230.dp)
-    );
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -106,16 +101,26 @@ public fun ExpandedPlayer(
         Spacer(modifier = Modifier.height(128.dp))
 
         // Album art
-        AsyncImage(
-            model = musicItem.imageUrl,
-            contentDescription = "${musicItem.title} by ${musicItem.artist} Image",
-            modifier = Modifier
-                .padding(top = 40.dp)
-                .size(240.dp)
-                .clip(RoundedCornerShape(140.dp))
-                .background(Color(0xFF404040))
-                .align(Alignment.CenterHorizontally)
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+                .fillMaxWidth()
+
+        ) {
+            VisualizerCircle(
+                visualizerViewModel = visualizerViewModel,
+                radius = 360.dp.value,
+                lineHeight = 550.dp.value,
+            );
+            AsyncImage(
+                model = musicItem.imageUrl,
+                contentDescription = "Song Image",
+                modifier = Modifier
+                    .size(240.dp)
+                    .clip(RoundedCornerShape(140.dp))
+                    .background(Color(0xFF404040))
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -274,7 +279,7 @@ fun VolumeControls(
             }
         }
         context.contentResolver.registerContentObserver(
-            android.provider.Settings.System.CONTENT_URI,
+            Settings.System.CONTENT_URI,
             true,
             volumeObserver
         )

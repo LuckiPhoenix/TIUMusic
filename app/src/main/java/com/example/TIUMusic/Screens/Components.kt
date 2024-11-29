@@ -1,7 +1,12 @@
 package com.example.TIUMusic.Screens
 
-import android.media.AudioManager
+
 import androidx.annotation.DrawableRes
+import android.content.Context
+import android.database.ContentObserver
+import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -38,6 +43,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -45,25 +52,37 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,6 +94,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -88,6 +109,15 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.ui.theme.ArtistNameColor
+import com.example.TIUMusic.SongData.PlayerViewModel
+import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.ButtonColor
+import com.example.TIUMusic.ui.theme.PrimaryColor
+import kotlinx.coroutines.launch
+import androidx.compose.ui.res.painterResource
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
@@ -232,6 +262,8 @@ fun ScrollableSearchScreen(
     // Calculate dynamic values
     val expandedHeight = 60.dp
     val collapsedHeight = 30.dp
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
     val expandedTitleSize = Dimensions.expandedTitleSize()
     val collapsedTitleSize = Dimensions.collapsedTitleSize()
     val bottomNavHeight = 56.dp // Define bottom nav height
@@ -296,6 +328,16 @@ fun ScrollableSearchScreen(
             val isLoading by searchViewModel.loading.collectAsState()
 
             Column(
+            val resultSearch = remember {
+                mutableStateListOf(
+                    "Result 1",
+                    "Result 2",
+                    "Result 3",
+                    "Result 4",
+                )
+            }
+
+            Box(
                 modifier = Modifier
                     .background(BackgroundColor)
             ) {
@@ -307,11 +349,14 @@ fun ScrollableSearchScreen(
                     titleSize = titleSize.sp,
                     height = height
                 )
-
-                Box {
+                Box(
+                    modifier = Modifier
+                        .padding(top = height - 60.dp, bottom = 10.dp)
+                ) {
                     Card(
                         modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = expandedHeight / 2 + 10.dp)
+                            .padding(top = 40.dp)
+                            .padding(horizontal = 20.dp)
                             .fillMaxWidth()
                             .height(36.dp)
                             .border(
@@ -922,7 +967,7 @@ fun AlbumCardNewScreen(
         )
 
         Text(
-            text = item.title ?: "",
+            text = item.title,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -932,7 +977,7 @@ fun AlbumCardNewScreen(
         )
 
         Text(
-            text = item.artist ?: "",
+            text = item.artist,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -962,7 +1007,7 @@ fun AlbumCardNewScreen(
                     modifier = Modifier
                         .width(imageSize - 44.dp)
                         .align(Alignment.CenterVertically),
-                    text = item.artist ?: "",
+                    text = item.artist,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White,
                     maxLines = 2,
@@ -1020,7 +1065,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = item.title ?: "",
+            text = item.title,
             style = MaterialTheme.typography.bodyMedium,
             color = ArtistNameColor,
             maxLines = 1,
