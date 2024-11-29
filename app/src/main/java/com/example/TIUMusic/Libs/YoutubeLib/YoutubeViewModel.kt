@@ -65,7 +65,6 @@ class YoutubePlayerHelper {
     }
 
     public fun play() {
-        seekToTime = currentSecond;
         ytPlayer?.play();
     }
 
@@ -122,7 +121,7 @@ class YoutubeViewModel(context : Context) : ViewModel() {
 
         ___ran = true;
         println("1");
-        var builder = Notification.Builder(context, Notification.CATEGORY_MESSAGE)
+        val builder = Notification.Builder(context, Notification.CATEGORY_MESSAGE)
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("it's not litter if you bin it")
             .setContentText("Niko B - dog eats dog food world")
