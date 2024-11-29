@@ -1,8 +1,6 @@
 package com.example.TIUMusic.Screens
 
 import androidx.annotation.DrawableRes
-import android.media.AudioManager
-import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -39,6 +37,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -65,7 +65,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,6 +76,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -97,9 +98,19 @@ import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.painterResource
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.R
+import com.example.TIUMusic.ui.theme.SurfaceColor
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.example.TIUMusic.ui.theme.SurfaceColor
 import dagger.hilt.android.lifecycle.HiltViewModel
 
@@ -124,7 +135,7 @@ fun ScrollableScreen(
     title: String,
     selectedTab: Int = 0,
     onTabSelected: (Int) -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit,
+    content: @Composable (PaddingValues) -> Unit
 ) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
@@ -1042,12 +1053,19 @@ fun AlbumCardNewScreenListVertical(
 @Composable
 fun NowPlayingSheet(
     modifier: Modifier = Modifier,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    youtubeViewModel: YoutubeViewModel,
+    visualizerViewModel: VisualizerViewModel
 ) {
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
-
+    val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
+    // Su dung de check user dang seek hay khong
+    // Set true tai onSeek khi user dang keo slider
+    // Set false khi !isPlaying khi chuyen tu state paused sang playing
+    // Still very retarded way to do this
+    var isSeeking by remember { mutableStateOf(false) }
 
     val springSpec = SpringSpec<Float>(
         dampingRatio = 0.8f,
@@ -1074,6 +1092,40 @@ fun NowPlayingSheet(
         dragProgress.value = newProgress
     }
 
+    YoutubeView(
+        youtubeVideoId = "Zgd1corMdnk",
+        youtubeMetadata = YoutubeMetadata(
+            title = "it's not litter if you bin it",
+            artist = "Niko B",
+        ),
+        onSecond = { ytPlayer, second ->
+            if (!isSeeking)
+                playerViewModel.setCurrentTime(second);
+        },
+        onDurationLoaded = { ytPlayer, dur ->
+            playerViewModel.setDuration(dur);
+        },
+        onState =  { ytPlayer, state ->
+            when(state) {
+                PlayerConstants.PlayerState.PLAYING -> {
+                    if (!playerViewModel.isPlaying.value)
+                        isSeeking = false;
+                    playerViewModel.setPlaying(true);
+                }
+                PlayerConstants.PlayerState.PAUSED, PlayerConstants.PlayerState.ENDED -> {
+                    playerViewModel.setPlaying(false)
+                };
+                PlayerConstants.PlayerState.BUFFERING -> {
+                    playerViewModel.setPlaying(false);
+                } // Set Loading
+                else -> {
+                    playerViewModel.setPlaying(false);
+                    // Set Loading
+                }
+            }
+        },
+        youtubeViewModel = youtubeViewModel
+    )
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -1111,12 +1163,33 @@ fun NowPlayingSheet(
                     if (!isExpanded) {
                         MiniPlayer(
                             isPlaying = playerViewModel.isPlaying.value,
-                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
+                            onPlayPauseClick = {
+                                if (playerViewModel.isPlaying.value)
+                                    ytPlayerHelper.pause();
+                                else
+                                    ytPlayerHelper.play();
+                            },
                         )
                     } else {
                         ExpandedPlayer(
                             isPlaying = playerViewModel.isPlaying.value,
-                            onPlayPauseClick = { playerViewModel.setPlaying(!playerViewModel.isPlaying.value) }
+                            duration = playerViewModel.duration.value,
+                            currentTime = playerViewModel.currentTime.value,
+                            onPlayPauseClick = {
+                                if (playerViewModel.isPlaying.value)
+                                    ytPlayerHelper.pause();
+                                else
+                                    ytPlayerHelper.play();
+                           },
+                            onSeek = { newPosition ->
+                                isSeeking = true;
+                            },
+                            onSeekFinished = { newPosition ->
+                                playerViewModel.setPlaying(false);
+                                playerViewModel.setCurrentTime(newPosition);
+                                ytPlayerHelper.seekTo(newPosition);
+                            },
+                            visualizerViewModel = visualizerViewModel
                         )
                     }
                 }
@@ -1190,76 +1263,3 @@ private fun MiniPlayer(
         }
     }
 }
-
-@Composable
-private fun ExpandedPlayer(
-    isPlaying: Boolean,
-    onPlayPauseClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Spacer(modifier = Modifier.height(64.dp))
-
-        // Album art
-        AsyncImage(
-            model = "",
-            contentDescription = "Song Image",
-            modifier = Modifier
-                .size(320.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF404040))
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Title and artist
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            Text(
-                text = "Song Title",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Artist Name",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-
-        PlaybackControls(
-            isPlaying = isPlaying,
-            onPlayPauseClick = onPlayPauseClick,
-            currentTime = 0f,
-            duration = 10f,
-            onSeek = {}
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        VolumeControls()
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-
-
-/*
-để fun chỉnh volume ra ngoài để sync với system, dùng observe để sync với system.
-chỉnh volume ko đc mượt tại system có volume theo từng nắc từ 0 đến 10, nên có 10 nắc
-(này chịu, nhma cái animation vjp pro này phân tán sự chú ý problem này r =)))))
- */
-
-private fun adjustVolume(audioManager: AudioManager, newVolume: Float, maxVolume: Float) {
-    val adjustedVolume = (newVolume * maxVolume).coerceIn(0f, maxVolume).toInt()
-    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, adjustedVolume, 0)
-}
-
-

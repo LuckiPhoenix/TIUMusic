@@ -5,6 +5,7 @@ import android.database.ContentObserver
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -70,6 +71,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
+import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.R
@@ -83,24 +87,39 @@ public fun ExpandedPlayer(
     currentTime: Float,
     duration : Float,
     onPlayPauseClick: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onSeekFinished: (Float) -> Unit,
+    visualizerViewModel: VisualizerViewModel
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(128.dp))
 
         // Album art
-        AsyncImage(
-            model = "",
-            contentDescription = "Song Image",
-            modifier = Modifier
-                .size(320.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF404040))
-                .align(Alignment.CenterHorizontally)
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+                .fillMaxWidth()
+
+        ) {
+            VisualizerCircle(
+                visualizerViewModel = visualizerViewModel,
+                radius = 360.dp.value,
+                lineHeight = 550.dp.value,
+            );
+            AsyncImage(
+                model = "",
+                contentDescription = "Song Image",
+                modifier = Modifier
+                    .size(240.dp)
+                    .clip(RoundedCornerShape(140.dp))
+                    .background(Color(0xFF404040))
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -127,7 +146,8 @@ public fun ExpandedPlayer(
             onPlayPauseClick = onPlayPauseClick,
             currentTime = currentTime,
             duration = duration,
-            onSeek = {}
+            onSeek = onSeek,
+            onSeekFinished = onSeekFinished
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -144,12 +164,31 @@ fun PlaybackControls(
     currentTime: Float,
     duration: Float,
     onPlayPauseClick: () -> Unit,
-    onSeek: (Float) -> Unit // user chỉnh time
+    onSeek: (Float) -> Unit, // User changes the time
+    onSeekFinished: (Float) -> Unit
 ) {
+    // Local state for handling slider interactions
+    var sliderPosition by remember { mutableStateOf(currentTime) }
+    var isSeeking by remember { mutableStateOf(false) }
+
+    if (!isSeeking)
+        sliderPosition = currentTime; // Really stupid
+
     Column {
         Slider(
-            value = currentTime,
-            onValueChange = onSeek,
+            value = sliderPosition,
+            onValueChange = { newPosition ->
+                isSeeking = true;
+                sliderPosition = newPosition
+                // Notify the wrapper about the change
+                // to disable slider sync when seeking
+                onSeek(sliderPosition)
+            },
+            onValueChangeFinished = {
+                isSeeking = false;
+                // Change here
+                onSeekFinished(sliderPosition)
+            },
             valueRange = 0f..duration,
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,7 +202,7 @@ fun PlaybackControls(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatTime(currentTime), color = Color.Gray)
+            Text(formatTime(sliderPosition), color = Color.Gray)
             Text(formatTime(duration), color = Color.Gray)
         }
 
@@ -174,7 +213,7 @@ fun PlaybackControls(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* quay về stack trước */ }) {
+            IconButton(onClick = { /* Handle previous action */ }) {
                 Icon(
                     painter = painterResource(R.drawable.prev_song),
                     contentDescription = "Previous",
@@ -190,14 +229,16 @@ fun PlaybackControls(
                     .background(Color(0xFF404040), CircleShape)
             ) {
                 Icon(
-                    painter = painterResource( if (isPlaying) R.drawable.pause else R.drawable.play_solid),
+                    painter = painterResource(
+                        if (isPlaying) R.drawable.pause else R.drawable.play_solid
+                    ),
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
             }
 
-            IconButton(onClick = { /* nhạc tiếp theo */ }) {
+            IconButton(onClick = { /* Handle next action */ }) {
                 Icon(
                     painter = painterResource(R.drawable.next_song),
                     contentDescription = "Next",
@@ -237,7 +278,7 @@ fun VolumeControls(
             }
         }
         context.contentResolver.registerContentObserver(
-            android.provider.Settings.System.CONTENT_URI,
+            Settings.System.CONTENT_URI,
             true,
             volumeObserver
         )
