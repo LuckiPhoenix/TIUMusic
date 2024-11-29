@@ -78,6 +78,7 @@ fun NavHost() {
                         }
                     )
                 }
+
                 composable("new") { NewScreen(
                     navController,
                     onTabSelected = { tabIndex ->

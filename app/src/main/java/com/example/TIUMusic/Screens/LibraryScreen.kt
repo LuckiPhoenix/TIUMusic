@@ -1,10 +1,155 @@
 package com.example.TIUMusic.Screens
 
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.SongData.getTopPicks
+import com.example.TIUMusic.ui.theme.BackgroundColor
 
 @Composable
-fun LibraryScreen(navController: NavController, modifier: Modifier = Modifier) {
-    //TODO
+fun LibraryScreen(navController: NavController,onTabSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
+    val windowSize = rememberWindowSize()
+
+    // Transition variables
+    var isScrolled by remember { mutableStateOf(false) }
+    val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
+
+    // Calculate dynamic values
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
+    val expandedTitleSize = Dimensions.expandedTitleSize()
+    val collapsedTitleSize = Dimensions.collapsedTitleSize()
+    val bottomNavHeight = 56.dp // Define bottom nav height
+
+    // Animation values
+    val alpha by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "Alpha"
+    ) { state -> if (state) 0.9f else 1f }
+
+    val translationX by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = "TranslationX"
+    ) { state ->
+        if (state) {
+            when (windowSize) {
+                WindowSize.COMPACT -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 52.dp
+                WindowSize.MEDIUM -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 48.dp
+            }
+        } else 0.dp
+    }
+
+    val titleSize by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "TextSize"
+    ) { state ->
+        if (state) collapsedTitleSize.value else expandedTitleSize.value
+    }
+
+    val height by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "height"
+    ) { state -> if (state) collapsedHeight else expandedHeight }
+
+    LaunchedEffect(scrollState.value) {
+        isScrolled = scrollState.value > expandedHeight.value
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BackgroundColor
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .background(BackgroundColor)
+                    .padding(top = expandedHeight)
+            ) {
+                Text(
+                    "My playlists:",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 32.dp),
+                    color = White,
+                    fontWeight = FontWeight.SemiBold
+                )
+                // Use Modifier.height or a fixed height if needed
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .height(600.dp), // Adjust height as needed
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    items(getTopPicks()) { item ->
+                        AlbumCard(
+                            item = item,
+                            modifier = Modifier,
+                            imageSize = 180.dp,
+                            onClick = { }
+                        )
+                    }
+                }
+            }
+
+            // Top app bar
+            AnimatedTopAppBar(
+                title = "Library",
+                alpha = alpha,
+                translationX = translationX,
+                titleSize = titleSize.sp,
+                height = height
+            )
+
+
+            // Bottom navigation
+            CustomBottomNavigation(
+                selectedTab = 2,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun LibraryScreenPreview() {
+    LibraryScreen(navController = rememberNavController(), onTabSelected = {})
 }
