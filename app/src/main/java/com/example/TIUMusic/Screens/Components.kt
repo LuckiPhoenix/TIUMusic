@@ -690,7 +690,7 @@ fun HorizontalScrollableNewScreenSection2(
                     modifier = Modifier.width(itemWidth!! + 10.dp)
                 ) {
                     songList.forEach {
-                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
+                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist ?: "", it.imageUrl ?: "")
                     }
                 }
             }
@@ -876,7 +876,7 @@ fun AlbumCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = item.title,
+            text = item.title ?: "",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -886,7 +886,7 @@ fun AlbumCard(
         )
 
         Text(
-            text = item.artist,
+            text = item.artist ?: "",
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -921,7 +921,7 @@ fun AlbumCardNewScreen(
         )
 
         Text(
-            text = item.title,
+            text = item.title ?: "",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -931,7 +931,7 @@ fun AlbumCardNewScreen(
         )
 
         Text(
-            text = item.artist,
+            text = item.artist ?: "",
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -961,7 +961,7 @@ fun AlbumCardNewScreen(
                     modifier = Modifier
                         .width(imageSize - 44.dp)
                         .align(Alignment.CenterVertically),
-                    text = item.artist,
+                    text = item.artist ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White,
                     maxLines = 2,
@@ -1019,7 +1019,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = item.title,
+            text = item.title ?: "",
             style = MaterialTheme.typography.bodyMedium,
             color = ArtistNameColor,
             maxLines = 1,

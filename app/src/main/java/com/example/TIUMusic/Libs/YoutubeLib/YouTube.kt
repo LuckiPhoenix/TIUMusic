@@ -75,7 +75,7 @@ import kotlin.random.Random
 
 
 object YouTube {
-    private val ytMusic = Ytmusic()
+    val ytMusic = Ytmusic()
 
     var cachePath: File?
         get() = ytMusic.cachePath
