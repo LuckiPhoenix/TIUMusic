@@ -92,7 +92,7 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
-    VisualizerCircle(
+    VisualizerCircleRGB(
         visualizerViewModel = visualizerViewModel,
         radius = 330.dp.value,
         lineHeight = 550.dp.value,

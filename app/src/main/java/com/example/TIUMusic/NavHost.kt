@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
@@ -81,7 +82,18 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            youtubeViewModel.loadAndPlayVideo(musicItem.id);
+                            youtubeViewModel.loadAndPlayVideo(
+                                videoId = musicItem.id,
+                                metadata = YoutubeMetadata(
+                                    title = "",
+                                    artist = "",
+                                    artBitmap = null,
+                                    displayTitle = "",
+                                    displaySubtitle = ""
+                                ),
+                                0L,
+                                context = context
+                            );
                             // navController.navigate("playlist/${musicItem.id}")
                         }
                     )

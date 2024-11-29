@@ -146,7 +146,8 @@ fun YoutubeView(
                         {
                             youtubeViewModel.updateMediaMetadata(
                                 metadata = youtubeMetadata,
-                                durationMs = duration.toLong() * 1000L
+                                durationMs = duration.toLong() * 1000L,
+                                context
                             );
                             youtubeViewModel.setMediaSessionActive(true);
                             // println("Playing");
