@@ -122,6 +122,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.R
+import com.example.TIUMusic.ui.theme.SurfaceColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 
 /*
