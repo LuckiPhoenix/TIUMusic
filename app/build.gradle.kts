@@ -104,6 +104,9 @@ dependencies {
 
     //Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    //SLF4J
+    implementation (libs.logback.classic)
 }
 
 kapt {

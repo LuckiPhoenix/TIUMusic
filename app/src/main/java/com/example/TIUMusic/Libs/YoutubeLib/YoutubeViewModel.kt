@@ -19,7 +19,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTube
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.TIUMusic.Libs.YoutubeLib.models.SearchResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.VideoInfo
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -235,11 +235,14 @@ class YtmusicViewModel @Inject constructor(
     private val ytmusic: Ytmusic // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
 ) : ViewModel() {
 
+    private val _searchResults = MutableStateFlow<List<SearchingInfo>>(emptyList())
+    val searchResults: StateFlow<List<SearchingInfo>> = _searchResults
+
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    fun performSearch(query: String) : List<VideoInfo>? {
-        var videoInfos: List<VideoInfo>? = null
+    fun performSearch(query: String){
+        var videoInfos: List<SearchingInfo>
         Log.d("viewModelTest", "RUN")
         viewModelScope.launch {
             _loading.value = true
@@ -247,58 +250,89 @@ class YtmusicViewModel @Inject constructor(
                 withContext(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
                     Log.e("viewModelTest", "Lỗi trong coroutine: ${throwable.message}")
                 }) {
-                    Log.d("viewModelTest", "RUNinside-1")
                     val client = YouTubeClient.WEB_REMIX
-                    val response = ytmusic.search(client = client, "ade").bodyAsText()
-                    Log.d("viewModelTest", "RUNinside-1.5")
+                    val response = ytmusic.search(client = client, query).bodyAsText()
+                    // Cấu hình JSON parser
+                    val json = Json {
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                    }
+                    // Parse JSON
+                    val parsedResponse = json.decodeFromString<SearchResponse>(response)
+                    val parsedResponseString = parsedResponse.toString()
                     // Phần còn lại của mã
+                    val maxLogSize = 1000
+                    for(i in 0 .. parsedResponseString.length / maxLogSize){
+                        val start = i * maxLogSize
+                        var end = (i + 1) * maxLogSize
+                        end = if (end < parsedResponseString.length) end else parsedResponseString.length
+                        Log.d("messageReturn", parsedResponseString.substring(start, end))
+                    }
+                    Log.d("messageReturn", "ENDJSON")
+
+                    videoInfos = extractVideoInfo(parsedResponse)
+
+                    // Chuyển đổi dữ liệu để phù hợp với định dạng mong muốn
+                    val formattedResults = videoInfos.map { videoInfo ->
+                        SearchingInfo(
+                            title = videoInfo.title ?: "Unknown Title",
+                            videoId = videoInfo.videoId ?: "Unknown ID",
+                            artist = videoInfo.artist ?: "Unknown Artist",
+                            artistId = videoInfo.artistId ?: "Unknown Artist ID"
+                        )
+                    }
+                    // Gán giá trị mới cho _searchResults
+                    _searchResults.value = formattedResults
                 }
             } catch (e: Exception) {
                 // Xử lý ngoại lệ ở đây
-                videoInfos = null
                 Log.d("viewModelTest", "Error occurred: ${e.message}")
             } finally {
                 _loading.value = false
             }
         }
-        return videoInfos
-    }
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("viewModelTest", "ViewModel is cleared")
     }
     // Hàm trích xuất thông tin video ID
-    fun extractVideoInfo(response: SearchResponse): List<VideoInfo> {
+    fun extractVideoInfo(response: SearchResponse): List<SearchingInfo> {
+        // Thông tin trả về
+        val searchInfos = mutableListOf<SearchingInfo>()
+
         // Lấy tabs đầu tiên
-        val firstTab = response.contents.tabbedSearchResultsRenderer.tabs.firstOrNull()
-            ?: throw Exception("No tabs found")
+        val listShelfRender = response.contents.tabbedSearchResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents
+            ?:throw Exception(" No renderer")
 
-        // Duyệt qua từng tab và lấy thông tin video
-        val videoInfos = mutableListOf<VideoInfo>()
+        // Duyệt
+        for (renderer in listShelfRender.take(3)){
+            if(renderer.musicCardShelfRender == null && renderer.musicShelfRenderer != null){
+                val contents = renderer.musicShelfRenderer.contents
+                    ?: throw Exception(" - No content in Renderer found")
+                Log.d("viewModelTest","Count musicResponsiveListItemRenderer size: ${renderer.musicShelfRenderer.contents.size}")
+                for(content in contents) {
+                    val item = content.musicResponsiveListItemRenderer?.flexColumns
+                        ?: throw Exception(" - No musicResponsiveListItemFlexColumnRenderer found")
 
-        // Lấy musicCardShelfRenderer
-        val musicShelf = firstTab.tabRenderer.content.sectionListRenderer.contents.firstOrNull()?.musicCardShelfRenderer
-            ?: throw Exception("No music card shelf found")
+                    val songRender =
+                        item[0].musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()
+                            ?: throw Exception(" - No songRenderer found")
+                    val artistRender = item[1].musicResponsiveListItemFlexColumnRenderer.text?.runs
+                        ?: throw Exception(" - No artistRenderer found")
 
-
-        //Lấy các run
-        val runs = musicShelf.title.runs
-        Log.d("viewModelTest","Count RUNS: ${runs.size}")
-        for (run in runs){
-            // Tìm tiêu đề
-            val title = run.text
-            // Tìm video ID từ navigation endpoint
-            val videoId = run.navigationEndpoint?.watchEndpoint?.videoId
-                ?: run.navigationEndpoint?.browseEndpoint?.browseId
-            videoInfos.add(
-                VideoInfo(
-                    videoId = videoId,
-                    title = title
-                )
-            )
+                    var i = artistRender.indexOfFirst { it.navigationEndpoint != null }
+                    if (i == -1){
+                        i = 0
+                    }
+                    searchInfos.add(
+                        SearchingInfo(
+                            title = songRender.text,
+                            videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId,
+                            artist = artistRender[i].text,
+                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId
+                        )
+                    )
+                }
+            }
         }
-
-        return videoInfos
+        return searchInfos
     }
 }
 

@@ -1,6 +1,8 @@
 package com.example.TIUMusic.Libs.YoutubeLib.models
 
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer.Content
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 
 @Serializable
@@ -26,12 +28,12 @@ data class Tab(
 @Serializable
 data class TabRenderer(
     val content: Content
-)
-
-@Serializable
-data class Content(
-    val sectionListRenderer: SectionListRenderer
-)
+){
+    @Serializable
+    data class Content(
+        val sectionListRenderer: SectionListRenderer
+    )
+}
 
 @Serializable
 data class SectionListRenderer(
@@ -40,17 +42,44 @@ data class SectionListRenderer(
 
 @Serializable
 data class ContentItem(
-    val musicCardShelfRenderer: MusicCardShelfRenderer? = null
+    val musicCardShelfRender: MusicCardShelfRender? = null,
+    val musicShelfRenderer: MusicShelfRenderer? = null
 )
 
 @Serializable
-data class MusicCardShelfRenderer(
-    val title: Title,
+data class MusicCardShelfRender(
+    val title: Runs
 )
 
 @Serializable
-data class Title(
-    val runs: List<Run>
+data class MusicShelfRenderer(
+    val title: Runs,
+    val contents: List<Content>? = null
+){
+    @Serializable
+    data class Content(
+        val musicResponsiveListItemRenderer: MusicResponsiveListItemRenderer?
+    )
+}
+
+@Serializable
+data class MusicResponsiveListItemRenderer(
+    val flexColumns: List<FlexColumns>
+)
+
+@Serializable
+data class FlexColumns(
+    @JsonNames("musicResponsiveListItemFixedColumnRenderer")
+    val musicResponsiveListItemFlexColumnRenderer: MusicResponsiveListItemFlexColumnRenderer)
+
+@Serializable
+data class MusicResponsiveListItemFlexColumnRenderer(
+    val text: Runs?
+)
+
+@Serializable
+data class Runs(
+    val runs: List<Run>?,
 )
 
 @Serializable
@@ -67,9 +96,11 @@ data class NavigationEndpoint(
 
 // Data class để lưu trữ video ID
 @Serializable
-data class VideoInfo(
+data class SearchingInfo(
+    val title: String?,
     val videoId: String?,
-    val title: String
+    val artist: String?,
+    val artistId: String?
 )
 
 

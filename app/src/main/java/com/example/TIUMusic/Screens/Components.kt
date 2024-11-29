@@ -63,6 +63,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -91,6 +92,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -288,23 +290,9 @@ fun ScrollableSearchScreen(
 
             var text by remember { mutableStateOf("") }
             var active by remember { mutableStateOf(false) }
-            try{
-                searchViewModel.performSearch(text)
-            } catch (e: Exception) {
-                // Xử lý ngoại lệ ở đây
-                Log.d("viewModelTest", "Error occurred in UI: ${e.message}")
-            }
 
-            //var search = searchViewModel.performSearch(text)
-
-            val resultSearch = remember {
-                mutableStateListOf(
-                    "Result 1",
-                    "Result 2",
-                    "Result 3",
-                    "Result 4",
-                )
-            }
+            val searchResults by searchViewModel.searchResults.collectAsState()
+            val isLoading by searchViewModel.loading.collectAsState()
 
             Column(
                 modifier = Modifier
@@ -344,16 +332,7 @@ fun ScrollableSearchScreen(
                         query = text,
                         onQueryChange = {
                             text = it
-//                            Log.d("SearchScreen", "Text: ${text}")
-//                            Log.d("SearchScreen", "Number Results: ${search?.size}")
-//                            if(search != null){
-//                                var i = 1
-//                                for (result in search!!) {
-//                                    Log.d("SearchScreen", "No.${i++}")
-//                                    Log.d("SearchScreen", "Search Title: ${result.title}")
-//                                    Log.d("SearchScreen", "ID Title: ${result.videoId}")
-//                                }
-//                            }
+                            searchViewModel.performSearch(it) // Gửi truy vấn tìm kiếm
                         },
                         onSearch = {
                             active = false
@@ -392,7 +371,8 @@ fun ScrollableSearchScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 23.dp)
                     ) {
-                        resultSearch.forEach {
+                        searchResults.forEach {
+//                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
                             Column {
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
 
@@ -413,19 +393,23 @@ fun ScrollableSearchScreen(
                                             .width(0.dp)
                                             .weight(1F)
                                     ) {
-                                        Text(
-                                            text = it,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(all = 4.dp)
-                                        )
-                                        Text(
-                                            text = "Song - Vũ & Binz",
-                                            fontSize = 14.sp,
-                                            color = Color.Gray,
-                                            modifier = Modifier.padding(4.dp)
-                                        )
+                                        it.title?.let { it1 ->
+                                            Text(
+                                                text = it1,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                fontSize = 16.sp,
+                                                modifier = Modifier.padding(all = 4.dp)
+                                            )
+                                        }
+                                        it.artist?.let { it1 ->
+                                            Text(
+                                                text = it1,
+                                                fontSize = 14.sp,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(4.dp)
+                                            )
+                                        }
                                     }
 
                                     Icon(

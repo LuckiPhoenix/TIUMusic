@@ -18,6 +18,7 @@ lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
 lifecycleViewmodelCompose = "2.8.7"
+logbackClassic = "1.2.11"
 navigationCompose = "2.8.3"
 roomRuntime = "2.6.1"
 runtimeLivedata = "1.7.4"
@@ -65,6 +66,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktorVersion" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
