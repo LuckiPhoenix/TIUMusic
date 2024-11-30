@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
@@ -26,6 +27,7 @@ import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen
@@ -84,6 +86,7 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
+                            playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.id,
                                 metadata = YoutubeMetadata(
@@ -157,7 +160,6 @@ fun NavHost(
         // Check if we're in any route within the main navigation
         if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
-                musicItem = MusicItem("", "", "" , ""),
                 playerViewModel = playerViewModel,
                 youtubeViewModel = youtubeViewModel,
                 visualizerViewModel = visualizerViewModel,

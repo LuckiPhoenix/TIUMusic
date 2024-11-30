@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 import com.example.TIUMusic.SongData.MusicItem
 
@@ -83,16 +84,26 @@ private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
     val musicItems = mutableListOf<MusicItem>();
     for (item in list) {
         if (item != null)
-            musicItems.add(fromHomeContent(item));
+            musicItems.add(fromHomeContent(item, item.videoId != null));
     }
     return musicItems;
 }
 
-private fun fromHomeContent(item : HomeContent) : MusicItem {
-    return MusicItem(
-        id = item.videoId ?: "",
-        title = item.title,
-        artist = item.artists?.firstOrNull()?.name ?: "",
-        imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
-    )
+private fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem {
+    if (useHDImage) {
+        val hdImageUrl = if (item.videoId != null) getYoutubeHDThumbnail(item.videoId) else "";
+        return MusicItem(
+            id = item.videoId ?: "",
+            title = item.title,
+            artist = item.artists?.firstOrNull()?.name ?: "",
+            imageUrl = hdImageUrl
+        )
+    }
+    else
+        return MusicItem(
+            id = item.videoId ?: "",
+            title = item.title,
+            artist = item.artists?.firstOrNull()?.name ?: "",
+            imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
+        )
 }

@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -76,6 +77,7 @@ import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
@@ -112,8 +114,9 @@ public fun ExpandedPlayer(
                 lineHeight = 550.dp.value,
             );
             AsyncImage(
-                model = musicItem.imageUrl,
+                model = getYoutubeHDThumbnail(musicItem.id),
                 contentDescription = "Song Image",
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier
                     .size(240.dp)
                     .clip(RoundedCornerShape(140.dp))

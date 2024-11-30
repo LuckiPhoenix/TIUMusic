@@ -8,15 +8,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
-import com.example.TIUMusic.SongData.getTopPicks
 import kotlinx.coroutines.launch
 
 
@@ -33,7 +30,7 @@ fun NewScreen(
 
     LaunchedEffect(Unit) {
         launch {
-            ytmusicViewModel.getChart("KR");
+            ytmusicViewModel.getChart("US");
         }
         launch {
             ytmusicViewModel.getNewReleases(context);
@@ -68,63 +65,76 @@ fun NewScreen(
                     i++;
                 }
             }
-            HorizontalScrollableNewScreenSection(
-                items = newReleaseMusicItems,
-                itemWidth = 300.dp,
-                sectionHeight = 300.dp,
-                onItemClick = { }
-            )
+            if (newReleaseMusicItems.isNotEmpty()){
+                HorizontalScrollableNewScreenSection(
+                    items = newReleaseMusicItems,
+                    itemWidth = 300.dp,
+                    sectionHeight = 300.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection2(
-                title = "Trending Song",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = trendingItem?.songsToMusicItem(3) ?: listOf(listOf()),
-                itemWidth = 300.dp,
-                sectionHeight = 260.dp,
-                onItemClick = { }
-            )
+            val trendingSongList = trendingItem?.songsToMusicItem(3);
+            if (trendingSongList != null && trendingSongList.isNotEmpty()){
+                HorizontalScrollableNewScreenSection2(
+                    title = "Trending Song",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = trendingSongList,
+                    itemWidth = 300.dp,
+                    sectionHeight = 260.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection3(
-                title = "Top music videos",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = trendingItem?.videoPlaylist?.videosToMusicItems() ?: emptyList(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val topMusicVideos = trendingItem?.videoPlaylist?.videosToMusicItems();
+            if (topMusicVideos != null && topMusicVideos.isNotEmpty()) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "Top music videos",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = topMusicVideos,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection3(
-                title = "New Album Releases",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = newReleases.getOrNull(1)?.contents?.mapNotNull {
-                    MusicItem(
-                        id = it?.videoId ?: "",
-                        title = it?.title ?: "",
-                        artist = it?.artists?.firstOrNull()?.name ?: "",
-                        imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
-                    )
-                } ?: emptyList(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val newAlbumReleases = newReleases.getOrNull(1)?.contents?.mapNotNull {
+                MusicItem(
+                    id = it?.videoId ?: "",
+                    title = it?.title ?: "",
+                    artist = it?.artists?.firstOrNull()?.name ?: "",
+                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                )
+            };
+            if (newAlbumReleases != null) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "New Album Releases",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = newAlbumReleases,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
 
-
-            HorizontalScrollableNewScreenSection3(
-                title = "New music videos",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items =  newReleases.getOrNull(2)?.contents?.mapNotNull {
-                    MusicItem(
-                        id = it?.videoId ?: "",
-                        title = it?.title ?: "",
-                        artist = it?.artists?.firstOrNull()?.name ?: "",
-                        imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
-                    )
-                } ?: emptyList(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val newMusicVideos = newReleases.getOrNull(2)?.contents?.mapNotNull {
+                MusicItem(
+                    id = it?.videoId ?: "",
+                    title = it?.title ?: "",
+                    artist = it?.artists?.firstOrNull()?.name ?: "",
+                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                )
+            }
+            if (newMusicVideos != null && newMusicVideos.isNotEmpty()) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "New music videos",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items =  newMusicVideos,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
 //
 //            HorizontalScrollableNewScreenSection2(
 //                title = "Latest Songs",

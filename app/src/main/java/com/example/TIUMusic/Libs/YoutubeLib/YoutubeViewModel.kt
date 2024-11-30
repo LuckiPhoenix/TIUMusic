@@ -2,6 +2,8 @@ package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.Manifest
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,8 +11,12 @@ import android.graphics.drawable.BitmapDrawable
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat.startForeground
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
@@ -18,6 +24,7 @@ import coil.compose.rememberImagePainter
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -34,6 +41,7 @@ import kotlinx.coroutines.launch
 interface MediaNotificationSeek {
     fun onSeek(seekTime : Float);
 }
+
 
 class YoutubePlayerHelper {
     var ytPlayer : YouTubePlayer? = null;
@@ -71,7 +79,7 @@ object YoutubeSettings {
     var NotificationEnabled = false;
 }
 
-class YoutubeViewModel(context : Context) : ViewModel() {
+class YoutubeViewModel() : ViewModel() {
     private var _mediaSession : MutableStateFlow<MediaSession?> = MutableStateFlow(null);
     val mediaSession : StateFlow<MediaSession?> = _mediaSession.asStateFlow();
 
@@ -83,7 +91,11 @@ class YoutubeViewModel(context : Context) : ViewModel() {
 
     var reloadDuration : Boolean = false;
 
-    val NotificationID = 0;
+    var notificationChannel : NotificationChannel? = null;
+
+    var notificationBuilder : Notification.Builder? = null;
+
+    var mediaMetadata : YoutubeMetadata = YoutubeMetadata("", "");
 
     companion object {
         var ___ran : Boolean = false;
@@ -116,24 +128,11 @@ class YoutubeViewModel(context : Context) : ViewModel() {
     }
 
     fun init(context: Context) {
+        if (!VisualizerSettings.VisualizerEnabled)
+            return; // Just to be sure
         _mediaSession.value = MediaSession(context, "MusicService");
-        val builder = Notification.Builder(context, Notification.CATEGORY_MESSAGE)
-            .setSmallIcon(R.drawable.tiumusicmark)
-            .setContentTitle("TIUMusic")
-            .setContentText("TIUMusic")
-            .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.value!!.sessionToken))
-        with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                println("nope");
-                return@with
-            }
-            // notificationId is a unique int for each notification that you must define.
-            notify(NotificationID, builder.build())
-        }
+
+        notificationChannel = createNotificationChannel(context);
 
         _mediaSession.value!!.setCallback(object : MediaSession.Callback() {
             override fun onPlay() {
@@ -171,9 +170,10 @@ class YoutubeViewModel(context : Context) : ViewModel() {
         }
     }
 
-    fun updateMediaMetadata(metadata: YoutubeMetadata, durationMs: Long, context : Context) {
+    fun updateMediaMetadata(metadata: YoutubeMetadata = mediaMetadata, durationMs: Long, context : Context) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
+        mediaMetadata = metadata;
         if (metadata.artBitmap == null && metadata.artBitmapURL != null) {
             updateMediaMetadata(
                 metadata.displayTitle,
@@ -194,88 +194,7 @@ class YoutubeViewModel(context : Context) : ViewModel() {
                 durationMs,
                 metadata.artBitmap
             )
-        }
-    }
-
-    fun updateMediaMetadata(
-        displayTitle : String,
-        displaySubtitle : String,
-        title : String,
-        artist : String,
-        durationMs : Long,
-        artBitmapUrl : String,
-        context: Context
-    ) {
-        if (!YoutubeSettings.NotificationEnabled)
-            return;
-        var imageBitmap : Bitmap? = null;
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = ImageRequest.Builder(context)
-                .data(artBitmapUrl)
-                .crossfade(true)
-                .build()
-            val imageLoader = ImageLoader.Builder(context)
-                .crossfade(true)
-                .build()
-            val result = imageLoader.execute(request);
-            if (result is SuccessResult) {
-                imageBitmap = (result.drawable as BitmapDrawable).bitmap;
-            }
-            else if (result is ErrorResult) {
-                cancel(result.throwable.localizedMessage ?: "ErrorResult", result.throwable)
-            }
-        }.invokeOnCompletion { throwable ->
-            val metadataBuilder = MediaMetadata.Builder().apply {
-                // To provide most control over how an item is displayed set the
-                // display fields in the metadata
-                putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-                putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
-                // And at minimum the title and artist for legacy support
-                putString(MediaMetadata.METADATA_KEY_TITLE, title)
-                putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-                putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
-                // A small bitmap for the artwork is also recommended
-                if (imageBitmap != null)
-                    putBitmap(MediaMetadata.METADATA_KEY_ART, imageBitmap)
-                // Add any other fields you have for your data as well
-            }
-            // println("wtf");
-            _mediaSession.update { it ->
-                it!!.setMetadata(metadataBuilder.build());
-                it;
-            }
-        }
-
-    }
-
-    fun updateMediaMetadata(
-        displayTitle : String,
-        displaySubtitle : String,
-        title : String,
-        artist : String,
-        durationMs : Long,
-        artBitmap : Bitmap?
-    ) {
-        if (!YoutubeSettings.NotificationEnabled)
-            return;
-        val metadataBuilder = MediaMetadata.Builder().apply {
-            // To provide most control over how an item is displayed set the
-            // display fields in the metadata
-            putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-            putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
-            // And at minimum the title and artist for legacy support
-            putString(MediaMetadata.METADATA_KEY_TITLE, title)
-            putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-            putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
-            // A small bitmap for the artwork is also recommended
-            if (artBitmap != null)
-                putBitmap(MediaMetadata.METADATA_KEY_ART, artBitmap)
-            // Add any other fields you have for your data as well
-        }
-        // println("wtf");
-        _mediaSession.update { it ->
-            it!!.setMetadata(metadataBuilder.build());
-            it;
+            mediaNotification(metadata.title, metadata.artist, metadata.artBitmap, context);
         }
     }
 
@@ -336,4 +255,140 @@ class YoutubeViewModel(context : Context) : ViewModel() {
         }
     }
 
+
+    private fun mediaNotification(
+        title : String,
+        artist : String,
+        albumArt: Bitmap?,
+        context: Context
+    ) {
+        if (!VisualizerSettings.VisualizerEnabled)
+            return;
+        Log.d("Title", title);
+        notificationBuilder = Notification.Builder(context, notificationChannel!!.id)
+            .setSmallIcon(R.drawable.tiumusicmark)
+            .setContentTitle(title)
+            .setContentText(artist)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.value!!.sessionToken))
+        if (albumArt != null)
+            notificationBuilder!!.setLargeIcon(albumArt);
+        with(NotificationManagerCompat.from(context)) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                println("nope");
+                return@with
+            }
+            // notificationId is a unique int for each notification that you must define.
+            notify(NotificationID, notificationBuilder!!.build());
+        }
+    }
+
+
+    private fun updateMediaMetadata(
+        displayTitle : String,
+        displaySubtitle : String,
+        title : String,
+        artist : String,
+        durationMs : Long,
+        artBitmapUrl : String,
+        context: Context
+    ) {
+        if (!YoutubeSettings.NotificationEnabled)
+            return;
+        var imageBitmap : Bitmap? = null;
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = ImageRequest.Builder(context)
+                .data(artBitmapUrl)
+                .crossfade(true)
+                .build()
+            val imageLoader = ImageLoader.Builder(context)
+                .crossfade(true)
+                .build()
+            val result = imageLoader.execute(request);
+            if (result is SuccessResult) {
+                imageBitmap = (result.drawable as BitmapDrawable).bitmap;
+            }
+            else if (result is ErrorResult) {
+                cancel(result.throwable.localizedMessage ?: "ErrorResult", result.throwable)
+            }
+        }.invokeOnCompletion { throwable ->
+            mediaNotification(title, artist, imageBitmap, context);
+            val metadataBuilder = MediaMetadata.Builder().apply {
+                // To provide most control over how an item is displayed set the
+                // display fields in the metadata
+                putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+                putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
+                // And at minimum the title and artist for legacy support
+                putString(MediaMetadata.METADATA_KEY_TITLE, title)
+                putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
+                putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
+                // A small bitmap for the artwork is also recommended
+                if (imageBitmap != null)
+                    putBitmap(MediaMetadata.METADATA_KEY_ART, imageBitmap)
+                // Add any other fields you have for your data as well
+            }
+            // println("wtf");
+            _mediaSession.update { it ->
+                it!!.setMetadata(metadataBuilder.build());
+                it;
+            }
+        }
+
+    }
+
+    private fun updateMediaMetadata(
+        displayTitle : String,
+        displaySubtitle : String,
+        title : String,
+        artist : String,
+        durationMs : Long,
+        artBitmap : Bitmap?
+    ) {
+        if (!YoutubeSettings.NotificationEnabled)
+            return;
+        val metadataBuilder = MediaMetadata.Builder().apply {
+            // To provide most control over how an item is displayed set the
+            // display fields in the metadata
+            putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+            putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
+            // And at minimum the title and artist for legacy support
+            putString(MediaMetadata.METADATA_KEY_TITLE, title)
+            putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
+            putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
+            // A small bitmap for the artwork is also recommended
+            if (artBitmap != null)
+                putBitmap(MediaMetadata.METADATA_KEY_ART, artBitmap)
+            // Add any other fields you have for your data as well
+        }
+        // println("wtf");
+        _mediaSession.update { it ->
+            it!!.setMetadata(metadataBuilder.build());
+            it;
+        }
+    }
+
+
+}
+
+
+val NotificationID = 0;
+
+fun createNotificationChannel(context: Context): NotificationChannel {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is not in the Support Library.
+    val name = "TIUMusic"
+    val descriptionText = "Music Player"
+    val importance = NotificationManager.IMPORTANCE_NONE
+    val channel = NotificationChannel("Player", name, importance).apply {
+        description = descriptionText
+    }
+    // Register the channel with the system.
+    val notificationManager: NotificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    notificationManager.createNotificationChannel(channel)
+    return channel;
 }
