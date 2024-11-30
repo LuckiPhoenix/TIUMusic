@@ -5,9 +5,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,12 +20,15 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,13 +40,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.SongData.getTopPicks
 import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
-fun LibraryScreen(navController: NavController,onTabSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, userViewModel: UserViewModel = hiltViewModel(),
+                  modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
 
@@ -89,6 +98,8 @@ fun LibraryScreen(navController: NavController,onTabSelected: (Int) -> Unit, mod
     LaunchedEffect(scrollState.value) {
         isScrolled = scrollState.value > expandedHeight.value
     }
+    val currentUser by userViewModel.currentUser.observeAsState()
+    val username: String = currentUser?.fullName ?: "User"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -101,13 +112,30 @@ fun LibraryScreen(navController: NavController,onTabSelected: (Int) -> Unit, mod
                     .background(BackgroundColor)
                     .padding(top = expandedHeight)
             ) {
-                Text(
-                    "My playlists:",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(start = 32.dp),
-                    color = White,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 32.dp)) {
+                    Text(
+                        "$username's playlists:",
+                        fontSize = 16.sp,
+                        color = White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Button(
+                        onClick = {
+                            userViewModel.logout()
+                            navController.navigate("login") {
+                                popUpTo("library") { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier
+                            .background(color = SecondaryColor, shape = RoundedCornerShape(16.dp))
+                            .height(32.dp)
+                    ) {
+                        Text("Log Out", fontSize = 12.sp)
+                    }
+                }
                 // Use Modifier.height or a fixed height if needed
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),

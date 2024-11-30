@@ -333,31 +333,10 @@ fun ScrollableSearchScreen(
                     titleSize = titleSize.sp,
                     height = height
                 )
-
                 Box(
                     modifier = Modifier
                         .padding(top = height - 60.dp, bottom = 10.dp)
                 ) {
-                    Card(
-                        modifier = Modifier
-                            .padding(top = 40.dp)
-                            .padding(horizontal = 20.dp)
-                            .fillMaxWidth()
-                            .height(36.dp)
-                            .border(
-                                width = 1.dp,
-                                color = SurfaceColor,
-                                shape = RoundedCornerShape(20.dp)
-                            ),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text(
-                            "", modifier = Modifier
-                                .background(SurfaceColor)
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                        )
-                    }
 
                     SearchBar(
                         query = text,
@@ -399,7 +378,6 @@ fun ScrollableSearchScreen(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 23.dp)
                     ) {
                         resultSearch.forEach {
                             Column {

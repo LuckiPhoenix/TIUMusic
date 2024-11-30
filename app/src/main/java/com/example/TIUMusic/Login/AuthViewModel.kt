@@ -2,6 +2,8 @@ package com.example.TIUMusic.Login
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -47,22 +49,101 @@ object DatabaseModule {
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    companion object {
+        private const val PREFS_NAME = "UserSessionPrefs"
+        private const val KEY_USER_EMAIL = "current_user_email"
+        private const val KEY_IS_LOGGED_IN = "is_logged_in"
+    }
+
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
+        PREFS_NAME,
+        Context.MODE_PRIVATE
+    )
 
     private val _userAuthStatus = MutableLiveData<Result<User?>>()
     val userAuthStatus: LiveData<Result<User?>> = _userAuthStatus
 
-    private val _userDetails = MutableLiveData<User?>() //currently unused
-    val userDetails: LiveData<User?> = _userDetails
+    private val _currentUser = MutableLiveData<User?>()
+    val currentUser: LiveData<User?> = _currentUser
 
     private val _resetPasswordStatus = MutableLiveData<Result<Boolean>>()
     val resetPasswordStatus: LiveData<Result<Boolean>> = _resetPasswordStatus
+
+    // Check if user is already logged in on ViewModel initialization
+    init {
+        checkPersistentSession()
+    }
+
+    fun isLoggedIn(): Boolean {
+        return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false) &&
+                sharedPreferences.getString(KEY_USER_EMAIL, null) != null
+    }
+
+    private fun checkPersistentSession() {
+        viewModelScope.launch {
+            val isLoggedIn = isLoggedIn()
+            val userEmail = sharedPreferences.getString(KEY_USER_EMAIL, null)
+
+            if (isLoggedIn && userEmail != null) {
+                val user = userRepository.getUserByEmail(userEmail)
+                if (user != null) {
+                    _currentUser.postValue(user)
+                }
+            }
+        }
+    }
+
+    fun getCurrentUserEmail(): String? {
+        return if (isLoggedIn()) {
+            sharedPreferences.getString(KEY_USER_EMAIL, null)
+        } else {
+            null
+        }
+    }
+
+    suspend fun getCurrentUser(): User? {
+        val email = getCurrentUserEmail()
+        return email?.let { userRepository.getUserByEmail(it) }
+    }
+
+    fun logout() {
+        // Clear login state
+        sharedPreferences.edit().apply {
+            remove(KEY_IS_LOGGED_IN)
+            remove(KEY_USER_EMAIL)
+        }.apply()
+
+        // Clear current user
+        _currentUser.postValue(null)
+    }
+    private fun isValidEmail(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun isValidPassword(password: String): Boolean {
+        return password.length >= 6
+    }
 
     fun insertUser(user: User) {
         viewModelScope.launch {
             _userAuthStatus.postValue(Result.Loading)
             try {
+                // Validate email format
+                if (!isValidEmail(user.email)) {
+                    _userAuthStatus.postValue(Result.Error(Exception("Invalid email format")))
+                    return@launch
+                }
+
+                // Validate password length
+                if (!isValidPassword(user.password)) {
+                    _userAuthStatus.postValue(Result.Error(Exception("Password must be at least 6 characters long")))
+                    return@launch
+                }
+
                 val existingUser = userRepository.getUserByEmail(user.email)
                 if (existingUser != null) {
                     _userAuthStatus.postValue(Result.Error(EmailExistsException("Email already exists")))
@@ -80,8 +161,25 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             _userAuthStatus.postValue(Result.Loading)
             try {
+                // Validate email format
+                if (!isValidEmail(email)) {
+                    _userAuthStatus.postValue(Result.Error(Exception("Invalid email format")))
+                    return@launch
+                }
+
+                // Validate password length
+                if (!isValidPassword(password)) {
+                    _userAuthStatus.postValue(Result.Error(Exception("Password must be at least 6 characters long")))
+                    return@launch
+                }
+
                 val user = userRepository.authenticate(email, password)
                 if (user != null) {
+                    sharedPreferences.edit().apply {
+                        putBoolean(KEY_IS_LOGGED_IN, true)
+                        putString(KEY_USER_EMAIL, user.email)
+                    }.apply()
+                    _currentUser.postValue(user)
                     _userAuthStatus.postValue(Result.Success(user))
                 } else {
                     _userAuthStatus.postValue(Result.Error(AuthenticationException("Incorrect Email and/or Password")))
@@ -92,17 +190,16 @@ class UserViewModel @Inject constructor(
         }
     }
 
-    fun getUserByEmail(email: String) {
-        viewModelScope.launch {
-            val user = userRepository.getUserByEmail(email)
-            _userDetails.postValue(user)
-        }
-    }
-
     fun checkEmailExists(email: String) {
         viewModelScope.launch {
             _resetPasswordStatus.postValue(Result.Loading)
             try {
+                // Validate email format
+                if (!isValidEmail(email)) {
+                    _resetPasswordStatus.postValue(Result.Error(Exception("Invalid email format")))
+                    return@launch
+                }
+
                 val user = userRepository.getUserByEmail(email)
                 if (user != null) {
                     _resetPasswordStatus.postValue(Result.Success(true))
@@ -119,6 +216,12 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             _resetPasswordStatus.postValue(Result.Loading)
             try {
+                // Validate password length
+                if (!isValidPassword(newPassword)) {
+                    _resetPasswordStatus.postValue(Result.Error(Exception("Password must be at least 6 characters long")))
+                    return@launch
+                }
+
                 val user = userRepository.getUserByEmail(email)
                 if (user != null) {
                     val updatedUser = user.copy(password = newPassword)
