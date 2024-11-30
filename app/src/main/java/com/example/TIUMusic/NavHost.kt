@@ -45,12 +45,15 @@ fun NavHost(
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
+    val userViewModel: UserViewModel = viewModel()
+    val startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
+
     Log.d("NavHost", "Current route: $currentRoute")
 
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = "auth"
+            startDestination = startDestination
         ) {
             navigation(startDestination = "youtubeLogin", route = "auth") {
                 composable("youtubeLogin") { YoutubeLogin(navController) }

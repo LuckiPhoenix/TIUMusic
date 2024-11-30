@@ -30,36 +30,36 @@ object Dimensions {
     @Composable
     fun contentPadding() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 16.dp
-        WindowSize.MEDIUM -> 24.dp
+        WindowSize.MEDIUM -> 28.dp
     }
 
     @Composable
     fun itemSpacing() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 8.dp
-        WindowSize.MEDIUM -> 12.dp
+        WindowSize.MEDIUM -> 14.dp
     }
 
     @Composable
     fun topBarExpandedHeight() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 128.dp
-        WindowSize.MEDIUM -> 144.dp
+        WindowSize.MEDIUM -> 162.dp
     }
 
     @Composable
     fun topBarCollapsedHeight() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 86.dp
-        WindowSize.MEDIUM -> 72.dp
+        WindowSize.MEDIUM -> 92.dp
     }
 
     @Composable
     fun expandedTitleSize() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 32.sp
-        WindowSize.MEDIUM -> 40.sp
+        WindowSize.MEDIUM -> 42.sp
     }
 
     @Composable
     fun collapsedTitleSize() = when (rememberWindowSize()) {
         WindowSize.COMPACT -> 16.sp
-        WindowSize.MEDIUM -> 18.sp
+        WindowSize.MEDIUM -> 22.sp
     }
 }

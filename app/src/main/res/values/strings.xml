@@ -7,7 +7,7 @@
     <string name="get_started_description">Create your account</string>
     <string name="full_name_label">Full Name</string>
     <string name="email_label">Email Address</string>
-    <string name="password_label">Password</string>
+    <string name="password_label">Password (>=6 characters)</string>
     <string name="sign_up_button">Sign Up</string>
     <string name="forgot_password_header">Forgot Password?</string>
     <string name="forgot_password_description">Enter email address to recover account!</string>
