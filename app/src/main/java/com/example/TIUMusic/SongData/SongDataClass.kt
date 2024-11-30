@@ -6,6 +6,12 @@ data class MusicItem(
     val artist: String,
     val imageUrl: String
 )
+
+data class NewReleaseCard(
+    val type: String,
+    val musicItem: MusicItem
+)
+
 //data class không hoàn thiện, Hải chỉnh lại theo file Json hoặc CSV của spotify API
 // các file API/SDK logic viết tại folder này
 

@@ -756,50 +756,62 @@ object YouTube {
         runCatching {
             val response =
                 ytMusic.browse(WEB_REMIX, browseId = "FEmusic_new_releases").body<BrowseResponse>()
-            println(response)
-//        response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.gridRenderer?.items
-//            ?.mapNotNull { it.musicTwoRowItemRenderer }
-//            ?.mapNotNull(NewReleaseAlbumPage::fromMusicTwoRowItemRenderer)
-//            .orEmpty()
             ExplorePage(
-                released =
-                    response.contents
-                        ?.singleColumnBrowseResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.firstOrNull()
-                        ?.gridRenderer
-                        ?.items
-                        ?.mapNotNull { it.musicTwoRowItemRenderer }
-                        ?.mapNotNull(RelatedPage::fromMusicTwoRowItemRenderer)
-                        .orEmpty()
-                        .mapNotNull {
-                            if (it.type == YTItemType.PLAYLIST) it as? PlaylistItem else null
-                        },
-                musicVideo =
-                    response.contents
-                        ?.singleColumnBrowseResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.lastOrNull()
-                        ?.musicCarouselShelfRenderer
-                        ?.contents
-                        ?.mapNotNull {
-                            it.musicTwoRowItemRenderer
-                        }?.mapNotNull(
-                            ArtistPage::fromMusicTwoRowItemRenderer,
-                        ).orEmpty()
-                        .mapNotNull {
-                            if (it.type == YTItemType.VIDEO) it as? VideoItem else null
-                        },
+                released = response.contents
+                    ?.singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+                    ?.contents
+                    ?.get(0)
+                    ?.gridRenderer
+                    ?.items
+                    ?.mapNotNull { it.musicTwoRowItemRenderer }
+                    ?.mapNotNull(RelatedPage::fromMusicTwoRowItemRenderer)
+                    .orEmpty()
+                    .mapNotNull {
+                        if (it.type == YTItemType.PLAYLIST) it as? PlaylistItem else null
+                    },
+                albums = response.contents
+                    ?.singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+                    ?.contents
+                    ?.get(1)
+                    ?.musicCarouselShelfRenderer
+                    ?.contents
+                    ?.mapNotNull {
+                        it.musicTwoRowItemRenderer
+                    }?.mapNotNull(
+                        ArtistPage::fromMusicTwoRowItemRenderer,
+                    ).orEmpty()
+                    .mapNotNull {
+                        if (it.type == YTItemType.ALBUM) it as? AlbumItem else null
+                    },
+                musicVideo = response.contents
+                    ?.singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+                    ?.contents
+                    ?.get(2)
+                    ?.musicCarouselShelfRenderer
+                    ?.contents
+                    ?.mapNotNull {
+                        it.musicTwoRowItemRenderer
+                    }?.mapNotNull(
+                        ArtistPage::fromMusicTwoRowItemRenderer,
+                    ).orEmpty()
+                    .mapNotNull {
+                        if (it.type == YTItemType.VIDEO) it as? VideoItem else null
+                    }
             )
         }
 

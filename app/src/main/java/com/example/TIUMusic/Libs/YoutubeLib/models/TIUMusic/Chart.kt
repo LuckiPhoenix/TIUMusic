@@ -11,7 +11,22 @@ data class Chart(
     data class TrendingVideoPlaylist (
         val playlistId : String,
         val videos : List<TrendingVideo>
-    )
+    ) {
+        fun videosToMusicItems() : List<MusicItem> {
+            val musicItems = mutableListOf<MusicItem>();
+            for (it in videos) {
+                musicItems.add(
+                    MusicItem(
+                        id = it.videoId,
+                        title = it.title,
+                        artist = it.artists.firstOrNull()?.name ?: "",
+                        imageUrl = it.thumbnail,
+                    )
+                )
+            }
+            return musicItems;
+        }
+    }
 
     fun songsToMusicItem(rowSize: Int) : List<List<MusicItem>> {
         Log.d("HERE", songs.size.toString());

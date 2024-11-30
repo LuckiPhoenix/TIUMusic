@@ -97,6 +97,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.NewReleaseCard
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
@@ -627,7 +628,7 @@ fun HorizontalScrollableSection(
 fun HorizontalScrollableNewScreenSection(
     title: String? = null,
     @DrawableRes iconHeader: Int? = null,
-    items: List<MusicItem>,
+    items: List<NewReleaseCard>,
     itemWidth: Dp? = null,
     sectionHeight: Dp? = null,
     onItemClick: (MusicItem) -> Unit = {}  // Add click handler
@@ -657,10 +658,11 @@ fun HorizontalScrollableNewScreenSection(
         ) {
             items(items) { item ->
                 AlbumCardNewScreen(
-                    item = item,
+                    type = item.type,
+                    item = item.musicItem,
                     modifier = Modifier.width(calculatedItemWidth),
                     imageSize = calculatedItemWidth,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item.musicItem) }
                 )
             }
         }
@@ -915,6 +917,7 @@ fun AlbumCard(
 
 @Composable
 fun AlbumCardNewScreen(
+    type : String,
     item: MusicItem,
     modifier: Modifier = Modifier,
     imageSize: Dp,
@@ -929,7 +932,7 @@ fun AlbumCardNewScreen(
             )
     ) {
         Text(
-            text = "New Album",
+            text = type,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -1027,7 +1030,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = "New Album",
+            text = item.title,
             style = MaterialTheme.typography.bodySmall,
             color = Color.White,
             fontWeight = FontWeight.Bold,
@@ -1036,7 +1039,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = item.title,
+            text = item.artist,
             style = MaterialTheme.typography.bodyMedium,
             color = ArtistNameColor,
             maxLines = 1,

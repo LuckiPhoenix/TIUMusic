@@ -6,6 +6,8 @@ import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
@@ -20,11 +22,14 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingSong
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingVideo
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.parseSongArtists
+import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
+import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
 import dagger.Module
 import dagger.Provides
@@ -32,12 +37,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -66,6 +74,9 @@ class YtmusicViewModel @Inject constructor(
 
     private var _chart = MutableStateFlow<Chart?>(null);
     val chart = _chart.asStateFlow();
+
+    private var _newReleases = MutableStateFlow<List<HomeItem>>(listOf());
+    val newReleases = _newReleases.asStateFlow();
 
     private var _homeContinuation = mutableIntStateOf(2);
     val homeContinuation = _homeContinuation.asIntState();
@@ -793,4 +804,116 @@ class YtmusicViewModel @Inject constructor(
         return listVideoItem
     }
 
+    fun getNewReleases(context: Context) {
+        viewModelScope.launch {
+            _newReleases.value = newRelease(context);
+            val response = ytMusic.browse(WEB_REMIX, browseId = "FEmusic_new_releases").bodyAsText()
+            // Parse JSON
+            val parsedResponse = response
+            val parsedResponseString = parsedResponse.toString()
+            // Phần còn lại của mã
+            val maxLogSize = 1000
+            for (i in 0..parsedResponseString.length / maxLogSize) {
+                val start = i * maxLogSize
+                var end = (i + 1) * maxLogSize
+                end =
+                    if (end < parsedResponseString.length) end else parsedResponseString.length
+                if (i == parsedResponseString.length / maxLogSize / 2) {
+                    delay(200);
+                }
+                println(parsedResponseString.substring(start, end))
+            }
+            Log.d("messageReturn", "ENDJSON")
+
+        }
+    }
+
+
+    private suspend fun newRelease(context: Context) : List<HomeItem> {
+        YouTube.newRelease().onSuccess { result ->
+            return parseNewRelease(result, context);
+        }.onFailure {
+            Log.e("YtmusicViewModel", it.message.toString());
+        }
+        return listOf();
+    }
+
+    private fun parseNewRelease(explore: ExplorePage, context: Context) : List<HomeItem> {
+        val result = mutableListOf<HomeItem>()
+        result.add(
+            HomeItem(
+                title = "New Release",
+                contents =
+                explore.released.map {
+                    HomeContent(
+                        album = null,
+                        artists =
+                        listOf(
+                            Artist(
+                                id = it.author?.id ?: "",
+                                name = it.author?.name ?: "",
+                            ),
+                        ),
+                        description = it.author?.name ?: "YouTube Music",
+                        isExplicit = it.explicit,
+                        playlistId = it.id,
+                        browseId = it.id,
+                        thumbnails = listOf(Thumbnail(it.thumbnail, 0, 0)),
+                        title = it.title,
+                        videoId = null,
+                        views = null,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        result.add(
+            HomeItem(
+                title = "Albums",
+                contents =
+                explore.albums.map { albumItem ->
+                    val artists = albumItem.artists?.map { Artist(name = it.name, id = it.id) }?.toMutableList()
+                    HomeContent(
+                        album = null,
+                        artists = artists,
+                        description = null,
+                        isExplicit = albumItem.explicit,
+                        playlistId = albumItem.playlistId,
+                        browseId = albumItem.browseId,
+                        thumbnails = listOf(Thumbnail(albumItem.thumbnail, 0, 0)),
+                        title = albumItem.title,
+                        videoId = null,
+                        views = null,
+                        durationSeconds = null,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        result.add(
+            HomeItem(
+                title = "Music Videos",
+                contents =
+                explore.musicVideo.map { videoItem ->
+                    val artists = videoItem.artists
+                        .map { Artist(name = it.name, id = it.id) }.toMutableList()
+                    HomeContent(
+                        album = videoItem.album?.let { Album(name = it.name,id = it.id) },
+                        artists = artists,
+                        description = null,
+                        isExplicit = videoItem.explicit,
+                        playlistId = null,
+                        browseId = null,
+                        thumbnails = listOf(Thumbnail(videoItem.thumbnail, 0, 0)),
+                        title = videoItem.title,
+                        videoId = videoItem.id,
+                        views = videoItem.view,
+                        durationSeconds = videoItem.duration,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        return result
+    }
 }
