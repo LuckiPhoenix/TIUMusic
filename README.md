@@ -1,6 +1,7 @@
 <div align="center">
 
-![Banner](https://capsule-render.vercel.app/api?type=venom&color=0:fc3c44,100:FF3868&height=200&section=header&text=TIU%20Music&fontSize=60&fontColor=ffffff&animation=twinkling&fontAlignY=50&)
+
+<img src="app/src/main/res/drawable/tiumusicfulllogo.png" alt="TIU Music Logo" height="200"/>
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.8.0-purple.svg?style=for-the-badge&logo=kotlin)](https://kotlinlang.org)
 [![Android Studio](https://img.shields.io/badge/Android_Studio-2024.11-green.svg?style=for-the-badge&logo=android-studio)](https://developer.android.com/studio)
@@ -14,7 +15,7 @@
 
 ## 📖 Project Overview
 
-TIU Music is an innovative Android music streaming application developed by students at UIT (University of Information Technology, Vietnam National University - Ho Chi Minh City). Inspired by Apple Music's design, this native Android app leverages YouTube Music's API to provide seamless music searching, storing, and streaming
+TIU Music is an innovative Android music streaming application developed by students at UIT (University of Information Technology, Vietnam National University - Ho Chi Minh City). Inspired by Apple Music's design, this native Android app leverages YouTube Music's API to provide seamless music searching, storing, and streaming.
 
 
 ## 📚 Academic Project

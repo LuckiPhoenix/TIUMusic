@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -27,255 +28,258 @@ import coil.compose.AsyncImage
 val heightItemCategorySearch = 140.dp
 
 @Composable
-fun SearchScreen(navController: NavController,  onTabSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun SearchScreen(
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ScrollableSearchScreen (
+        searchViewModel = hiltViewModel(),
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            Row {
-                Box(
-                    modifier = Modifier
-                        .padding(20.dp, 50.dp, 6.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "R&B".uppercase(),
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(6.dp, 50.dp, 20.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Apple Music Live",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-            }
-
-            Row {
-                Box(
-                    modifier = Modifier
-                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Vietnamese Music",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "K-Pop",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-            }
-
-            Row {
-                Box(
-                    modifier = Modifier
-                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Pop",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Charts",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-            }
-
-            Row {
-                Box(
-                    modifier = Modifier
-                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Hits",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                        .width(0.dp)
-                        .weight(1F)
-                        .padding(bottom = 80.dp)
-                        .height(heightItemCategorySearch)
-                ) {
-
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
-                        contentDescription = "Album art for",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-
-                    Text(
-                        text = "Spatial Audio",
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(10.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                    )
-                }
-            }
+//            Row {
+//                Box(
+//                    modifier = Modifier
+//                        .padding(20.dp, 70.dp, 6.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "R&B".uppercase(),
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .padding(6.dp, 70.dp, 20.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Apple Music Live",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//            }
+//
+//            Row {
+//                Box(
+//                    modifier = Modifier
+//                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Vietnamese Music",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "K-Pop",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//            }
+//
+//            Row {
+//                Box(
+//                    modifier = Modifier
+//                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Pop",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Charts",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//            }
+//
+//            Row {
+//                Box(
+//                    modifier = Modifier
+//                        .padding(20.dp, 20.dp, 6.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Hits",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .padding(6.dp, 20.dp, 20.dp, 0.dp)
+//                        .width(0.dp)
+//                        .weight(1F)
+//                        .height(heightItemCategorySearch)
+//                ) {
+//
+//                    AsyncImage(
+//                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+//                        contentDescription = "Album art for",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(180.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color(0xFF282828))
+//                    )
+//
+//                    Text(
+//                        text = "Spatial Audio",
+//                        fontWeight = FontWeight.Medium,
+//                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+//                            .padding(10.dp),
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                    )
+//                }
+//            }
         }
     }
 }
