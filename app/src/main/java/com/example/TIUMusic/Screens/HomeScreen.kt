@@ -51,6 +51,10 @@ fun HomeScreen(
     ScrollableScreen(
         title = "Home",
         selectedTab = 0,
+        itemCount = homeItems.size,
+        fetchContinuation = {
+            ytMusicViewModel.GetContinuation(context);
+        },
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {

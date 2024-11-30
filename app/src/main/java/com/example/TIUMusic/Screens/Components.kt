@@ -64,6 +64,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -124,12 +125,14 @@ các components reusable phải được declare ở đây
 fun ScrollableScreen(
     title: String,
     selectedTab: Int = 0,
+    itemCount : Int = 0,
     onTabSelected: (Int) -> Unit = {},
+    fetchContinuation : () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
-
+    val fetchBufferItem = 1;
     // Transition variables
     var isScrolled by remember { mutableStateOf(false) }
     val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
@@ -171,8 +174,18 @@ fun ScrollableScreen(
         label = "height"
     ) { state -> if (state) collapsedHeight else expandedHeight }
 
+    var reachedBottom : Boolean = false;
+    if (itemCount != 0 && scrollState.maxValue != 0) {
+        val sizePerItem = scrollState.maxValue / itemCount;
+        reachedBottom = scrollState.value / sizePerItem >= itemCount - fetchBufferItem;
+    }
+
+    println("${reachedBottom}  ${scrollState.value} max: ${scrollState.maxValue}");
+
     LaunchedEffect(scrollState.value) {
         isScrolled = scrollState.value > expandedHeight.value
+        if (reachedBottom)
+            fetchContinuation();
     }
 
     Surface(
@@ -381,7 +394,7 @@ fun ScrollableSearchScreen(
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
 
                                     AsyncImage(
-                                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+                                        model = it.thumbnailURL,
                                         contentDescription = "Album art for",
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier

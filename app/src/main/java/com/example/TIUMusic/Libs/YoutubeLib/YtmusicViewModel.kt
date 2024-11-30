@@ -63,8 +63,10 @@ class YtmusicViewModel @Inject constructor(
     private var _homeItems = MutableStateFlow<List<HomeItem>>(emptyList());
     val homeItems : StateFlow<List<HomeItem>> = _homeItems.asStateFlow();
 
-    private var _homeContinuation = mutableIntStateOf(0);
+    private var _homeContinuation = mutableIntStateOf(2);
     val homeContinuation = _homeContinuation.asIntState();
+
+    var fetchingContinuation : Boolean = false;
 
     fun performSearch(query: String){
         var videoInfos: List<SearchingInfo>
@@ -104,7 +106,8 @@ class YtmusicViewModel @Inject constructor(
                             title = videoInfo.title ?: "Unknown Title",
                             videoId = videoInfo.videoId ?: "Unknown ID",
                             artist = videoInfo.artist ?: "Unknown Artist",
-                            artistId = videoInfo.artistId ?: "Unknown Artist ID"
+                            artistId = videoInfo.artistId ?: "Unknown Artist ID",
+                            thumbnailURL = videoInfo.thumbnailURL,
                         )
                     }
                     // Gán giá trị mới cho _searchResults
@@ -155,7 +158,9 @@ class YtmusicViewModel @Inject constructor(
                             title = songRender.text,
                             videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId,
                             artist = artistRender[i].text,
-                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId
+                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId,
+                            thumbnailURL = content.musicResponsiveListItemRenderer?.thumbnail?.
+                                musicThumbnailRenderer?.thumbnail?.thumbnails?.firstOrNull()?.url ?: ""
                         )
                     )
                 }
@@ -165,10 +170,14 @@ class YtmusicViewModel @Inject constructor(
     }
 
     fun GetContinuation(context: Context) {
-        _homeContinuation.intValue = 2;
+        if (fetchingContinuation)
+            return;
+        Log.d("ytmusic", "fetchBomb?");
+        fetchingContinuation = true;
         viewModelScope.launch {
             getHomeScreen(context).collect {
                 _homeItems.value = it;
+                fetchingContinuation = false;
             }
         }
         _homeContinuation.intValue++;
@@ -620,6 +629,10 @@ class YtmusicViewModel @Inject constructor(
                                 channelId = if (artistChannelId?.contains("UC") == true) artistChannelId else null,
                             ),
                         )
+                    }
+                    if (list.lastOrNull() != null) {
+                        if (list.last().contents.isEmpty())
+                            list.removeAt(list.size - 1);
                     }
                     Log.w("parse_mixed_content", list.toString())
                 }

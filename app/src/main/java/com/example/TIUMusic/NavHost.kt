@@ -83,11 +83,11 @@ fun NavHost(
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.id,
                                 metadata = YoutubeMetadata(
-                                    title = "",
-                                    artist = "",
+                                    title = musicItem.title,
+                                    artist = musicItem.artist,
                                     artBitmap = null,
-                                    displayTitle = "",
-                                    displaySubtitle = ""
+                                    displayTitle = musicItem.title,
+                                    displaySubtitle = musicItem.artist
                                 ),
                                 0L,
                                 context = context

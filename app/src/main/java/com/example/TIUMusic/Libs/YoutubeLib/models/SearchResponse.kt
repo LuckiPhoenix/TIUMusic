@@ -8,7 +8,8 @@ data class SearchingInfo(
     val title: String?,
     val videoId: String?,
     val artist: String?,
-    val artistId: String?
+    val artistId: String?,
+    val thumbnailURL: String,
 )
 
 
