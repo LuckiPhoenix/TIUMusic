@@ -1,12 +1,8 @@
 package com.example.TIUMusic.Screens
 
 
-import androidx.annotation.DrawableRes
-import android.content.Context
-import android.database.ContentObserver
 import android.media.AudioManager
-import android.os.Handler
-import android.os.Looper
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -43,8 +39,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -52,37 +46,25 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -94,9 +76,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -106,24 +87,22 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.ui.theme.ArtistNameColor
-import com.example.TIUMusic.SongData.PlayerViewModel
-import com.example.TIUMusic.ui.theme.BackgroundColor
-import com.example.TIUMusic.ui.theme.ButtonColor
-import com.example.TIUMusic.ui.theme.PrimaryColor
-import kotlinx.coroutines.launch
-import androidx.compose.ui.res.painterResource
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.PlayerViewModel
+import com.example.TIUMusic.ui.theme.ArtistNameColor
+import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SurfaceColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import kotlinx.coroutines.launch
 
 /*
 các components reusable phải được declare ở đây
@@ -146,7 +125,7 @@ fun ScrollableScreen(
     title: String,
     selectedTab: Int = 0,
     onTabSelected: (Int) -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
@@ -239,6 +218,7 @@ fun ScrollableScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScrollableSearchScreen(
+    searchViewModel: YtmusicViewModel = hiltViewModel(),
     onTabSelected: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -312,14 +292,8 @@ fun ScrollableSearchScreen(
             var text by remember { mutableStateOf("") }
             var active by remember { mutableStateOf(false) }
 
-            val resultSearch = remember {
-                mutableStateListOf(
-                    "Result 1",
-                    "Result 2",
-                    "Result 3",
-                    "Result 4",
-                )
-            }
+            val searchResults by searchViewModel.searchResults.collectAsState()
+            val isLoading by searchViewModel.loading.collectAsState()
 
             Box(
                 modifier = Modifier
@@ -333,7 +307,6 @@ fun ScrollableSearchScreen(
                     titleSize = titleSize.sp,
                     height = height
                 )
-
                 Box(
                     modifier = Modifier
                         .padding(top = height - 60.dp, bottom = 10.dp)
@@ -363,6 +336,7 @@ fun ScrollableSearchScreen(
                         query = text,
                         onQueryChange = {
                             text = it
+                            searchViewModel.performSearch(it) // Gửi truy vấn tìm kiếm
                         },
                         onSearch = {
                             active = false
@@ -401,7 +375,8 @@ fun ScrollableSearchScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 23.dp)
                     ) {
-                        resultSearch.forEach {
+                        searchResults.forEach {
+//                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
                             Column {
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
 
@@ -422,19 +397,23 @@ fun ScrollableSearchScreen(
                                             .width(0.dp)
                                             .weight(1F)
                                     ) {
-                                        Text(
-                                            text = it,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(all = 4.dp)
-                                        )
-                                        Text(
-                                            text = "Song - Vũ & Binz",
-                                            fontSize = 14.sp,
-                                            color = Color.Gray,
-                                            modifier = Modifier.padding(4.dp)
-                                        )
+                                        it.title?.let { it1 ->
+                                            Text(
+                                                text = it1,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                fontSize = 16.sp,
+                                                modifier = Modifier.padding(all = 4.dp)
+                                            )
+                                        }
+                                        it.artist?.let { it1 ->
+                                            Text(
+                                                text = it1,
+                                                fontSize = 14.sp,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(4.dp)
+                                            )
+                                        }
                                     }
 
                                     Icon(
@@ -715,7 +694,7 @@ fun HorizontalScrollableNewScreenSection2(
                     modifier = Modifier.width(itemWidth!! + 10.dp)
                 ) {
                     songList.forEach {
-                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
+                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist ?: "", it.imageUrl ?: "")
                     }
                 }
             }
@@ -901,7 +880,7 @@ fun AlbumCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = item.title,
+            text = item.title ?: "",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -911,7 +890,7 @@ fun AlbumCard(
         )
 
         Text(
-            text = item.artist,
+            text = item.artist ?: "",
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -1066,6 +1045,7 @@ fun AlbumCardNewScreenListVertical(
 //cái này đặt ngoài navHost
 @Composable
 fun NowPlayingSheet(
+    musicItem: MusicItem,
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
     youtubeViewModel: YoutubeViewModel,
@@ -1107,10 +1087,10 @@ fun NowPlayingSheet(
     }
 
     YoutubeView(
-        youtubeVideoId = "Zgd1corMdnk",
+        youtubeVideoId = musicItem.id,
         youtubeMetadata = YoutubeMetadata(
-            title = "it's not litter if you bin it",
-            artist = "Niko B",
+            title = musicItem.title,
+            artist = musicItem.artist,
         ),
         onSecond = { ytPlayer, second ->
             if (!isSeeking)
@@ -1176,6 +1156,7 @@ fun NowPlayingSheet(
                 ) { isExpanded ->
                     if (!isExpanded) {
                         MiniPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             onPlayPauseClick = {
                                 if (playerViewModel.isPlaying.value)
@@ -1186,6 +1167,7 @@ fun NowPlayingSheet(
                         )
                     } else {
                         ExpandedPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             duration = playerViewModel.duration.value,
                             currentTime = playerViewModel.currentTime.value,
@@ -1224,6 +1206,7 @@ fun NowPlayingSheet(
 
 @Composable
 private fun MiniPlayer(
+    musicItem: MusicItem,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit
 ) {
@@ -1250,12 +1233,12 @@ private fun MiniPlayer(
 
             Column {
                 Text(
-                    text = "Song Title",
+                    text = musicItem.title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
                 Text(
-                    text = "Artist Name",
+                    text = musicItem.artist,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -1277,3 +1260,16 @@ private fun MiniPlayer(
         }
     }
 }
+
+/*
+để fun chỉnh volume ra ngoài để sync với system, dùng observe để sync với system.
+chỉnh volume ko đc mượt tại system có volume theo từng nắc từ 0 đến 10, nên có 10 nắc
+(này chịu, nhma cái animation vjp pro này phân tán sự chú ý problem này r =)))))
+ */
+
+private fun adjustVolume(audioManager: AudioManager, newVolume: Float, maxVolume: Float) {
+    val adjustedVolume = (newVolume * maxVolume).coerceIn(0f, maxVolume).toInt()
+    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, adjustedVolume, 0)
+}
+
+

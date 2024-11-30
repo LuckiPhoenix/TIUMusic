@@ -191,7 +191,7 @@ fun PlaylistScreen(navController: NavController, playlistId: String, onTabSelect
 
             // Song list
             items(SongListSample()) { item ->
-                SongInPlaylist(item.title, item.artist, item.imageUrl)
+                SongInPlaylist(item.title ?: "", item.artist ?: "", item.imageUrl ?: "")
                 HorizontalDivider(
                     thickness = 2.dp,
                     color = ButtonColor,

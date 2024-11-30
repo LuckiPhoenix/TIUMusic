@@ -23,7 +23,7 @@ data class YouTubeClient(
             hl = locale.hl,
             visitorData = visitorData,
             osVersion = osVersion,
-        )
+            )
     )
 
     companion object {
