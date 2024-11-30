@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,13 +19,12 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
-import com.example.TIUMusic.Login.YoutubeLogin
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen

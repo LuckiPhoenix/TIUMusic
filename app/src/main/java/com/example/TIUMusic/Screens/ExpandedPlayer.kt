@@ -105,11 +105,10 @@ public fun ExpandedPlayer(
             contentAlignment = Alignment.Center,
             modifier = Modifier.align(Alignment.CenterHorizontally)
                 .fillMaxWidth()
-
         ) {
-            VisualizerCircle(
+            VisualizerCircleRGB(
                 visualizerViewModel = visualizerViewModel,
-                radius = 360.dp.value,
+                radius = 330.dp.value,
                 lineHeight = 550.dp.value,
             );
             AsyncImage(

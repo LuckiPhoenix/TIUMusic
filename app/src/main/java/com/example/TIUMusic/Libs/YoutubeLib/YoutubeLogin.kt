@@ -1,4 +1,4 @@
-package com.example.TIUMusic.Login
+package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.util.Log
 import android.webkit.CookieManager
@@ -9,8 +9,6 @@ import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.example.TIUMusic.Libs.YoutubeLib.YouTube
-import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 
 @Composable
@@ -46,17 +44,17 @@ fun YoutubeLogin(navController: NavController) {
                             CookieManager.getInstance().getCookie(url)?.let {
                                 YouTube.cookie = it
                             }
-                            WebStorage.getInstance().deleteAllData()
-
-                            // Clear all the cookies
-                            CookieManager.getInstance().removeAllCookies(null)
-                            CookieManager.getInstance().flush()
+//                            WebStorage.getInstance().deleteAllData()
+//
+//                            // Clear all the cookies
+//                            CookieManager.getInstance().removeAllCookies(null)
+//                            CookieManager.getInstance().flush()
 
                             if (view != null) {
-                                view.clearCache(true)
-                                view.clearFormData()
-                                view.clearHistory()
-                                view.clearSslPreferences()
+//                                view.clearCache(true)
+//                                view.clearFormData()
+//                                view.clearHistory()
+//                                view.clearSslPreferences()
                             }
                             // Pop back stack
                             navController.navigate("login");

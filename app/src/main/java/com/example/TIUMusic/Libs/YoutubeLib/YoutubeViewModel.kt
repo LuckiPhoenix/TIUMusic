@@ -81,6 +81,8 @@ class YoutubeViewModel(context : Context) : ViewModel() {
     private var _ytPlayerView : MutableStateFlow<YouTubePlayerView?> = MutableStateFlow(null);
     val ytPlayerView : StateFlow<YouTubePlayerView?> = _ytPlayerView.asStateFlow();
 
+    var reloadDuration : Boolean = false;
+
     val NotificationID = 0;
 
     companion object {
@@ -116,7 +118,7 @@ class YoutubeViewModel(context : Context) : ViewModel() {
     fun init(context: Context) {
         _mediaSession.value = MediaSession(context, "MusicService");
         val builder = Notification.Builder(context, Notification.CATEGORY_MESSAGE)
-            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setSmallIcon(R.drawable.tiumusicmark)
             .setContentTitle("TIUMusic")
             .setContentText("TIUMusic")
             .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.value!!.sessionToken))
@@ -283,6 +285,7 @@ class YoutubeViewModel(context : Context) : ViewModel() {
         durationMs: Long,
         context: Context
     ) {
+        reloadDuration = true;
         _ytHelper.value.ytPlayer?.loadVideo(videoId, 0f);
         updateMediaMetadata(metadata, durationMs, context);
     }

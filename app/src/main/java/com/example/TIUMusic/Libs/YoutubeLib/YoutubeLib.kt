@@ -142,8 +142,9 @@ fun YoutubeView(
 
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                         onDurationLoaded(youTubePlayer, duration);
-                        if (mediaSession != null && !mediaSession!!.isActive)
+                        if (mediaSession != null && (!mediaSession!!.isActive || youtubeViewModel.reloadDuration))
                         {
+                            youtubeViewModel.reloadDuration = false;
                             youtubeViewModel.updateMediaMetadata(
                                 metadata = youtubeMetadata,
                                 durationMs = duration.toLong() * 1000L,

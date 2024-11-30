@@ -12,19 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
-import com.example.TIUMusic.Login.YoutubeLogin
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
