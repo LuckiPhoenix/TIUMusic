@@ -78,7 +78,7 @@ class YtmusicViewModel @Inject constructor(
     private var _newReleases = MutableStateFlow<List<HomeItem>>(listOf());
     val newReleases = _newReleases.asStateFlow();
 
-    private var _homeContinuation = mutableIntStateOf(2);
+    private var _homeContinuation = mutableIntStateOf(1);
     val homeContinuation = _homeContinuation.asIntState();
 
     var fetchingContinuation : Boolean = false;

@@ -182,6 +182,9 @@ fun YoutubeView(
         }
     )
 }
+fun getYoutubeHDThumbnail(videoId: String) : String {
+    return "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
+}
 
 fun parseSyncedLyrics(syncedLyrics : String) : List<Line2> {
     var line2s : MutableList<Line2> = mutableListOf();
