@@ -89,7 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
@@ -1040,7 +1040,6 @@ fun AlbumCardNewScreenListVertical(
 //cái này đặt ngoài navHost
 @Composable
 fun NowPlayingSheet(
-    musicItem: MusicItem,
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
     youtubeViewModel: YoutubeViewModel,
@@ -1050,6 +1049,7 @@ fun NowPlayingSheet(
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
     val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
+    val musicItem by playerViewModel.musicItem.collectAsState()
     // Su dung de check user dang seek hay khong
     // Set true tai onSeek khi user dang keo slider
     // Set false khi !isPlaying khi chuyen tu state paused sang playing

@@ -34,23 +34,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import io.ktor.client.call.body
 import okhttp3.internal.notify
 
-fun createNotificationChannel(context: Context) {
-    // Create the NotificationChannel, but only on API 26+ because
-    // the NotificationChannel class is not in the Support Library.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val name = "TIUMusic"
-        val descriptionText = "Music Player"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(Notification.CATEGORY_MESSAGE, name, importance).apply {
-            description = descriptionText
-        }
-        // Register the channel with the system.
-        val notificationManager: NotificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-    }
-}
-
 fun ensurePlayerNotificationPermissionAllowed(
     activity : ComponentActivity,
     onPermissionAccepted: () -> Unit,
@@ -146,9 +129,8 @@ fun YoutubeView(
                         {
                             youtubeViewModel.reloadDuration = false;
                             youtubeViewModel.updateMediaMetadata(
-                                metadata = youtubeMetadata,
                                 durationMs = duration.toLong() * 1000L,
-                                context
+                                context = context
                             );
                             youtubeViewModel.setMediaSessionActive(true);
                             // println("Playing");
