@@ -3,7 +3,8 @@ accompanistSystemuicontroller = "<latest-version>"
 accompanistSystemuicontrollerVersion = "0.27.0"
 activityKtx = "1.9.3"
 agp = "8.7.1"
-coilCompose = "2.4.0"
+coilCompose = "3.0.4"
+coilNetworkOkhttp = "3.0.4"
 dec = "0.1.2"
 fragmentCompose = "1.8.5"
 gson = "2.10.1"
@@ -36,8 +37,9 @@ androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 brotli-dec = { module = "org.brotli:dec", version.ref = "dec" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
 google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

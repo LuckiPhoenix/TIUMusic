@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.media.MediaMetadata
 import android.media.session.MediaSession
@@ -19,12 +20,18 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat.startForeground
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.ImageLoader
-import coil.compose.rememberImagePainter
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.compose.LocalPlatformContext
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
+import coil3.util.CoilUtils
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
+import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -173,29 +180,19 @@ class YoutubeViewModel() : ViewModel() {
     fun updateMediaMetadata(metadata: YoutubeMetadata = mediaMetadata, durationMs: Long, context : Context) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
+        if (mediaMetadata == metadata)
+            return;
         mediaMetadata = metadata;
-        if (metadata.artBitmap == null && metadata.artBitmapURL != null) {
-            updateMediaMetadata(
-                metadata.displayTitle,
-                metadata.displaySubtitle,
-                metadata.title,
-                metadata.artist,
-                durationMs,
-                metadata.artBitmapURL,
-                context
-            )
-        }
-        else {
-            updateMediaMetadata(
-                metadata.displayTitle,
-                metadata.displaySubtitle,
-                metadata.title,
-                metadata.artist,
-                durationMs,
-                metadata.artBitmap
-            )
-            mediaNotification(metadata.title, metadata.artist, metadata.artBitmap, context);
-        }
+        updateMediaMetadata(
+            metadata.displayTitle,
+            metadata.displaySubtitle,
+            metadata.title,
+            metadata.artist,
+            durationMs,
+            metadata.artBitmapURL ?: "",
+            context
+        )
+
     }
 
     fun loadAndPlayVideo(
@@ -297,25 +294,31 @@ class YoutubeViewModel() : ViewModel() {
         artBitmapUrl : String,
         context: Context
     ) {
-        if (!YoutubeSettings.NotificationEnabled)
+        if (!YoutubeSettings.NotificationEnabled || artBitmapUrl == "")
             return;
         var imageBitmap : Bitmap? = null;
         viewModelScope.launch(Dispatchers.IO) {
+            val headers = NetworkHeaders.Builder()
+                .set("Cache-Control", "no-cache")
+                .build()
             val request = ImageRequest.Builder(context)
                 .data(artBitmapUrl)
-                .crossfade(true)
+                .httpHeaders(headers)
                 .build()
-            val imageLoader = ImageLoader.Builder(context)
-                .crossfade(true)
-                .build()
+            val imageLoader = ImageLoader.Builder(context).build();
             val result = imageLoader.execute(request);
             if (result is SuccessResult) {
-                imageBitmap = (result.drawable as BitmapDrawable).bitmap;
+                imageBitmap = (result.image.toBitmap());
             }
             else if (result is ErrorResult) {
                 cancel(result.throwable.localizedMessage ?: "ErrorResult", result.throwable)
             }
         }.invokeOnCompletion { throwable ->
+            if (throwable != null){
+                Log.e("MediaMetadata", throwable.message.toString());
+                return@invokeOnCompletion;
+            }
+            Log.d("MediaMetadata", "Load image Successful");
             mediaNotification(title, artist, imageBitmap, context);
             val metadataBuilder = MediaMetadata.Builder().apply {
                 // To provide most control over how an item is displayed set the
@@ -339,39 +342,11 @@ class YoutubeViewModel() : ViewModel() {
         }
 
     }
+}
 
-    private fun updateMediaMetadata(
-        displayTitle : String,
-        displaySubtitle : String,
-        title : String,
-        artist : String,
-        durationMs : Long,
-        artBitmap : Bitmap?
-    ) {
-        if (!YoutubeSettings.NotificationEnabled)
-            return;
-        val metadataBuilder = MediaMetadata.Builder().apply {
-            // To provide most control over how an item is displayed set the
-            // display fields in the metadata
-            putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-            putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
-            // And at minimum the title and artist for legacy support
-            putString(MediaMetadata.METADATA_KEY_TITLE, title)
-            putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-            putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
-            // A small bitmap for the artwork is also recommended
-            if (artBitmap != null)
-                putBitmap(MediaMetadata.METADATA_KEY_ART, artBitmap)
-            // Add any other fields you have for your data as well
-        }
-        // println("wtf");
-        _mediaSession.update { it ->
-            it!!.setMetadata(metadataBuilder.build());
-            it;
-        }
-    }
-
-
+var testBitmap : Bitmap? = null;
+fun createTestBitmap(context: Context) {
+    testBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.tiumusicdarkbackground);
 }
 
 

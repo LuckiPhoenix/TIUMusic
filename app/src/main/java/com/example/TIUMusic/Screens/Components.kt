@@ -89,7 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView

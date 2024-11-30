@@ -71,7 +71,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel

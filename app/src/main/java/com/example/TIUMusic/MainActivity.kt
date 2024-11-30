@@ -9,13 +9,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat.checkSelfPermission
+import coil3.ImageLoader
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
+import com.example.TIUMusic.Libs.YoutubeLib.createTestBitmap
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -28,6 +31,7 @@ import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -59,6 +63,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
+        createTestBitmap(this);
         setContent {
             TIUMusicTheme {
                 NavHost(

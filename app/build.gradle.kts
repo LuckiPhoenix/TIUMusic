@@ -66,7 +66,7 @@ dependencies {
 
 
     // YoutubeLib
-
+    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment)

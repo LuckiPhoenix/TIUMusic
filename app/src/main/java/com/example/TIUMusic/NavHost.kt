@@ -92,7 +92,7 @@ fun NavHost(
                                 metadata = YoutubeMetadata(
                                     title = musicItem.title,
                                     artist = musicItem.artist,
-                                    artBitmap = null,
+                                    artBitmapURL = musicItem.imageUrl,
                                     displayTitle = musicItem.title,
                                     displaySubtitle = musicItem.artist
                                 ),
