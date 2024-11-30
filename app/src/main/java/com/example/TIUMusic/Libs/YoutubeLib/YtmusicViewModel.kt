@@ -6,20 +6,30 @@ import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.MusicCarouselShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
 import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.Chart
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingSong
+import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingVideo
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.parseSongArtists
+import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
+import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
+import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
 import dagger.Module
 import dagger.Provides
@@ -30,14 +40,13 @@ import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @Module
@@ -63,8 +72,16 @@ class YtmusicViewModel @Inject constructor(
     private var _homeItems = MutableStateFlow<List<HomeItem>>(emptyList());
     val homeItems : StateFlow<List<HomeItem>> = _homeItems.asStateFlow();
 
-    private var _homeContinuation = mutableIntStateOf(0);
+    private var _chart = MutableStateFlow<Chart?>(null);
+    val chart = _chart.asStateFlow();
+
+    private var _newReleases = MutableStateFlow<List<HomeItem>>(listOf());
+    val newReleases = _newReleases.asStateFlow();
+
+    private var _homeContinuation = mutableIntStateOf(1);
     val homeContinuation = _homeContinuation.asIntState();
+
+    var fetchingContinuation : Boolean = false;
 
     fun performSearch(query: String){
         var videoInfos: List<SearchingInfo>
@@ -104,7 +121,8 @@ class YtmusicViewModel @Inject constructor(
                             title = videoInfo.title ?: "Unknown Title",
                             videoId = videoInfo.videoId ?: "Unknown ID",
                             artist = videoInfo.artist ?: "Unknown Artist",
-                            artistId = videoInfo.artistId ?: "Unknown Artist ID"
+                            artistId = videoInfo.artistId ?: "Unknown Artist ID",
+                            thumbnailURL = videoInfo.thumbnailURL,
                         )
                     }
                     // Gán giá trị mới cho _searchResults
@@ -155,7 +173,9 @@ class YtmusicViewModel @Inject constructor(
                             title = songRender.text,
                             videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId,
                             artist = artistRender[i].text,
-                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId
+                            artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId,
+                            thumbnailURL = content.musicResponsiveListItemRenderer?.thumbnail?.
+                                musicThumbnailRenderer?.thumbnail?.thumbnails?.firstOrNull()?.url ?: ""
                         )
                     )
                 }
@@ -164,59 +184,63 @@ class YtmusicViewModel @Inject constructor(
         return searchInfos
     }
 
-    fun GetContinuation(context: Context) {
-        _homeContinuation.intValue = 2;
+    fun getContinuation(context: Context) {
+        if (fetchingContinuation)
+            return;
+        fetchingContinuation = true;
         viewModelScope.launch {
-            getHomeScreen(context).collect {
-                _homeItems.value = it;
-            }
+            val items = getHomeScreen(context)
+            if (items.isNotEmpty())
+                _homeItems.value = items;
+            fetchingContinuation = false;
         }
         _homeContinuation.intValue++;
     }
 
-    private suspend fun getHomeScreen(context: Context) : Flow<List<HomeItem>> =
-        flow {
-            runCatching {
-                YouTube.customQuery(browseId = "FEmusic_home")
-                    .onSuccess { result ->
-                        var continueParam =
-                            result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.
-                                tabRenderer?.content?.sectionListRenderer?.continuations?.get(0)?.nextContinuationData?.continuation
-                        val data =
-                            result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.tabRenderer?.content?.sectionListRenderer?.contents;
-                        val list: ArrayList<HomeItem> = arrayListOf()
-                        list.addAll(parseHomeScreen(data, context))
-                        var count = 0
-                        while (count < _homeContinuation.intValue && continueParam != null) {
-                            YouTube.customQuery(browseId = "", continuation = continueParam)
-                                .onSuccess { response ->
-                                    continueParam =
-                                        response.continuationContents
-                                            ?.sectionListContinuation
-                                            ?.continuations
-                                            ?.get(
-                                                0,
-                                            )?.nextContinuationData
-                                            ?.continuation
-                                    Log.d("Repository", "continueParam: $continueParam")
-                                    val dataContinue =
-                                        response.continuationContents?.sectionListContinuation?.contents
-                                    list.addAll(parseHomeScreen(dataContinue, context))
-                                    count++
-                                    Log.d("Repository", "count: $count")
-                                }.onFailure {
-                                    Log.e("Repository", "Error: ${it.message}")
-                                    count++
-                                }
-                        }
-                        emit(list)
+    private suspend fun getHomeScreen(context: Context) : List<HomeItem> {
+        runCatching {
+            YouTube.customQuery(browseId = "FEmusic_home")
+                .onSuccess { result ->
+                    var continueParam =
+                        result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.tabRenderer?.content?.sectionListRenderer?.continuations?.get(
+                            0
+                        )?.nextContinuationData?.continuation
+                    val data =
+                        result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.tabRenderer?.content?.sectionListRenderer?.contents;
+                    val list: ArrayList<HomeItem> = arrayListOf()
+                    list.addAll(parseHomeScreen(data, context))
+                    var count = 0
+                    while (count < _homeContinuation.intValue && continueParam != null) {
+                        YouTube.customQuery(browseId = "", continuation = continueParam)
+                            .onSuccess { response ->
+                                continueParam =
+                                    response.continuationContents
+                                        ?.sectionListContinuation
+                                        ?.continuations
+                                        ?.get(
+                                            0,
+                                        )?.nextContinuationData
+                                        ?.continuation
+                                Log.d("Repository", "continueParam: $continueParam")
+                                val dataContinue =
+                                    response.continuationContents?.sectionListContinuation?.contents
+                                list.addAll(parseHomeScreen(dataContinue, context))
+                                count++
+                                Log.d("Repository", "count: $count")
+                            }.onFailure {
+                                Log.e("Repository", "Error: ${it.message}")
+                                count++
+                            }
                     }
-                    .onFailure { error ->
-                        Log.e("YoutubeViewModel", error.message.toString());
-                        emit(listOf());
-                    }
-            }
+                    return list;
+                }
+                .onFailure { error ->
+                    Log.e("YtmusicViewModel", error.message.toString());
+                    return listOf();
+                }
         }
+        return listOf();
+    }
 
     private fun parseHomeScreen(
         data : List<SectionListRenderer.Content>?,
@@ -621,6 +645,10 @@ class YtmusicViewModel @Inject constructor(
                             ),
                         )
                     }
+                    if (list.lastOrNull() != null) {
+                        if (list.last().contents.isEmpty())
+                            list.removeAt(list.size - 1);
+                    }
                     Log.w("parse_mixed_content", list.toString())
                 }
             }
@@ -628,4 +656,264 @@ class YtmusicViewModel @Inject constructor(
         return list;
     }
 
+    fun getChart(countryCode: String = "US") {
+        viewModelScope.launch {
+            _chart.value = getChartData(countryCode);
+        }
+    }
+
+    private suspend fun getChartData(countryCode : String) : Chart? {
+        runCatching {
+            YouTube
+                .customQuery("FEmusic_charts", country = countryCode)
+                .onSuccess { result ->
+                    val data =
+                        result.contents
+                            ?.singleColumnBrowseResultsRenderer
+                            ?.tabs
+                            ?.get(
+                                0,
+                            )?.tabRenderer
+                            ?.content
+                            ?.sectionListRenderer
+                    val chart = parseChart(data)
+                    if (chart != null) {
+                        return chart;
+                    } else {
+                        Log.e("YtmusicViewModel", "Error parsing chart");
+                        return null;
+                    }
+                }.onFailure { error ->
+                    Log.e("YtmusicViewModel", error.message.toString());
+                }
+        }
+        return null;
+    }
+
+    private fun parseChart(data: SectionListRenderer?) : Chart? {
+        if (data?.contents != null) {
+            val trendingVideos = mutableListOf<TrendingVideo>();
+            val trendingSongs = mutableListOf<TrendingSong>()
+            var videoPlaylistId = "";
+            for (section in data.contents!!) {
+                if (section.musicCarouselShelfRenderer != null) {
+                    val musicCarouselShelfRenderer = section.musicCarouselShelfRenderer
+                    val pageType =
+                        musicCarouselShelfRenderer?.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.get(0)?.
+                            navigationEndpoint?.browseEndpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType
+
+                    if (pageType == "MUSIC_PAGE_TYPE_PLAYLIST" && musicCarouselShelfRenderer.numItemsPerColumn == null) {
+                        videoPlaylistId =
+                            musicCarouselShelfRenderer.header?.musicCarouselShelfBasicHeaderRenderer?.
+                                title?.runs?.get(0)?.navigationEndpoint?.browseEndpoint?.browseId ?: ""
+                        val contents = musicCarouselShelfRenderer.contents
+                        trendingVideos.addAll(parseSongChart(contents))
+                    }
+                    else if (pageType == "MUSIC_PAGE_TYPE_PLAYLIST" && musicCarouselShelfRenderer.numItemsPerColumn == "4") {
+                        val contents = musicCarouselShelfRenderer.contents
+                        contents.forEachIndexed { index, content ->
+                            val musicResponsiveListItemRenderer = content.musicResponsiveListItemRenderer
+
+                            if (musicResponsiveListItemRenderer != null) {
+                                val thumb = musicResponsiveListItemRenderer.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails
+//                                val firstThumb = thumb?.firstOrNull()
+//                                if (firstThumb != null && (firstThumb.width == firstThumb.height && firstThumb.width != null)) {
+                                    val song =
+                                        TrendingSong(
+                                            album = musicResponsiveListItemRenderer.flexColumns.getOrNull(2)?.
+                                                musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
+                                                ?.let {
+                                                    Album(
+                                                        name = it.text,
+                                                        id = it.navigationEndpoint?.browseEndpoint?.browseId ?: ""
+                                                    )
+                                                },
+                                            artists = musicResponsiveListItemRenderer.flexColumns.getOrNull(1)?.
+                                                musicResponsiveListItemFlexColumnRenderer?.text?.runs?.oddElements()
+                                                ?.map {
+                                                    Artist(
+                                                        name = it.text,
+                                                        id = it.navigationEndpoint?.browseEndpoint?.browseId
+                                                    )
+                                                },
+                                            thumbnail = thumb?.lastOrNull()!!.url ?: "",
+                                            title = musicResponsiveListItemRenderer.flexColumns.firstOrNull()
+                                                ?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
+                                                ?.text ?: "",
+                                            videoId = musicResponsiveListItemRenderer.playlistItemData?.videoId ?: "",
+                                        )
+                                    trendingSongs.add(song)
+//                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return Chart(
+                videoPlaylist = Chart.TrendingVideoPlaylist(
+                    playlistId = videoPlaylistId,
+                    videos = trendingVideos
+                ),
+                songs = trendingSongs,
+            )
+        }
+        return null;
+    }
+
+    private fun parseSongChart(contents : List<MusicCarouselShelfRenderer.Content>) : List<TrendingVideo> {
+        val listVideoItem: ArrayList<TrendingVideo> = arrayListOf()
+        for (content in contents) {
+            val title = content.musicTwoRowItemRenderer?.title?.runs?.get(0)?.text
+            val runs = content.musicTwoRowItemRenderer?.subtitle?.runs
+            var view = ""
+            val artists = mutableListOf<Artist>()
+            val albums = mutableListOf<Album>()
+            if (runs != null) {
+                for (i in runs.indices) {
+                    if (i.rem(2) == 0) {
+                        if (i == runs.size - 1) {
+                            view += runs[i].text
+                        } else {
+                            val name = runs[i].text
+                            val id = runs[i].navigationEndpoint?.browseEndpoint?.browseId
+                            if (id != null) {
+                                if (id.startsWith("MPRE")) {
+                                    albums.add(Album(id = id, name = name))
+                                } else {
+                                    artists.add(Artist(name = name, id = id))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            val thumbnails =
+                content.musicTwoRowItemRenderer?.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails
+            val videoId = content.musicTwoRowItemRenderer?.navigationEndpoint?.watchEndpoint?.videoId
+            listVideoItem.add(
+                TrendingVideo(
+                    artists = artists,
+                    playlistId = "",
+                    thumbnail = thumbnails?.lastOrNull()?.url ?: "",
+                    title = title ?: "",
+                    videoId = videoId ?: "",
+                    views = view
+                )
+            )
+        }
+        return listVideoItem
+    }
+
+    fun getNewReleases(context: Context) {
+        viewModelScope.launch {
+            _newReleases.value = newRelease(context);
+            val response = ytMusic.browse(WEB_REMIX, browseId = "FEmusic_new_releases").bodyAsText()
+            // Parse JSON
+            val parsedResponse = response
+            val parsedResponseString = parsedResponse.toString()
+            // Phần còn lại của mã
+            val maxLogSize = 1000
+            for (i in 0..parsedResponseString.length / maxLogSize) {
+                val start = i * maxLogSize
+                var end = (i + 1) * maxLogSize
+                end =
+                    if (end < parsedResponseString.length) end else parsedResponseString.length
+                if (i == parsedResponseString.length / maxLogSize / 2) {
+                    delay(200);
+                }
+                println(parsedResponseString.substring(start, end))
+            }
+            Log.d("messageReturn", "ENDJSON")
+
+        }
+    }
+
+
+    private suspend fun newRelease(context: Context) : List<HomeItem> {
+        YouTube.newRelease().onSuccess { result ->
+            return parseNewRelease(result, context);
+        }.onFailure {
+            Log.e("YtmusicViewModel", it.message.toString());
+        }
+        return listOf();
+    }
+
+    private fun parseNewRelease(explore: ExplorePage, context: Context) : List<HomeItem> {
+        val result = mutableListOf<HomeItem>()
+        result.add(
+            HomeItem(
+                title = "New Release",
+                contents =
+                explore.released.map {
+                    HomeContent(
+                        album = null,
+                        artists =
+                        listOf(
+                            Artist(
+                                id = it.author?.id ?: "",
+                                name = it.author?.name ?: "",
+                            ),
+                        ),
+                        description = it.author?.name ?: "YouTube Music",
+                        isExplicit = it.explicit,
+                        playlistId = it.id,
+                        browseId = it.id,
+                        thumbnails = listOf(Thumbnail(it.thumbnail, 0, 0)),
+                        title = it.title,
+                        videoId = null,
+                        views = null,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        result.add(
+            HomeItem(
+                title = "Albums",
+                contents =
+                explore.albums.map { albumItem ->
+                    val artists = albumItem.artists?.map { Artist(name = it.name, id = it.id) }?.toMutableList()
+                    HomeContent(
+                        album = null,
+                        artists = artists,
+                        description = null,
+                        isExplicit = albumItem.explicit,
+                        playlistId = albumItem.playlistId,
+                        browseId = albumItem.browseId,
+                        thumbnails = listOf(Thumbnail(albumItem.thumbnail, 0, 0)),
+                        title = albumItem.title,
+                        videoId = null,
+                        views = null,
+                        durationSeconds = null,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        result.add(
+            HomeItem(
+                title = "Music Videos",
+                contents =
+                explore.musicVideo.map { videoItem ->
+                    val artists = videoItem.artists
+                        .map { Artist(name = it.name, id = it.id) }.toMutableList()
+                    HomeContent(
+                        album = videoItem.album?.let { Album(name = it.name,id = it.id) },
+                        artists = artists,
+                        description = null,
+                        isExplicit = videoItem.explicit,
+                        playlistId = null,
+                        browseId = null,
+                        thumbnails = listOf(Thumbnail(videoItem.thumbnail, 0, 0)),
+                        title = videoItem.title,
+                        videoId = videoItem.id,
+                        views = videoItem.view,
+                        durationSeconds = videoItem.duration,
+                        radio = null,
+                    )
+                },
+            ),
+        )
+        return result
+    }
 }

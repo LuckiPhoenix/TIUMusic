@@ -4,34 +4,17 @@ package com.example.TIUMusic.Screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
-import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
 import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.SongData.getBasedOnRecent
-import com.example.TIUMusic.SongData.getPlaylists
-import com.example.TIUMusic.SongData.getRecentItems
-import com.example.TIUMusic.SongData.getTopPicks
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun HomeScreen(
@@ -45,12 +28,16 @@ fun HomeScreen(
     val homeItems by ytMusicViewModel.homeItems.collectAsState(emptyList());
 
     LaunchedEffect(Unit) {
-        ytMusicViewModel.GetContinuation(context);
+        ytMusicViewModel.getContinuation(context);
     }
 
     ScrollableScreen(
         title = "Home",
         selectedTab = 0,
+        itemCount = homeItems.size,
+        fetchContinuation = {
+            ytMusicViewModel.getContinuation(context);
+        },
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {

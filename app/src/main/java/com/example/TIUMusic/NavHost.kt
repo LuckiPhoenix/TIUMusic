@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
@@ -86,11 +87,11 @@ fun NavHost(
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.id,
                                 metadata = YoutubeMetadata(
-                                    title = "",
-                                    artist = "",
+                                    title = musicItem.title,
+                                    artist = musicItem.artist,
                                     artBitmap = null,
-                                    displayTitle = "",
-                                    displaySubtitle = ""
+                                    displayTitle = musicItem.title,
+                                    displaySubtitle = musicItem.artist
                                 ),
                                 0L,
                                 context = context
@@ -110,8 +111,10 @@ fun NavHost(
                     }
                     },onPlaylistClick = { musicItem ->
                         navController.navigate("playlist/${musicItem.id}")
-                    }
-                    ) }
+                    },
+                    hiltViewModel()
+                    )
+                }
                 composable("search") { SearchScreen(
                     navController,
                     onTabSelected = { tabIndex ->

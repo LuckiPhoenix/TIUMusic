@@ -3,17 +3,42 @@ package com.example.TIUMusic.Screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.NewReleaseCard
 import com.example.TIUMusic.SongData.getTopPicks
+import kotlinx.coroutines.launch
+
 
 @Composable
-fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlaylistClick: (MusicItem) -> Unit) {
+fun NewScreen(
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    onPlaylistClick: (MusicItem) -> Unit,
+    ytmusicViewModel: YtmusicViewModel
+) {
+    val context = LocalContext.current;
+    val trendingItem by ytmusicViewModel.chart.collectAsState();
+    val newReleases by ytmusicViewModel.newReleases.collectAsState();
+
+    LaunchedEffect(Unit) {
+        launch {
+            ytmusicViewModel.getChart("KR");
+        }
+        launch {
+            ytmusicViewModel.getNewReleases(context);
+        }
+    }
 
     ScrollableScreen(
         title = "New",
@@ -21,8 +46,30 @@ fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlay
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
+            val newReleaseMusicItems = mutableListOf<NewReleaseCard>();
+            for (newRelease in newReleases) {
+                var i = 0;
+                newRelease.contents.forEach {
+                    if (i >= 3)
+                        return@forEach;
+                    if (it != null) {
+                        newReleaseMusicItems.add(
+                            NewReleaseCard(
+                                newRelease.title,
+                                MusicItem(
+                                    id = it.videoId ?: "",
+                                    title = it.title,
+                                    artist = it.artists?.firstOrNull()?.name ?: "",
+                                    imageUrl = it.thumbnails.lastOrNull()?.url ?: ""
+                                )
+                            )
+                        )
+                    }
+                    i++;
+                }
+            }
             HorizontalScrollableNewScreenSection(
-                items = getTopPicks(),
+                items = newReleaseMusicItems,
                 itemWidth = 300.dp,
                 sectionHeight = 300.dp,
                 onItemClick = { }
@@ -31,83 +78,89 @@ fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlay
             HorizontalScrollableNewScreenSection2(
                 title = "Trending Song",
                 iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
+                items = trendingItem?.songsToMusicItem(3) ?: listOf(listOf()),
                 itemWidth = 300.dp,
                 sectionHeight = 260.dp,
                 onItemClick = { }
             )
 
             HorizontalScrollableNewScreenSection3(
-                title = "New Releases",
+                title = "Top music videos",
                 iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
+                items = trendingItem?.videoPlaylist?.videosToMusicItems() ?: emptyList(),
                 itemWidth = 150.dp,
                 sectionHeight = 220.dp,
                 onItemClick = { }
             )
 
             HorizontalScrollableNewScreenSection3(
-                title = "Viet music",
+                title = "New Album Releases",
                 iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
+                items = newReleases.getOrNull(1)?.contents?.mapNotNull {
+                    MusicItem(
+                        id = it?.videoId ?: "",
+                        title = it?.title ?: "",
+                        artist = it?.artists?.firstOrNull()?.name ?: "",
+                        imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                    )
+                } ?: emptyList(),
                 itemWidth = 150.dp,
                 sectionHeight = 220.dp,
                 onItemClick = { }
             )
 
-            HorizontalScrollableNewScreenSection4(
-                title = "Updated Playlist",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreenType4(),
-                itemWidth = 150.dp,
-                sectionHeight = 440.dp,
-                onItemClick = { }
-            )
 
             HorizontalScrollableNewScreenSection3(
-                title = "Match Your Mood",
+                title = "New music videos",
                 iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
+                items =  newReleases.getOrNull(2)?.contents?.mapNotNull {
+                    MusicItem(
+                        id = it?.videoId ?: "",
+                        title = it?.title ?: "",
+                        artist = it?.artists?.firstOrNull()?.name ?: "",
+                        imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                    )
+                } ?: emptyList(),
                 itemWidth = 150.dp,
                 sectionHeight = 220.dp,
                 onItemClick = { }
             )
-
-            HorizontalScrollableNewScreenSection2(
-                title = "Latest Songs",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
-                itemWidth = 300.dp,
-                sectionHeight = 260.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Everyone's Talking About",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Daily Top 100",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "City Charts",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+//
+//            HorizontalScrollableNewScreenSection2(
+//                title = "Latest Songs",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSampleNewScreen(),
+//                itemWidth = 300.dp,
+//                sectionHeight = 260.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Everyone's Talking About",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Daily Top 100",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "City Charts",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
         }
     }
 }

@@ -64,6 +64,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +97,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.NewReleaseCard
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
@@ -124,12 +126,14 @@ các components reusable phải được declare ở đây
 fun ScrollableScreen(
     title: String,
     selectedTab: Int = 0,
+    itemCount : Int = 0,
     onTabSelected: (Int) -> Unit = {},
+    fetchContinuation : () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
-
+    val fetchBufferItem = 1;
     // Transition variables
     var isScrolled by remember { mutableStateOf(false) }
     val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
@@ -171,8 +175,18 @@ fun ScrollableScreen(
         label = "height"
     ) { state -> if (state) collapsedHeight else expandedHeight }
 
+    var reachedBottom : Boolean = false;
+    if (itemCount != 0 && scrollState.maxValue != 0) {
+        val sizePerItem = scrollState.maxValue / itemCount;
+        reachedBottom = scrollState.value / sizePerItem >= itemCount - fetchBufferItem;
+    }
+
+    println("${reachedBottom}  ${scrollState.value} max: ${scrollState.maxValue}");
+
     LaunchedEffect(scrollState.value) {
         isScrolled = scrollState.value > expandedHeight.value
+        if (reachedBottom)
+            fetchContinuation();
     }
 
     Surface(
@@ -360,7 +374,7 @@ fun ScrollableSearchScreen(
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
 
                                     AsyncImage(
-                                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+                                        model = it.thumbnailURL,
                                         contentDescription = "Album art for",
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
@@ -593,7 +607,7 @@ fun HorizontalScrollableSection(
 fun HorizontalScrollableNewScreenSection(
     title: String? = null,
     @DrawableRes iconHeader: Int? = null,
-    items: List<MusicItem>,
+    items: List<NewReleaseCard>,
     itemWidth: Dp? = null,
     sectionHeight: Dp? = null,
     onItemClick: (MusicItem) -> Unit = {}  // Add click handler
@@ -623,10 +637,11 @@ fun HorizontalScrollableNewScreenSection(
         ) {
             items(items) { item ->
                 AlbumCardNewScreen(
-                    item = item,
+                    type = item.type,
+                    item = item.musicItem,
                     modifier = Modifier.width(calculatedItemWidth),
                     imageSize = calculatedItemWidth,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item.musicItem) }
                 )
             }
         }
@@ -673,7 +688,7 @@ fun HorizontalScrollableNewScreenSection2(
                     modifier = Modifier.width(itemWidth!! + 10.dp)
                 ) {
                     songList.forEach {
-                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist ?: "", it.imageUrl ?: "")
+                        SongInPlaylist(it.title, it.artist ?: "", it.imageUrl ?: "")
                     }
                 }
             }
@@ -881,6 +896,7 @@ fun AlbumCard(
 
 @Composable
 fun AlbumCardNewScreen(
+    type : String,
     item: MusicItem,
     modifier: Modifier = Modifier,
     imageSize: Dp,
@@ -895,7 +911,7 @@ fun AlbumCardNewScreen(
             )
     ) {
         Text(
-            text = "New Album",
+            text = type,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -993,7 +1009,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = "New Album",
+            text = item.title,
             style = MaterialTheme.typography.bodySmall,
             color = Color.White,
             fontWeight = FontWeight.Bold,
@@ -1002,7 +1018,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = item.title,
+            text = item.artist,
             style = MaterialTheme.typography.bodyMedium,
             color = ArtistNameColor,
             maxLines = 1,
