@@ -58,7 +58,7 @@ fun NavHost(
             startDestination = startDestination
         ) {
             navigation(startDestination = "youtubeLogin", route = "auth") {
-                composable("youtubeLogin") { YoutubeLogin(navController) }
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
@@ -73,7 +73,8 @@ fun NavHost(
                 }
             }
 
-            navigation(startDestination = "home", route = "main") {
+            navigation(startDestination = "youtubeLogin", route = "main") {
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("home") {
                     HomeScreen(
                         navController = navController,
