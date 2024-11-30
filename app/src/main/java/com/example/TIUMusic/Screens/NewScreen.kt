@@ -3,17 +3,32 @@ package com.example.TIUMusic.Screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.getTopPicks
 
+
 @Composable
-fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlaylistClick: (MusicItem) -> Unit) {
+fun NewScreen(
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    onPlaylistClick: (MusicItem) -> Unit,
+    ytmusicViewModel: YtmusicViewModel
+) {
+    val trendingItem by ytmusicViewModel.chart.collectAsState();
+
+    LaunchedEffect(Unit) {
+        ytmusicViewModel.getChart("GB");
+    }
 
     ScrollableScreen(
         title = "New",
@@ -31,7 +46,7 @@ fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlay
             HorizontalScrollableNewScreenSection2(
                 title = "Trending Song",
                 iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
+                items = trendingItem?.songsToMusicItem(3) ?: listOf(listOf()),
                 itemWidth = 300.dp,
                 sectionHeight = 260.dp,
                 onItemClick = { }
