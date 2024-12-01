@@ -35,7 +35,6 @@ import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
-import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
@@ -59,7 +58,7 @@ fun NavHost(
             startDestination = startDestination
         ) {
             navigation(startDestination = "youtubeLogin", route = "auth") {
-                composable("youtubeLogin") { YoutubeLogin(navController) }
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
@@ -74,7 +73,8 @@ fun NavHost(
                 }
             }
 
-            navigation(startDestination = "home", route = "main") {
+            navigation(startDestination = "youtubeLogin", route = "main") {
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("home") {
                     HomeScreen(
                         navController = navController,
@@ -89,7 +89,7 @@ fun NavHost(
                         onPlaylistClick = { musicItem ->
                             playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
-                                videoId = musicItem.id,
+                                videoId = musicItem.videoId,
                                 metadata = YoutubeMetadata(
                                     title = musicItem.title,
                                     artist = musicItem.artist,
@@ -114,7 +114,7 @@ fun NavHost(
                         3 -> navController.navigate("search")
                     }
                     },onPlaylistClick = { musicItem ->
-                        navController.navigate("playlist/${musicItem.id}")
+                        navController.navigate("playlist/${musicItem.videoId}")
                     },
                     hiltViewModel()
                     )

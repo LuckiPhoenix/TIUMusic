@@ -17,7 +17,7 @@ data class Chart(
             for (it in videos) {
                 musicItems.add(
                     MusicItem(
-                        id = it.videoId,
+                        videoId = it.videoId,
                         title = it.title,
                         artist = it.artists.firstOrNull()?.name ?: "",
                         imageUrl = it.thumbnail,
@@ -37,7 +37,7 @@ data class Chart(
             for (j in i * rowSize until min((i + 1) * rowSize, songs.size)) {
                 rowItems.add(
                     MusicItem(
-                        id = songs[j].videoId,
+                        videoId = songs[j].videoId,
                         title = songs[j].title,
                         artist = songs[j].artists?.firstOrNull()?.name ?: "",
                         imageUrl = songs[j].thumbnail
@@ -50,7 +50,7 @@ data class Chart(
             val rowItems = mutableListOf<MusicItem>();
             for (i in 0 until songs.size) {
                 rowItems.add(MusicItem(
-                        id = songs[i].videoId,
+                        videoId = songs[i].videoId,
                         title = songs[i].title,
                         artist = songs[i].artists?.firstOrNull()?.name ?: "",
                         imageUrl = songs[i].thumbnail

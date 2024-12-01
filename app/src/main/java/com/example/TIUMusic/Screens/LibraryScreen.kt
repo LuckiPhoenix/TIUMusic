@@ -1,5 +1,8 @@
 package com.example.TIUMusic.Screens
 
+import android.webkit.CookieManager
+import android.webkit.WebStorage
+import android.webkit.WebView
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -40,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -125,6 +129,9 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
                     Button(
                         onClick = {
                             userViewModel.logout()
+                            WebStorage.getInstance().deleteAllData()
+                            CookieManager.getInstance().removeAllCookies(null)
+                            CookieManager.getInstance().flush()
                             navController.navigate("login") {
                                 popUpTo("library") { inclusive = true }
                             }

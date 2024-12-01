@@ -78,17 +78,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -124,11 +120,23 @@ public fun ExpandedPlayer(
                 .fillMaxSize()
                 .padding(16.dp),
         ) {
+
             Spacer(modifier = Modifier.height(64.dp))
 
             // Album art
             Box(
                 contentAlignment = Alignment.Center,
+
+            VisualizerCircleRGB(
+                visualizerViewModel = visualizerViewModel,
+                radius = 330.dp.value,
+                lineHeight = 550.dp.value,
+            );
+            AsyncImage(
+                model = getYoutubeHDThumbnail(musicItem.videoId),
+                contentDescription = "Song Image",
+                contentScale = ContentScale.FillHeight,
+
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .fillMaxSize()

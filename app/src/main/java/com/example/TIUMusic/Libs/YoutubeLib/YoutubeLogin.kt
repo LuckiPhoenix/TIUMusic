@@ -7,12 +7,21 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
 
 @Composable
-fun YoutubeLogin(navController: NavController) {
+fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
+    if (userViewModel.isLoggedIn()) {
+        CookieManager.getInstance().getCookie(LocalContext.current.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
+            YouTube.cookie = it
+        }
+        navController.navigate("home");
+        return;
+    }
     AndroidView(
         factory = {
             WebView(it).apply{
@@ -30,7 +39,6 @@ fun YoutubeLogin(navController: NavController) {
                                 request.url.toString().startsWith(context.getString(R.string.YOUTUBE_URL))
                             ) {
                                 Log.d("YoutubeLogin", "Logged in");
-                                // Toast.makeText(MainActivity.this, "Logged in", Toast.LENGTH_SHORT).show();
                                 return false;
                             }
                         }
