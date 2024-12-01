@@ -5,7 +5,6 @@ plugins {
     kotlin("plugin.serialization") version "2.0.20"
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
-    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -67,7 +66,7 @@ dependencies {
 
 
     // YoutubeLib
-
+    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment)

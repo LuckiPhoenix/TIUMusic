@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import com.example.TIUMusic.Login.reusableInputField
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -191,7 +191,7 @@ fun PlaylistScreen(navController: NavController, playlistId: String, onTabSelect
 
             // Song list
             items(SongListSample()) { item ->
-                SongInPlaylist(item.title, item.artist, item.imageUrl)
+                SongInPlaylist(item.title ?: "", item.artist ?: "", item.imageUrl ?: "")
                 HorizontalDivider(
                     thickness = 2.dp,
                     color = ButtonColor,

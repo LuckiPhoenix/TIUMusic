@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -65,24 +66,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
 @Composable
 public fun ExpandedPlayer(
+    musicItem: MusicItem,
     isPlaying: Boolean,
     currentTime: Float,
     duration : Float,
@@ -91,7 +90,6 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,16 +102,16 @@ public fun ExpandedPlayer(
             contentAlignment = Alignment.Center,
             modifier = Modifier.align(Alignment.CenterHorizontally)
                 .fillMaxWidth()
-
         ) {
-            VisualizerCircle(
+            VisualizerCircleRGB(
                 visualizerViewModel = visualizerViewModel,
-                radius = 360.dp.value,
+                radius = 330.dp.value,
                 lineHeight = 550.dp.value,
             );
             AsyncImage(
-                model = "",
+                model = getYoutubeHDThumbnail(musicItem.videoId),
                 contentDescription = "Song Image",
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier
                     .size(240.dp)
                     .clip(RoundedCornerShape(140.dp))
@@ -126,14 +124,14 @@ public fun ExpandedPlayer(
         // Title and artist
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
-                text = "Song Title",
+                text = musicItem.title,
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Artist Name",
+                text = musicItem.artist,
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center

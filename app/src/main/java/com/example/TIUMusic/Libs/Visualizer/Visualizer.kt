@@ -38,34 +38,45 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
-    var successCounter : Int = 0;
+fun ensureVisualizerPermissionAllowed(
+    activity : ComponentActivity,
+    onPermissionAccepted: () -> Unit,
+    onFinish: () -> Unit
+) {
     val requestPermissionLauncher =
         activity.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                successCounter++;
+                VisualizerSettings.VisualizerEnabled = true;
                 // Permission is granted. Continue the action or workflow in your
                 // app.
             } else {
+                VisualizerSettings.VisualizerEnabled = false;
                 // Explain to the user that the feature is unavailable because the
                 // feature requires a permission that the user has denied. At the
                 // same time, respect the user's decision. Don't link to system
                 // settings in an effort to convince the user to change their
                 // decision.
             }
+            if (VisualizerSettings.VisualizerEnabled)
+                onPermissionAccepted();
+            onFinish();
         }
     when {
         ContextCompat.checkSelfPermission(
             activity,
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED -> {
-            successCounter++;
+            VisualizerSettings.VisualizerEnabled = true;
+            onPermissionAccepted();
+            onFinish();
             // You can use the API that requires the permission.
         }
         ActivityCompat.shouldShowRequestPermissionRationale(
             activity, Manifest.permission.RECORD_AUDIO) -> {
+            VisualizerSettings.VisualizerEnabled = false;
+            onFinish();
             // In an educational UI, explain to the user why your app requires this
             // permission for a specific feature to behave as expected, and what
             // features are disabled if it's declined. In this UI, include a
@@ -79,30 +90,6 @@ fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
                 Manifest.permission.RECORD_AUDIO)
         }
     }
-    when {
-        ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.MODIFY_AUDIO_SETTINGS
-        ) == PackageManager.PERMISSION_GRANTED -> {
-            successCounter++;
-            // You can use the API that requires the permission.
-        }
-        ActivityCompat.shouldShowRequestPermissionRationale(
-            activity, Manifest.permission.MODIFY_AUDIO_SETTINGS) -> {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected, and what
-            // features are disabled if it's declined. In this UI, include a
-            // "cancel" or "no thanks" button that lets the user continue
-            // using your app without granting the permission.
-        }
-        else -> {
-            // You can directly ask for the permission.
-            // The registered ActivityResultCallback gets the result of this request.
-            requestPermissionLauncher.launch(
-                Manifest.permission.MODIFY_AUDIO_SETTINGS)
-        }
-    }
-    VisualizerSettings.VisualizerEnabled = successCounter >= 2;
 }
 
 // Drawer
@@ -110,7 +97,6 @@ fun ensureVisualizerPermissionAllowed(activity : ComponentActivity) {
 fun VisualizerCircleRGB(
     modifier : Modifier = Modifier,
     radius : Float = 300f,
-    barDistance : Float = 20f,
     lineHeight: Float = 600f,
     minHertz : Float = 20f,
     maxHertz : Float = 15000f,
@@ -118,93 +104,32 @@ fun VisualizerCircleRGB(
 ) {
     if (!VisualizerSettings.VisualizerEnabled)
         return;
-    var prevTime by remember { mutableLongStateOf(System.currentTimeMillis()) };
+    var prevTime = remember { System.currentTimeMillis() };
     var pathLeft by remember { mutableStateOf(Path()) }
     var pathRight by remember { mutableStateOf(Path()) }
-    var center by remember { mutableStateOf(Size(0f, 0f)) }
-    var drawing by remember { mutableStateOf(false) }
+    var center = remember { Size(0f, 0f) }
     // INIT sa
     DisposableEffect(Unit) {
         println("INIT");
-        var threadShouldStop : Boolean = false;
-        Thread(Runnable {
-            println("ran");
-            while (!threadShouldStop) {
-                if (drawing) continue;
-                val newPathLeft = Path();
-                val newPathRight = Path();
-                val fft = visualizerViewModel.GetTransformedFFT(0, 22050);
-                val COUNT = fft.size - 1;
-                var minVal = 0.0f;
-                var maxVal = 0.0f;
-                for (fftData in fft) {
-                    minVal = min(minVal, fftData.toFloat());
-                    maxVal = max(maxVal, fftData.toFloat());
-                }
-                val range = maxVal - minVal;
-                val scaleFactor = range + 0.00001f;
-
-                var hertz = minHertz;
-                var barHeight = 0f;
-                // Setup path
-                val beginOffset = Offset(
-                    cos(Math.PI / 2).toFloat() * radius + center.width,
-                    sin(Math.PI / 2).toFloat() * radius + center.height
-                )
-                newPathRight.moveTo(beginOffset.x, beginOffset.y)
-                newPathLeft.moveTo(beginOffset.x,beginOffset.y)
-                for (i in 0..COUNT) {
-                    val xOffset: Float = barDistance * i - barDistance * COUNT / 2;
-                    val angle = i.toFloat() / COUNT.toFloat() * 1.0f * Math.PI;
-                    barHeight = (barHeight + lineHeight *
-                            ((visualizerViewModel.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
-                                    * lerp(0.3f, maxVal, Easing( i.toFloat() / COUNT.toFloat(), EasingType.OutQuad)))
-                            / 5) / 2;
-                    // Right
-                    val direction = Offset(
-                        cos(angle - Math.PI / 2).toFloat(),
-                        sin(angle - Math.PI / 2).toFloat()
-                    );
-                    val middle = direction * radius + Offset(center.width, center.height)// + Offset(0f, -200f);
-                    val nextPoint = (middle + direction * barHeight);
-                    newPathRight.lineTo(
-                        nextPoint.x,
-                        nextPoint.y
-                    )
-                    // Left
-                    val directionMirrored = Offset(
-                        x = cos(-angle - Math.PI / 2).toFloat(),
-                        y = sin(-angle - Math.PI / 2).toFloat()
-                    );
-                    val middleMirrored = directionMirrored * radius + Offset(center.width, center.height)// + Offset(0f, -200f);
-                    val nextPointMirrored = (middleMirrored + directionMirrored * barHeight);
-                    newPathLeft.lineTo(
-                        nextPointMirrored.x,
-                        nextPointMirrored.y,
-                    )
-                    hertz = lerp(minHertz, maxHertz, Easing((i + 1).toFloat() / COUNT.toFloat(), EasingType.InQuad));
-                }
-                newPathRight.lineTo(
-                    beginOffset.x,
-                    beginOffset.y
-                )
-                newPathLeft.lineTo(
-                    beginOffset.x,
-                    beginOffset.y
-                )
+        val listener = object : VisualizerListener {
+            override fun onChange(newPathLeft: Path, newPathRight: Path) {
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
-                // sleep(16);
             }
-            println("stop");
-        }).start();
+        }
+        visualizerViewModel.addVisualizerListener(
+            listener = listener,
+            radius = radius,
+            lineHeight = lineHeight,
+            minHertz = minHertz,
+            maxHertz = maxHertz
+        )
         onDispose {
-            threadShouldStop = true;
+            visualizerViewModel.removeVisualizerListener(listener);
         }
     }
     Canvas(modifier = modifier.background(Color.Transparent)) {
         // FPS COUNTER
-        drawing = true;
         val deltaTime : Float = 1 / ((System.currentTimeMillis() - prevTime) / 1000f);
         //println("Delta Time : $deltaTime")
         prevTime = System.currentTimeMillis();
@@ -233,7 +158,6 @@ fun VisualizerCircleRGB(
                 blendMode = blendMode
             )
         }
-        drawing = false;
     }
 
 
@@ -326,7 +250,7 @@ fun VisualizerCircle(
                 )
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
-                sleep(16);
+                // sleep(16);
             }
             println("stop");
         }).start();

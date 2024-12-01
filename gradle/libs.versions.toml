@@ -3,8 +3,8 @@ accompanistSystemuicontroller = "<latest-version>"
 accompanistSystemuicontrollerVersion = "0.27.0"
 activityKtx = "1.9.3"
 agp = "8.7.1"
-coilCompose = "2.4.0"
-core = "12.1.1"
+coilCompose = "3.0.4"
+coilNetworkOkhttp = "3.0.4"
 dec = "0.1.2"
 fragmentCompose = "1.8.5"
 gson = "2.10.1"
@@ -44,9 +44,9 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 brotli-dec = { module = "org.brotli:dec", version.ref = "dec" }
-core = { module = "com.pierfrancescosoffritti.androidyoutubeplayer:core", version.ref = "core" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
 google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }

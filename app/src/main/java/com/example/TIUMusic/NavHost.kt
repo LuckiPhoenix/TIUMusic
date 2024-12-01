@@ -6,11 +6,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
@@ -19,12 +20,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
@@ -44,14 +46,18 @@ fun NavHost(
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
+    val userViewModel: UserViewModel = viewModel()
+    val startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
+
     Log.d("NavHost", "Current route: $currentRoute")
 
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = "auth"
+            startDestination = startDestination
         ) {
-            navigation(startDestination = "login", route = "auth") {
+            navigation(startDestination = "youtubeLogin", route = "auth") {
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
@@ -66,7 +72,8 @@ fun NavHost(
                 }
             }
 
-            navigation(startDestination = "home", route = "main") {
+            navigation(startDestination = "youtubeLogin", route = "main") {
+                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("home") {
                     HomeScreen(
                         navController = navController,
@@ -79,11 +86,23 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            navController.navigate("playlist/${musicItem.id}")
+                            playerViewModel.setMusicItem(musicItem)
+                            youtubeViewModel.loadAndPlayVideo(
+                                videoId = musicItem.videoId,
+                                metadata = YoutubeMetadata(
+                                    title = musicItem.title,
+                                    artist = musicItem.artist,
+                                    artBitmapURL = musicItem.imageUrl,
+                                    displayTitle = musicItem.title,
+                                    displaySubtitle = musicItem.artist
+                                ),
+                                0L,
+                                context = context
+                            );
+                            // navController.navigate("playlist/${musicItem.id}")
                         }
                     )
                 }
-
                 composable("new") { NewScreen(
                     navController,
                     onTabSelected = { tabIndex ->
@@ -94,9 +113,11 @@ fun NavHost(
                         3 -> navController.navigate("search")
                     }
                     },onPlaylistClick = { musicItem ->
-                        navController.navigate("playlist/${musicItem.id}")
-                    }
-                    ) }
+                        navController.navigate("playlist/${musicItem.videoId}")
+                    },
+                    hiltViewModel()
+                    )
+                }
                 composable("search") { SearchScreen(
                     navController,
                     onTabSelected = { tabIndex ->
@@ -104,7 +125,7 @@ fun NavHost(
                             0 -> navController.navigate("home")
                             1 -> navController.navigate("new")
                             2 -> navController.navigate("library")
-                            3 -> {}
+                            3 -> navController.navigate("search")
                         }
                     }) }
                 composable("library") { LibraryScreen(navController,
@@ -144,7 +165,7 @@ fun NavHost(
                 visualizerViewModel = visualizerViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp),
+                    .padding(bottom = 80.dp)
             )
             Log.d("NavHost", "Overlay shown")
         }

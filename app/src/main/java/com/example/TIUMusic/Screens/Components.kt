@@ -1,5 +1,7 @@
 package com.example.TIUMusic.Screens
 
+
+import android.media.AudioManager
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
@@ -11,7 +13,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,8 +37,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -52,7 +50,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -76,10 +73,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -90,29 +85,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
-import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.ui.theme.ArtistNameColor
-import com.example.TIUMusic.SongData.PlayerViewModel
-import com.example.TIUMusic.ui.theme.BackgroundColor
-import com.example.TIUMusic.ui.theme.ButtonColor
-import com.example.TIUMusic.ui.theme.PrimaryColor
-import kotlinx.coroutines.launch
-import androidx.compose.ui.res.painterResource
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
+import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationSeek
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
-import com.example.TIUMusic.ui.theme.SurfaceColor
+import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.NewReleaseCard
+import com.example.TIUMusic.SongData.PlayerViewModel
+import com.example.TIUMusic.ui.theme.ArtistNameColor
+import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.example.TIUMusic.ui.theme.SurfaceColor
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 
 /*
 các components reusable phải được declare ở đây
@@ -134,6 +121,113 @@ các components reusable phải được declare ở đây
 fun ScrollableScreen(
     title: String,
     selectedTab: Int = 0,
+    itemCount : Int = 0,
+    onTabSelected: (Int) -> Unit = {},
+    fetchContinuation : () -> Unit = {},
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    val windowSize = rememberWindowSize()
+    val fetchBufferItem = 1;
+    // Transition variables
+    var isScrolled by remember { mutableStateOf(false) }
+    val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
+
+    // Calculate dynamic values
+    val expandedHeight = Dimensions.topBarExpandedHeight()
+    val collapsedHeight = Dimensions.topBarCollapsedHeight()
+    val expandedTitleSize = Dimensions.expandedTitleSize()
+    val collapsedTitleSize = Dimensions.collapsedTitleSize()
+    val bottomNavHeight = 56.dp // Define bottom nav height
+
+    // Animation values
+    val alpha by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "Alpha"
+    ) { state -> if (state) 0.9f else 1f }
+
+    val translationX by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = "TranslationX"
+    ) { state ->
+        if (state) {
+            when (windowSize) {
+                WindowSize.COMPACT -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 52.dp
+                WindowSize.MEDIUM -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 48.dp
+            }
+        } else 0.dp
+    }
+
+    val titleSize by transitionState.animateFloat(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "TextSize"
+    ) { state ->
+        if (state) collapsedTitleSize.value else expandedTitleSize.value
+    }
+
+    val height by transitionState.animateDp(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "height"
+    ) { state -> if (state) collapsedHeight else expandedHeight }
+
+    var reachedBottom : Boolean = false;
+    if (itemCount != 0 && scrollState.maxValue != 0) {
+        val sizePerItem = scrollState.maxValue / itemCount;
+        reachedBottom = scrollState.value / sizePerItem >= itemCount - fetchBufferItem;
+    }
+
+    println("${reachedBottom}  ${scrollState.value} max: ${scrollState.maxValue}");
+
+    LaunchedEffect(scrollState.value) {
+        isScrolled = scrollState.value > expandedHeight.value
+        if (reachedBottom)
+            fetchContinuation();
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BackgroundColor
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main content area
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .background(BackgroundColor)
+                    .padding(top = expandedHeight)
+            ) {
+                content(
+                    PaddingValues(
+                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
+                    )
+                )
+            }
+
+            // Top app bar
+            AnimatedTopAppBar(
+                title = title,
+                alpha = alpha,
+                translationX = translationX,
+                titleSize = titleSize.sp,
+                height = height
+            )
+
+
+            // Bottom navigation
+            CustomBottomNavigation(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScrollableSearchScreen(
+    searchViewModel: YtmusicViewModel = hiltViewModel(),
     onTabSelected: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -204,108 +298,13 @@ fun ScrollableScreen(
                 )
             }
 
-            // Top app bar
-            AnimatedTopAppBar(
-                title = title,
-                alpha = alpha,
-                translationX = translationX,
-                titleSize = titleSize.sp,
-                height = height
-            )
-
-
-            // Bottom navigation
-            CustomBottomNavigation(
-                selectedTab = selectedTab,
-                onTabSelected = onTabSelected,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ScrollableSearchScreen(
-    searchViewModel: YtmusicViewModel = hiltViewModel(),
-    onTabSelected: (Int) -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit
-) {
-    val scrollState = rememberScrollState()
-    val windowSize = rememberWindowSize()
-
-    // Transition variables
-    var isScrolled by remember { mutableStateOf(false) }
-    val transitionState = updateTransition(targetState = isScrolled, label = "AppBarTransition")
-
-    // Calculate dynamic values
-    val expandedHeight = 60.dp
-    val collapsedHeight = 30.dp
-    val expandedTitleSize = Dimensions.expandedTitleSize()
-    val collapsedTitleSize = Dimensions.collapsedTitleSize()
-    val bottomNavHeight = 56.dp // Define bottom nav height
-
-    // Animation values
-    val alpha by transitionState.animateFloat(
-        transitionSpec = { tween(durationMillis = 300) },
-        label = "Alpha"
-    ) { state -> if (state) 0.9f else 1f }
-
-    val translationX by transitionState.animateDp(
-        transitionSpec = { tween(durationMillis = 500) },
-        label = "TranslationX"
-    ) { state ->
-        if (state) {
-            when (windowSize) {
-                WindowSize.COMPACT -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 52.dp
-                WindowSize.MEDIUM -> (LocalConfiguration.current.screenWidthDp.dp / 2) - 48.dp
-            }
-        } else 0.dp
-    }
-
-    val titleSize by transitionState.animateFloat(
-        transitionSpec = { tween(durationMillis = 300) },
-        label = "TextSize"
-    ) { state ->
-        if (state) collapsedTitleSize.value else expandedTitleSize.value
-    }
-
-    val height by transitionState.animateDp(
-        transitionSpec = { tween(durationMillis = 300) },
-        label = "height"
-    ) { state -> if (state) collapsedHeight else expandedHeight }
-
-    LaunchedEffect(scrollState.value) {
-        isScrolled = scrollState.value > expandedHeight.value
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = BackgroundColor
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Main content area
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .background(BackgroundColor)
-                    .padding(top = expandedHeight)
-            ) {
-                content(
-                    PaddingValues(
-                        bottom = bottomNavHeight + 80.dp, // Add extra padding for NowPlayingSheet
-                    )
-                )
-            }
-
             var text by remember { mutableStateOf("") }
             var active by remember { mutableStateOf(false) }
 
             val searchResults by searchViewModel.searchResults.collectAsState()
             val isLoading by searchViewModel.loading.collectAsState()
 
-            Column(
+            Box(
                 modifier = Modifier
                     .background(BackgroundColor)
             ) {
@@ -317,27 +316,10 @@ fun ScrollableSearchScreen(
                     titleSize = titleSize.sp,
                     height = height
                 )
-
-                Box {
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = expandedHeight / 2 + 10.dp)
-                            .fillMaxWidth()
-                            .height(36.dp)
-                            .border(
-                                width = 1.dp,
-                                color = SurfaceColor,
-                                shape = RoundedCornerShape(20.dp)
-                            ),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text(
-                            "", modifier = Modifier
-                                .background(SurfaceColor)
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .padding(top = height - 60.dp, bottom = 10.dp)
+                ) {
 
                     SearchBar(
                         query = text,
@@ -380,7 +362,6 @@ fun ScrollableSearchScreen(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 23.dp)
                     ) {
                         searchResults.forEach {
 //                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
@@ -388,7 +369,7 @@ fun ScrollableSearchScreen(
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
 
                                     AsyncImage(
-                                        model = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg",
+                                        model = it.thumbnailURL,
                                         contentDescription = "Album art for",
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
@@ -621,7 +602,7 @@ fun HorizontalScrollableSection(
 fun HorizontalScrollableNewScreenSection(
     title: String? = null,
     @DrawableRes iconHeader: Int? = null,
-    items: List<MusicItem>,
+    items: List<NewReleaseCard>,
     itemWidth: Dp? = null,
     sectionHeight: Dp? = null,
     onItemClick: (MusicItem) -> Unit = {}  // Add click handler
@@ -651,10 +632,11 @@ fun HorizontalScrollableNewScreenSection(
         ) {
             items(items) { item ->
                 AlbumCardNewScreen(
-                    item = item,
+                    type = item.type,
+                    item = item.musicItem,
                     modifier = Modifier.width(calculatedItemWidth),
                     imageSize = calculatedItemWidth,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item.musicItem) }
                 )
             }
         }
@@ -701,7 +683,7 @@ fun HorizontalScrollableNewScreenSection2(
                     modifier = Modifier.width(itemWidth!! + 10.dp)
                 ) {
                     songList.forEach {
-                        SongInPlaylist(it.title.plus(" ${it.id}"), it.artist, it.imageUrl)
+                        SongInPlaylist(it.title, it.artist ?: "", it.imageUrl ?: "")
                     }
                 }
             }
@@ -887,7 +869,7 @@ fun AlbumCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = item.title,
+            text = item.title ?: "",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -897,7 +879,7 @@ fun AlbumCard(
         )
 
         Text(
-            text = item.artist,
+            text = item.artist ?: "",
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -909,6 +891,7 @@ fun AlbumCard(
 
 @Composable
 fun AlbumCardNewScreen(
+    type : String,
     item: MusicItem,
     modifier: Modifier = Modifier,
     imageSize: Dp,
@@ -923,7 +906,7 @@ fun AlbumCardNewScreen(
             )
     ) {
         Text(
-            text = "New Album",
+            text = type,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -1021,7 +1004,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = "New Album",
+            text = item.title,
             style = MaterialTheme.typography.bodySmall,
             color = Color.White,
             fontWeight = FontWeight.Bold,
@@ -1030,7 +1013,7 @@ fun AlbumCardNewScreenSelectionType3(
         )
 
         Text(
-            text = item.title,
+            text = item.artist,
             style = MaterialTheme.typography.bodyMedium,
             color = ArtistNameColor,
             maxLines = 1,
@@ -1061,6 +1044,7 @@ fun NowPlayingSheet(
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
     val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
+    val musicItem by playerViewModel.musicItem.collectAsState()
     // Su dung de check user dang seek hay khong
     // Set true tai onSeek khi user dang keo slider
     // Set false khi !isPlaying khi chuyen tu state paused sang playing
@@ -1077,7 +1061,7 @@ fun NowPlayingSheet(
         animationSpec = springSpec,
         label = "Sheet Progress"
     )
-
+    
     // Update the expanded state based on progress
     LaunchedEffect(progress) {
         playerViewModel.setExpanded(progress > 0.5f)
@@ -1093,10 +1077,10 @@ fun NowPlayingSheet(
     }
 
     YoutubeView(
-        youtubeVideoId = "Zgd1corMdnk",
+        youtubeVideoId = musicItem.videoId,
         youtubeMetadata = YoutubeMetadata(
-            title = "it's not litter if you bin it",
-            artist = "Niko B",
+            title = musicItem.title,
+            artist = musicItem.artist,
         ),
         onSecond = { ytPlayer, second ->
             if (!isSeeking)
@@ -1162,6 +1146,7 @@ fun NowPlayingSheet(
                 ) { isExpanded ->
                     if (!isExpanded) {
                         MiniPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             onPlayPauseClick = {
                                 if (playerViewModel.isPlaying.value)
@@ -1172,6 +1157,7 @@ fun NowPlayingSheet(
                         )
                     } else {
                         ExpandedPlayer(
+                            musicItem = musicItem,
                             isPlaying = playerViewModel.isPlaying.value,
                             duration = playerViewModel.duration.value,
                             currentTime = playerViewModel.currentTime.value,
@@ -1210,6 +1196,7 @@ fun NowPlayingSheet(
 
 @Composable
 private fun MiniPlayer(
+    musicItem: MusicItem,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit
 ) {
@@ -1225,7 +1212,10 @@ private fun MiniPlayer(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+            AsyncImage(
+                model = musicItem.imageUrl,
+                contentDescription = "song image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
@@ -1236,12 +1226,12 @@ private fun MiniPlayer(
 
             Column {
                 Text(
-                    text = "Song Title",
+                    text = musicItem.title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
                 Text(
-                    text = "Artist Name",
+                    text = musicItem.artist,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -1263,3 +1253,16 @@ private fun MiniPlayer(
         }
     }
 }
+
+/*
+để fun chỉnh volume ra ngoài để sync với system, dùng observe để sync với system.
+chỉnh volume ko đc mượt tại system có volume theo từng nắc từ 0 đến 10, nên có 10 nắc
+(này chịu, nhma cái animation vjp pro này phân tán sự chú ý problem này r =)))))
+ */
+
+private fun adjustVolume(audioManager: AudioManager, newVolume: Float, maxVolume: Float) {
+    val adjustedVolume = (newVolume * maxVolume).coerceIn(0f, maxVolume).toInt()
+    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, adjustedVolume, 0)
+}
+
+

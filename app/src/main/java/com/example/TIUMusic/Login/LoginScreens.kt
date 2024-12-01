@@ -256,10 +256,10 @@ fun reusableInputField(
             Image(
                 painter = painterResource(R.drawable.tiumusicfulllogo),
                 contentDescription = "TIU Music Logo",
-                modifier = Modifier.padding(start = 16.dp, top = 64.dp)
+                modifier = Modifier.padding(start = 16.dp, top = 32.dp)
                     .size(128.dp)
             )
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(48.dp))
             Text(
                 text = header,
                 fontSize = 64.sp,
@@ -277,7 +277,7 @@ fun reusableInputField(
                 modifier = Modifier.padding(start = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
             // Input fields
             if (input1.isNotEmpty()) {

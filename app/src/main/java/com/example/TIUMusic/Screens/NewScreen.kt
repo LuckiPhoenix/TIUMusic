@@ -3,17 +3,39 @@ package com.example.TIUMusic.Screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.SongData.getTopPicks
+import com.example.TIUMusic.SongData.NewReleaseCard
+import kotlinx.coroutines.launch
+
 
 @Composable
-fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlaylistClick: (MusicItem) -> Unit) {
+fun NewScreen(
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    onPlaylistClick: (MusicItem) -> Unit,
+    ytmusicViewModel: YtmusicViewModel
+) {
+    val context = LocalContext.current;
+    val trendingItem by ytmusicViewModel.chart.collectAsState();
+    val newReleases by ytmusicViewModel.newReleases.collectAsState();
+
+    LaunchedEffect(Unit) {
+        launch {
+            ytmusicViewModel.getChart("US");
+        }
+        launch {
+            ytmusicViewModel.getNewReleases(context);
+        }
+    }
 
     ScrollableScreen(
         title = "New",
@@ -21,93 +43,134 @@ fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlay
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            HorizontalScrollableNewScreenSection(
-                items = getTopPicks(),
-                itemWidth = 300.dp,
-                sectionHeight = 300.dp,
-                onItemClick = { }
-            )
+            val newReleaseMusicItems = mutableListOf<NewReleaseCard>();
+            for (newRelease in newReleases) {
+                var i = 0;
+                newRelease.contents.forEach {
+                    if (i >= 3)
+                        return@forEach;
+                    if (it != null) {
+                        newReleaseMusicItems.add(
+                            NewReleaseCard(
+                                newRelease.title,
+                                MusicItem(
+                                    videoId = it.videoId ?: "",
+                                    title = it.title,
+                                    artist = it.artists?.firstOrNull()?.name ?: "",
+                                    imageUrl = it.thumbnails.lastOrNull()?.url ?: ""
+                                )
+                            )
+                        )
+                    }
+                    i++;
+                }
+            }
+            if (newReleaseMusicItems.isNotEmpty()){
+                HorizontalScrollableNewScreenSection(
+                    items = newReleaseMusicItems,
+                    itemWidth = 300.dp,
+                    sectionHeight = 300.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection2(
-                title = "Trending Song",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
-                itemWidth = 300.dp,
-                sectionHeight = 260.dp,
-                onItemClick = { }
-            )
+            val trendingSongList = trendingItem?.songsToMusicItem(3);
+            if (trendingSongList != null && trendingSongList.isNotEmpty()){
+                HorizontalScrollableNewScreenSection2(
+                    title = "Trending Song",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = trendingSongList,
+                    itemWidth = 300.dp,
+                    sectionHeight = 260.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection3(
-                title = "New Releases",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val topMusicVideos = trendingItem?.videoPlaylist?.videosToMusicItems();
+            if (topMusicVideos != null && topMusicVideos.isNotEmpty()) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "Top music videos",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = topMusicVideos,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection3(
-                title = "Viet music",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val newAlbumReleases = newReleases.getOrNull(1)?.contents?.mapNotNull {
+                MusicItem(
+                    videoId = it?.videoId ?: "",
+                    title = it?.title ?: "",
+                    artist = it?.artists?.firstOrNull()?.name ?: "",
+                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                )
+            };
+            if (newAlbumReleases != null) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "New Album Releases",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = newAlbumReleases,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
 
-            HorizontalScrollableNewScreenSection4(
-                title = "Updated Playlist",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreenType4(),
-                itemWidth = 150.dp,
-                sectionHeight = 440.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Match Your Mood",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection2(
-                title = "Latest Songs",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
-                itemWidth = 300.dp,
-                sectionHeight = 260.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Everyone's Talking About",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Daily Top 100",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "City Charts",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+            val newMusicVideos = newReleases.getOrNull(2)?.contents?.mapNotNull {
+                MusicItem(
+                    videoId = it?.videoId ?: "",
+                    title = it?.title ?: "",
+                    artist = it?.artists?.firstOrNull()?.name ?: "",
+                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                )
+            }
+            if (newMusicVideos != null && newMusicVideos.isNotEmpty()) {
+                HorizontalScrollableNewScreenSection3(
+                    title = "New music videos",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items =  newMusicVideos,
+                    itemWidth = 150.dp,
+                    sectionHeight = 220.dp,
+                    onItemClick = { }
+                )
+            }
+//
+//            HorizontalScrollableNewScreenSection2(
+//                title = "Latest Songs",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSampleNewScreen(),
+//                itemWidth = 300.dp,
+//                sectionHeight = 260.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Everyone's Talking About",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Daily Top 100",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "City Charts",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
         }
     }
 }
