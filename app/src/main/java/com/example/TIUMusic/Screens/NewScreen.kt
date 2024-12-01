@@ -57,7 +57,8 @@ fun NewScreen(
                                     videoId = it.videoId ?: "",
                                     title = it.title,
                                     artist = it.artists?.firstOrNull()?.name ?: "",
-                                    imageUrl = it.thumbnails.lastOrNull()?.url ?: ""
+                                    imageUrl = it.thumbnails.lastOrNull()?.url ?: "",
+                                    type = 0
                                 )
                             )
                         )
@@ -104,6 +105,7 @@ fun NewScreen(
                     title = it?.title ?: "",
                     artist = it?.artists?.firstOrNull()?.name ?: "",
                     imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                    type = 0
                 )
             };
             if (newAlbumReleases != null) {
@@ -123,6 +125,7 @@ fun NewScreen(
                     title = it?.title ?: "",
                     artist = it?.artists?.firstOrNull()?.name ?: "",
                     imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
+                    type = 0
                 )
             }
             if (newMusicVideos != null && newMusicVideos.isNotEmpty()) {
@@ -173,168 +176,4 @@ fun NewScreen(
 //            )
         }
     }
-}
-
-fun SongListSampleNewScreen(): List<List<MusicItem>> {
-    return listOf(
-        listOf(
-            MusicItem(
-                "01",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "02",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "03",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "04",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "05",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "06",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "07",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "08",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "09",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "10",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "11",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "12",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "13",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "14",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "15",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            )
-        )
-    )
-}
-
-fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
-    return listOf(
-        listOf(
-            MusicItem(
-                "01",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "02",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "03",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "04",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "05",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "06",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        ),
-        listOf(
-            MusicItem(
-                "07",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-            MusicItem(
-                "08",
-                "I Miss You",
-                "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-            ),
-        )
-    )
 }

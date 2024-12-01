@@ -1,5 +1,6 @@
 package com.example.TIUMusic
 
+import android.os.Parcelable
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,12 +29,14 @@ import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.Screens.ArtistPage
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
+import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
@@ -150,11 +153,19 @@ fun NavHost(
                     }) }
                 composable(
                     route = "playlist/{playlistId}",
-                    arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+                    arguments = listOf(
+                        navArgument("playlistId") { type = NavType.StringType },
+                    )
                 ) { backStackEntry ->
+                    val playlistId = backStackEntry.arguments?.getString("playlistId") ?: ""
+
+                    val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+                    val title = savedStateHandle?.get<String>("title") ?: ""
+                    val artist = savedStateHandle?.get<String>("artist") ?: ""
+                    val image = savedStateHandle?.get<String>("image") ?: ""
                     PlaylistScreen(
                         navController = navController,
-                        playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
+                        playlistItem = MusicItem(playlistId, title, artist, image, 1),
                         onTabSelected ={ tabIndex ->
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
@@ -163,6 +174,41 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
+                        onSongClick = {musicItem ->
+                            Log.d("LogNav", "TYPE = 0")
+                            youtubeViewModel.loadAndPlayVideo(
+                                videoId = musicItem.videoId,
+                                metadata = YoutubeMetadata(
+                                    title = musicItem.title,
+                                    artist = musicItem.artist,
+                                    artBitmapURL = musicItem.imageUrl,
+                                    displayTitle = musicItem.title,
+                                    displaySubtitle = musicItem.artist
+                                ),
+                                0L,
+                                context = context
+                            );
+
+                        }
+                    )
+                }
+                composable(
+                    route = "artist",
+                ) {
+                    ArtistPage(
+                        BrowseID = "",
+                        onClickMusicItem = {},
+                        onClickAlbum = {},
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        ytmusicViewModel = hiltViewModel(),
+                        navController = navController,
                     )
                 }
             }

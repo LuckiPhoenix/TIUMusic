@@ -115,6 +115,8 @@ fun VisualizerCircleRGB(
             override fun onChange(newPathLeft: Path, newPathRight: Path) {
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
+                sleep(16);
+
             }
         }
         visualizerViewModel.addVisualizerListener(

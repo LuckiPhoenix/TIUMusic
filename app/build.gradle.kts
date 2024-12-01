@@ -75,7 +75,7 @@ dependencies {
 
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.1")
+    implementation(libs.core)
     // https://mvnrepository.com/artifact/org.brotli/dec
     implementation(libs.brotli.dec)
     implementation(libs.google.gson)
@@ -94,13 +94,13 @@ dependencies {
 
     // Room
     implementation(libs.androidx.room.runtime)
-    implementation("androidx.room:room-ktx:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose.v110)
 
     //Serialization
     implementation(libs.kotlinx.serialization.json)
@@ -112,4 +112,3 @@ dependencies {
 kapt {
     correctErrorTypes = true
 }
-
