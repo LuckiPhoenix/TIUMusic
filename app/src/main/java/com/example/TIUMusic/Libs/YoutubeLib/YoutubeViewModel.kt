@@ -104,6 +104,15 @@ class YoutubeViewModel() : ViewModel() {
 
     var mediaMetadata : YoutubeMetadata = YoutubeMetadata("", "");
 
+    val mediaMetadataBuilder : MediaMetadata.Builder = MediaMetadata.Builder();
+
+    val playbackStateBuilder : PlaybackState.Builder =
+        PlaybackState.Builder()
+        .setActions(availableActions)
+        .setState(PlaybackState.STATE_NONE, 0, 1.0f);
+
+    var videoDuration : Long = 0;
+
     companion object {
         var ___ran : Boolean = false;
         val availableActions : Long =
@@ -195,6 +204,24 @@ class YoutubeViewModel() : ViewModel() {
 
     }
 
+    fun checkUpdateDuration(durationMs: Long) {
+        if (durationMs != 0L && videoDuration != durationMs) {
+            updateVideoDuration(durationMs);
+        }
+    }
+
+    fun updateVideoDuration(durationMs: Long) {
+        videoDuration = durationMs;
+        mediaMetadataBuilder.apply {
+            putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs);
+        }
+        _mediaSession.update {
+            it?.setMetadata(mediaMetadataBuilder.build());
+            it;
+        }
+
+    }
+
     fun loadAndPlayVideo(
         videoId : String,
         metadata: YoutubeMetadata,
@@ -209,10 +236,10 @@ class YoutubeViewModel() : ViewModel() {
     fun updatePlaybackState(state : PlayerConstants.PlayerState, position : Long, playbackSpeed : Float) {
         if (!YoutubeSettings.NotificationEnabled)
             return;
+        println(state);
         _mediaSession.update { it ->
             it!!.setPlaybackState(
-                PlaybackState.Builder()
-                    .setActions(availableActions)
+                playbackStateBuilder
                     .setState(getState(state), position, playbackSpeed)
                     .build()
             )
@@ -225,8 +252,7 @@ class YoutubeViewModel() : ViewModel() {
             return;
         _mediaSession.update { it ->
             it!!.setPlaybackState(
-                PlaybackState.Builder()
-                    .setActions(availableActions)
+                playbackStateBuilder
                     .setState(state, position, playbackSpeed)
                     .build()
             )
@@ -294,7 +320,24 @@ class YoutubeViewModel() : ViewModel() {
         artBitmapUrl : String,
         context: Context
     ) {
-        if (!YoutubeSettings.NotificationEnabled || artBitmapUrl == "")
+        if (!YoutubeSettings.NotificationEnabled)
+            return;
+        mediaMetadataBuilder.apply {
+            // To provide most control over how an item is displayed set the
+            // display fields in the metadata
+            putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+            putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
+            // And at minimum the title and artist for legacy support
+            putString(MediaMetadata.METADATA_KEY_TITLE, title)
+            putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
+            putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
+        }
+        // println("wtf");
+        _mediaSession.update { it ->
+            it!!.setMetadata(mediaMetadataBuilder.build());
+            it;
+        }
+        if (artBitmapUrl == "")
             return;
         var imageBitmap : Bitmap? = null;
         viewModelScope.launch(Dispatchers.IO) {
@@ -320,23 +363,12 @@ class YoutubeViewModel() : ViewModel() {
             }
             Log.d("MediaMetadata", "Load image Successful");
             mediaNotification(title, artist, imageBitmap, context);
-            val metadataBuilder = MediaMetadata.Builder().apply {
-                // To provide most control over how an item is displayed set the
-                // display fields in the metadata
-                putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-                putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, displaySubtitle)
-                // And at minimum the title and artist for legacy support
-                putString(MediaMetadata.METADATA_KEY_TITLE, title)
-                putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-                putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
-                // A small bitmap for the artwork is also recommended
+            mediaMetadataBuilder.apply {
                 if (imageBitmap != null)
                     putBitmap(MediaMetadata.METADATA_KEY_ART, imageBitmap)
-                // Add any other fields you have for your data as well
             }
-            // println("wtf");
             _mediaSession.update { it ->
-                it!!.setMetadata(metadataBuilder.build());
+                it!!.setMetadata(mediaMetadataBuilder.build());
                 it;
             }
         }

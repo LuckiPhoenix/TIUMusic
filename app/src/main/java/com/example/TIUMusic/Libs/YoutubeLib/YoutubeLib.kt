@@ -128,10 +128,7 @@ fun YoutubeView(
                         if (mediaSession != null && (!mediaSession!!.isActive || youtubeViewModel.reloadDuration))
                         {
                             youtubeViewModel.reloadDuration = false;
-                            youtubeViewModel.updateMediaMetadata(
-                                durationMs = duration.toLong() * 1000L,
-                                context = context
-                            );
+                            youtubeViewModel.updateVideoDuration(durationMs = duration.toLong() * 1000L);
                             youtubeViewModel.setMediaSessionActive(true);
                             // println("Playing");
                             youtubeViewModel.updatePlaybackState(
@@ -153,6 +150,7 @@ fun YoutubeView(
                         onState(youTubePlayer, state);
                         if (state == PlayerConstants.PlayerState.UNSTARTED)
                             return;
+                        youtubeViewModel.updateVideoDuration(ytPlayerHelper.ytVideoTracker.videoDuration.toLong() * 1000L);
                         youtubeViewModel.updatePlaybackState(
                             state = state,
                             position = ytPlayerHelper.seekToTime.toLong() * 1000L,
