@@ -86,6 +86,7 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
@@ -567,7 +568,6 @@ fun HorizontalScrollableSection(
         WindowSize.COMPACT -> 160.dp
         WindowSize.MEDIUM -> 180.dp
     }
-
     val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
 
     Column {
@@ -849,6 +849,7 @@ fun AlbumCard(
     imageSize: Dp,
     onClick: () -> Unit = {}
 ) {
+    val painter = rememberAsyncImagePainter(item.imageUrl);
     Column(
         modifier = modifier
             .clickable(
@@ -859,6 +860,7 @@ fun AlbumCard(
     ) {
         AsyncImage(
             model = item.imageUrl,
+            fallback = painter,
             contentDescription = "Album art for ${item.title}",
             contentScale = ContentScale.Crop,
             modifier = Modifier

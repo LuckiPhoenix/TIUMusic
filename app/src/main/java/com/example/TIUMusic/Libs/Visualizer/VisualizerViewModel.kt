@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.ViewModel
+import com.example.TIUMusic.MainActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import java.lang.Thread.sleep
@@ -24,7 +25,7 @@ object VisualizerSettings {
 }
 
 interface VisualizerListener {
-    fun onChange(newPathLeft : Path, newPathRight : Path, transformedFFT : DoubleArray);
+    fun onChange(newPathLeft : Path, newPathRight : Path);
 }
 
 class VisualizerViewModel(
@@ -61,7 +62,6 @@ class VisualizerViewModel(
 
         fftBytes = ByteArray(0);
         fftM = MutableStateFlow(DoubleArray(0));
-        println(visualizer);
     }
 
     public fun init() {
@@ -83,7 +83,7 @@ class VisualizerViewModel(
                 println("ran");
                 var prevUpdateTime = System.currentTimeMillis();
                 while (true) {
-                    if (listeners.isEmpty()) {
+                    if (listeners.isEmpty() || MainActivity.isPaused) {
                         sleep(500);
                         continue;
                     }
@@ -93,7 +93,6 @@ class VisualizerViewModel(
                     val fft = GetTransformedFFT(0, 22050);
                     val newPathLeft = Path();
                     val newPathRight = Path();
-                    val transformedFFT : DoubleArray = DoubleArray(fft.size);
                     val COUNT = fft.size - 1;
                     var minVal = 0.0f;
                     var maxVal = 0.0f;
@@ -120,7 +119,6 @@ class VisualizerViewModel(
                                 ((GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
                                         * lerp(0.3f, maxVal, Easing( i.toFloat() / COUNT.toFloat(), EasingType.OutQuad)))
                                 / 5) / 2;
-                        transformedFFT[i] = barHeight.toDouble();
                         // Right
                         val direction = Offset(
                             cos(angle - Math.PI / 2).toFloat(),
@@ -155,7 +153,7 @@ class VisualizerViewModel(
                         beginOffset.y
                     )
                     for (listener in listeners) {
-                        listener.onChange(newPathLeft, newPathRight, transformedFFT);
+                        listener.onChange(newPathLeft, newPathRight);
                     }
                     val fpsLimit = 50.0f;
                     val spfLimit = 1.0f / fpsLimit * 1000.0f;

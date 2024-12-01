@@ -1,6 +1,8 @@
 package com.example.TIUMusic.SongData
 
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 
 data class MusicItem(
     val videoId: String,
@@ -8,16 +10,18 @@ data class MusicItem(
     val artist: String,
     val imageUrl: String,
     val type: Int, // 0: Song, 1: Playlist, 2: Album, 3, Artist
+    val playlistId : String = "",
+    val browseId : String = "",
 ) {
-    fun getHDThumbnail() : String {
-        return getYoutubeHDThumbnail(videoId);
-    }
+    fun getHDThumbnail() : String = getYoutubeHDThumbnail(videoId);
+    fun getSmallThumbnail() : String = getYoutubeSmallThumbnail(videoId);
 }
 
 data class NewReleaseCard(
     val type: String,
     val musicItem: MusicItem
 )
+
 //data class không hoàn thiện, Hải chỉnh lại theo file Json hoặc CSV của spotify API
 // các file API/SDK logic viết tại folder này
 

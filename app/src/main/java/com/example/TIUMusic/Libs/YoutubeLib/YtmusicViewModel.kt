@@ -71,7 +71,7 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    private var _homeItems = MutableStateFlow<List<HomeItem>>(emptyList());
+    private var _homeItems = MutableStateFlow<List<HomeItem>>(listOf());
     val homeItems : StateFlow<List<HomeItem>> = _homeItems.asStateFlow();
 
     private var _chart = MutableStateFlow<Chart?>(null);
@@ -172,13 +172,25 @@ class YtmusicViewModel @Inject constructor(
     }
 
     fun getContinuation(context: Context) {
-        if (fetchingContinuation)
+        if (fetchingContinuation || homeContinuation.intValue > 15)
             return;
         fetchingContinuation = true;
         viewModelScope.launch {
             val items = getHomeScreen(context)
-            if (items.isNotEmpty())
-                _homeItems.value = items;
+            if (items.isNotEmpty()) {
+                val newHome = mutableListOf<HomeItem>();
+                newHome.addAll(_homeItems.value);
+                if (_homeItems.value.isEmpty()) {
+                    newHome.addAll(items);
+                }
+                else {
+                    for (item in items) {
+                        if (newHome.find { (it.title == item.title) } == null)
+                            newHome.add(item);
+                    }
+                }
+                _homeItems.value = (newHome);
+            }
             fetchingContinuation = false;
         }
         _homeContinuation.intValue++;
@@ -194,8 +206,8 @@ class YtmusicViewModel @Inject constructor(
                         )?.nextContinuationData?.continuation
                     val data =
                         result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.tabRenderer?.content?.sectionListRenderer?.contents;
-                    val list: ArrayList<HomeItem> = arrayListOf()
-                    list.addAll(parseHomeScreen(data, context))
+                    val list: MutableList<HomeItem> = mutableListOf()
+                    // list.addAll(parseHomeScreen(data, context))
                     var count = 0
                     while (count < _homeContinuation.intValue && continueParam != null) {
                         YouTube.customQuery(browseId = "", continuation = continueParam)
@@ -798,7 +810,6 @@ class YtmusicViewModel @Inject constructor(
         }
     }
 
-
     private suspend fun newRelease(context: Context) : List<HomeItem> {
         YouTube.newRelease().onSuccess { result ->
             return parseNewRelease(result, context);
@@ -886,6 +897,7 @@ class YtmusicViewModel @Inject constructor(
         )
         return result
     }
+
     fun SongListSample(playlistId: String){
         viewModelScope.launch {
             runCatching {

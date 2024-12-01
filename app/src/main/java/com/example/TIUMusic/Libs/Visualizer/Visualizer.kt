@@ -110,9 +110,8 @@ fun VisualizerCircleRGB(
     var center = remember { Size(0f, 0f) }
     // INIT sa
     DisposableEffect(Unit) {
-        println("INIT");
         val listener = object : VisualizerListener {
-            override fun onChange(newPathLeft: Path, newPathRight: Path, transformedFFT : DoubleArray) {
+            override fun onChange(newPathLeft: Path, newPathRight: Path) {
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
 
@@ -175,93 +174,32 @@ fun VisualizerCircle(
 ) {
     if (!VisualizerSettings.VisualizerEnabled)
         return;
-    var prevTime by remember { mutableLongStateOf(System.currentTimeMillis()) };
+    var prevTime = remember { (System.currentTimeMillis()) };
     var pathLeft by remember { mutableStateOf(Path()) }
     var pathRight by remember { mutableStateOf(Path()) }
     var center by remember { mutableStateOf(Size(0f, 0f)) }
-    var drawing by remember { mutableStateOf(false) }
     // INIT sa
     DisposableEffect(Unit) {
-        println("INIT");
-        var threadShouldStop : Boolean = false;
-        Thread(Runnable {
-            println("ran");
-            while (!threadShouldStop) {
-                if (drawing) continue;
-                val newPathLeft = Path();
-                val newPathRight = Path();
-                val fft = visualizerViewModel.GetTransformedFFT(0, 22050);
-                val COUNT = fft.size - 1;
-                var minVal = 0.0f;
-                var maxVal = 0.0f;
-                for (fftData in fft) {
-                    minVal = min(minVal, fftData.toFloat());
-                    maxVal = max(maxVal, fftData.toFloat());
-                }
-                val range = maxVal - minVal;
-                val scaleFactor = range + 0.00001f;
-
-                var hertz = minHertz;
-                var barHeight = 0f;
-                // Setup path
-                val beginOffset = Offset(
-                    cos(Math.PI / 2).toFloat() * radius + center.width,
-                    sin(Math.PI / 2).toFloat() * radius + center.height
-                )
-                newPathRight.moveTo(beginOffset.x, beginOffset.y)
-                newPathLeft.moveTo(beginOffset.x,beginOffset.y)
-                for (i in 0..COUNT) {
-                    val xOffset: Float = barDistance * i - barDistance * COUNT / 2;
-                    val angle = i.toFloat() / COUNT.toFloat() * 1.0f * Math.PI;
-                    barHeight = (barHeight + lineHeight *
-                            ((visualizerViewModel.GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
-                                    * lerp(0.3f, maxVal, Easing( i.toFloat() / COUNT.toFloat(), EasingType.OutQuad)))
-                            / 5) / 2;
-                    // Right
-                    val direction = Offset(
-                        cos(angle - Math.PI / 2).toFloat(),
-                        sin(angle - Math.PI / 2).toFloat()
-                    );
-                    val middle = direction * radius + Offset(center.width, center.height)// + Offset(0f, -200f);
-                    val nextPoint = (middle + direction * barHeight);
-                    newPathRight.lineTo(
-                        nextPoint.x,
-                        nextPoint.y
-                    )
-                    // Left
-                    val directionMirrored = Offset(
-                        x = cos(-angle - Math.PI / 2).toFloat(),
-                        y = sin(-angle - Math.PI / 2).toFloat()
-                    );
-                    val middleMirrored = directionMirrored * radius + Offset(center.width, center.height)// + Offset(0f, -200f);
-                    val nextPointMirrored = (middleMirrored + directionMirrored * barHeight);
-                    newPathLeft.lineTo(
-                        nextPointMirrored.x,
-                        nextPointMirrored.y,
-                    )
-                    hertz = lerp(minHertz, maxHertz, Easing((i + 1).toFloat() / COUNT.toFloat(), EasingType.InQuad));
-                }
-                newPathRight.lineTo(
-                    beginOffset.x,
-                    beginOffset.y
-                )
-                newPathLeft.lineTo(
-                    beginOffset.x,
-                    beginOffset.y
-                )
+        val listener = object : VisualizerListener {
+            override fun onChange(newPathLeft: Path, newPathRight: Path) {
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
-                // sleep(16);
+
             }
-            println("stop");
-        }).start();
+        }
+        visualizerViewModel.addVisualizerListener(
+            listener = listener,
+            radius = radius,
+            lineHeight = lineHeight,
+            minHertz = minHertz,
+            maxHertz = maxHertz
+        )
         onDispose {
-            threadShouldStop = true;
+            visualizerViewModel.removeVisualizerListener(listener);
         }
     }
     Canvas(modifier = modifier.background(Color.Transparent)) {
         // FPS COUNTER
-        drawing = true;
         val deltaTime: Float = 1 / ((System.currentTimeMillis() - prevTime) / 1000f);
         //println("Delta Time : $deltaTime")
         prevTime = System.currentTimeMillis();
@@ -280,6 +218,5 @@ fun VisualizerCircle(
             resultPath,
             brush
         )
-        drawing = false;
     }
 }

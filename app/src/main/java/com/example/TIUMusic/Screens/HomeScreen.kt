@@ -51,34 +51,10 @@ fun HomeScreen(
                     onItemClick = onPlaylistClick
                 );
             }
-//            HorizontalScrollableSection(
-//                title = "Top picks for you",
-//                items = getTopPicks(),
-//                itemWidth = 200.dp,
-//                sectionHeight = 280.dp,
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Recent",
-//                items = getRecentItems(),
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Based on recent activity",
-//                items = getBasedOnRecent(),
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Made for you",
-//                items = getPlaylists(),
-//                onItemClick = onPlaylistClick
-//            )
         }
     }
 }
+
 
 private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
     val musicItems = mutableListOf<MusicItem>();
@@ -104,21 +80,21 @@ private fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem
         type = 0
         id = item.videoId
     }
-    if (useHDImage) {
-        val hdImageUrl = if (item.videoId != null) getYoutubeHDThumbnail(item.videoId) else "";
-        return MusicItem(
-            videoId = item.videoId ?: "",
-            title = item.title,
-            artist = item.artists?.firstOrNull()?.name ?: "",
-            imageUrl = hdImageUrl,
-            type = 0,
-        )
+    val thumbnail = item.thumbnails.lastOrNull();
+    var thumbnailUrl = "";
+    if (thumbnail != null) {
+        if ((thumbnail.width ?: 0) <= 200 && item.videoId != null)
+            thumbnailUrl = getYoutubeHDThumbnail(item.videoId);
+        else
+            thumbnailUrl = thumbnail.url
     }
     return MusicItem(
-        videoId = id,
+        videoId = item.videoId ?: "",
+        browseId = item.browseId ?: "",
+        playlistId = item.playlistId ?: "",
         title = item.title,
         artist = item.artists?.firstOrNull()?.name ?: "",
-        imageUrl = item.thumbnails.lastOrNull()?.url ?: "",
+        imageUrl = thumbnailUrl,
         type = type
     )
 }
