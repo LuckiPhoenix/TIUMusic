@@ -1,12 +1,14 @@
 package com.example.TIUMusic.Screens
 
 import android.content.ClipData.Item
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,10 +35,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.reusableInputField
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -44,6 +48,7 @@ import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
 import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
@@ -57,7 +62,9 @@ fun TopPlaylistBar(
             .height(82.dp)
             .padding(
                 start = 8.dp,
-                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                top = WindowInsets.statusBars
+                    .asPaddingValues()
+                    .calculateTopPadding()
             ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -65,8 +72,9 @@ fun TopPlaylistBar(
         Icon(
             painter = painterResource(R.drawable.arrow_left_buttom),
             contentDescription = "Return Button",
-            modifier = Modifier.padding(16.dp)
-                .clickable { navController.popBackStack()},
+            modifier = Modifier
+                .padding(16.dp)
+                .clickable { navController.popBackStack() },
             tint = PrimaryColor
         )
         Row(
@@ -89,7 +97,18 @@ fun TopPlaylistBar(
 
 
 @Composable
-fun PlaylistScreen(navController: NavController, playlistId: String, onTabSelected: (Int) -> Unit , modifier: Modifier = Modifier) {
+fun PlaylistScreen(
+    navController: NavController,
+    playlistItem: MusicItem,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    onSongClick: (MusicItem) -> Unit = {},
+    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),) {
+    val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
+
+    LaunchedEffect(Unit) {
+        ytMusicViewModel.SongListSample(playlistItem.videoId)
+    }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
         bottomBar = {
@@ -101,209 +120,138 @@ fun PlaylistScreen(navController: NavController, playlistId: String, onTabSelect
         },
         containerColor = BackgroundColor
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(start = 8.dp, end = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                // Header content
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+        when (val state = playlistState){
+            is UiState.Initial -> {
+                // Trạng thái ban đầu
+                Log.d("LogNav", "Initial id : ${playlistItem.videoId}")
+            }
+            is UiState.Loading -> {
+                CircularProgressIndicator()
+                Log.d("LogNav", "Loading")
+            }
+            is UiState.Success -> {
+                Log.d("LogNav", "Success")
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(start = 8.dp, end = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AsyncImage(
-                        model = "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
-                        contentDescription = "Album Art",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(160.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF282828))
-                    )
-                    Text(text = "Favourite", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
-                    Text(text = "author", fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
-                    Text(text = "Update on Thursday", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .size(160.dp, 52.dp)
-                                .padding(4.dp),
-                            colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                    item {
+                        // Header content
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
+                            AsyncImage(
+                                model = playlistItem.imageUrl,
+                                contentDescription = "Album Art",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(160.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF282828))
+                            )
+                            Text(text = playlistItem.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
+                            Text(text = playlistItem.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
+                            Text(text = playlistItem.artist, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp))
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.play_solid),
-                                    contentDescription = "Play Button",
-                                    modifier = Modifier.padding(12.dp),
-                                    tint = PrimaryColor
-                                )
-                                Text(
-                                    text = "Play",
-                                    fontSize = 18.sp,
-                                    color = PrimaryColor,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Card(
+                                    modifier = Modifier
+                                        .size(160.dp, 52.dp)
+                                        .padding(4.dp),
+                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.play_solid),
+                                            contentDescription = "Play Button",
+                                            modifier = Modifier.padding(12.dp),
+                                            tint = PrimaryColor
+                                        )
+                                        Text(
+                                            text = "Play",
+                                            fontSize = 18.sp,
+                                            color = PrimaryColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Card(
+                                    modifier = Modifier
+                                        .size(160.dp, 52.dp)
+                                        .padding(4.dp),
+                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.shuffle_button),
+                                            contentDescription = "Play Button",
+                                            modifier = Modifier.padding(12.dp),
+                                            tint = PrimaryColor
+                                        )
+                                        Text(
+                                            text = "Shuffle",
+                                            fontSize = 18.sp,
+                                            color = PrimaryColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
                             }
-                        }
-                        Card(
-                            modifier = Modifier
-                                .size(160.dp, 52.dp)
-                                .padding(4.dp),
-                            colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.shuffle_button),
-                                    contentDescription = "Play Button",
-                                    modifier = Modifier.padding(12.dp),
-                                    tint = PrimaryColor
-                                )
-                                Text(
-                                    text = "Shuffle",
-                                    fontSize = 18.sp,
-                                    color = PrimaryColor,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            HorizontalDivider(
+                                thickness = 2.dp,
+                                color = ButtonColor,
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
+                            )
                         }
                     }
-                    HorizontalDivider(
-                        thickness = 2.dp,
-                        color = ButtonColor,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
-                    )
+                    // Song list
+                    items(state.data){item ->
+                        SongInPlaylist(
+                            item,
+                            onClick = {onSongClick(item)} )
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            color = ButtonColor,
+                            modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                        )
+                    }
                 }
             }
+            is UiState.Error -> {
 
-
-
-            // Song list
-            items(SongListSample()) { item ->
-                SongInPlaylist(item.title ?: "", item.artist ?: "", item.imageUrl ?: "")
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    color = ButtonColor,
-                    modifier = Modifier.padding(start = 66.dp, end = 8.dp)
-                )
             }
         }
+
     }
 }
 
-fun SongListSample(): List<MusicItem> {
-    return listOf(
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        ),
-        MusicItem(
-            "01",
-            "I Miss You",
-            "Adele",
-            "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
-        )
-    )
-}
 
 @Composable
-fun SongInPlaylist(title: String, artist: String, albumCover: String) {
+fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
+    val title = item.title
+    val albumCover = item.imageUrl
+    val artist = item.artist
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(start = 8.dp, bottom = 2.dp, top = 6.dp, end = 4.dp)
+            .clickable {
+                onClick()
+            }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
@@ -341,10 +289,4 @@ fun SongInPlaylist(title: String, artist: String, albumCover: String) {
             tint = Color.White,
         )
     }
-}
-
-@Preview
-@Composable
-fun preview () {
-    val navController = rememberNavController()
 }

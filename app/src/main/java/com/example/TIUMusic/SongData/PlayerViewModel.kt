@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class PlayerViewModel : ViewModel() {
-    private var _musicItem = MutableStateFlow(MusicItem("", "", "", ""));
+    private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", 0));
     val musicItem = _musicItem.asStateFlow();
 
     private val _isPlaying = mutableStateOf(false)

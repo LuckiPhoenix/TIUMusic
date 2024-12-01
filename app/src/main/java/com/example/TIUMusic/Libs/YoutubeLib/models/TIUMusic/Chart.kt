@@ -21,6 +21,7 @@ data class Chart(
                         title = it.title,
                         artist = it.artists.firstOrNull()?.name ?: "",
                         imageUrl = it.thumbnail,
+                        type =0
                     )
                 )
             }
@@ -40,7 +41,8 @@ data class Chart(
                         videoId = songs[j].videoId,
                         title = songs[j].title,
                         artist = songs[j].artists?.firstOrNull()?.name ?: "",
-                        imageUrl = songs[j].thumbnail
+                        imageUrl = songs[j].thumbnail,
+                        type = 0
                     )
                 );
             }
@@ -53,7 +55,8 @@ data class Chart(
                         videoId = songs[i].videoId,
                         title = songs[i].title,
                         artist = songs[i].artists?.firstOrNull()?.name ?: "",
-                        imageUrl = songs[i].thumbnail
+                        imageUrl = songs[i].thumbnail,
+                        type = 0
                     )
                 );
             }

@@ -5,6 +5,7 @@ activityKtx = "1.9.3"
 agp = "8.7.1"
 coilCompose = "3.0.4"
 coilNetworkOkhttp = "3.0.4"
+core = "12.1.1"
 dec = "0.1.2"
 fragmentCompose = "1.8.5"
 gson = "2.10.1"
@@ -47,6 +48,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 brotli-dec = { module = "org.brotli:dec", version.ref = "dec" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
+core = { module = "com.pierfrancescosoffritti.androidyoutubeplayer:core", version.ref = "core" }
 google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }

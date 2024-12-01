@@ -683,7 +683,7 @@ fun HorizontalScrollableNewScreenSection2(
                     modifier = Modifier.width(itemWidth!! + 10.dp)
                 ) {
                     songList.forEach {
-                        SongInPlaylist(it.title, it.artist ?: "", it.imageUrl ?: "")
+                        SongInPlaylist(it, onClick = {onItemClick(it)})
                     }
                 }
             }

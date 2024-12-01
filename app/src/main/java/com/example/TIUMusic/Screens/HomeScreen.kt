@@ -90,19 +90,35 @@ private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
 }
 
 private fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem {
+    var type = 0
+    var id = ""
+    if(item.browseId != null){
+        type = 2
+        id = item.browseId
+    }
+    if(item.playlistId != null){
+        type = 1
+        id = item.playlistId
+    }
+    if(item.videoId != null){
+        type = 0
+        id = item.videoId
+    }
     if (useHDImage) {
         val hdImageUrl = if (item.videoId != null) getYoutubeHDThumbnail(item.videoId) else "";
         return MusicItem(
             videoId = item.videoId ?: "",
             title = item.title,
             artist = item.artists?.firstOrNull()?.name ?: "",
-            imageUrl = hdImageUrl
+            imageUrl = hdImageUrl,
+            type = 0,
         )
     }
     return MusicItem(
-        videoId = item.videoId ?: "",
+        videoId = id,
         title = item.title,
         artist = item.artists?.firstOrNull()?.name ?: "",
-        imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
+        imageUrl = item.thumbnails.lastOrNull()?.url ?: "",
+        type = type
     )
 }

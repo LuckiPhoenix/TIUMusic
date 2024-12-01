@@ -31,6 +31,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
+import com.example.TIUMusic.SongData.MusicItem
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,6 +39,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.encodeURLPath
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -78,7 +80,10 @@ class YtmusicViewModel @Inject constructor(
     private var _newReleases = MutableStateFlow<List<HomeItem>>(listOf());
     val newReleases = _newReleases.asStateFlow();
 
-    private var _homeContinuation = mutableIntStateOf(1);
+    private var _listTrackItems = MutableStateFlow<UiState<List<MusicItem>>>(UiState.Initial)
+    val listTrackItems : StateFlow<UiState<List<MusicItem>>> = _listTrackItems.asStateFlow();
+
+    private var _homeContinuation = mutableIntStateOf(0);
     val homeContinuation = _homeContinuation.asIntState();
 
     var fetchingContinuation : Boolean = false;
@@ -94,24 +99,6 @@ class YtmusicViewModel @Inject constructor(
                 }) {
                     val client = YouTubeClient.WEB_REMIX
                     val response = ytmusic.search(client = client, query).body<SearchResponse>()
-//                    // Cấu hình JSON parser
-//                    val json = Json {
-//                        ignoreUnknownKeys = true
-//                        isLenient = true
-//                    }
-//                    // Parse JSON
-//                    val parsedResponse = json.decodeFromString<SearchResponse>(response)
-//                    val parsedResponseString = parsedResponse.toString()
-//                    // Phần còn lại của mã
-//                    val maxLogSize = 1000
-//                    for (i in 0..parsedResponseString.length / maxLogSize) {
-//                        val start = i * maxLogSize
-//                        var end = (i + 1) * maxLogSize
-//                        end =
-//                            if (end < parsedResponseString.length) end else parsedResponseString.length
-//                        Log.d("messageReturn", parsedResponseString.substring(start, end))
-//                    }
-//                    Log.d("messageReturn", "ENDJSON")
 
                     videoInfos = extractVideoInfo(response)
 
@@ -898,5 +885,35 @@ class YtmusicViewModel @Inject constructor(
             ),
         )
         return result
+    }
+    fun SongListSample(playlistId: String){
+        viewModelScope.launch {
+            runCatching {
+                YouTube.getPlaylistFullTracks(playlistId)
+            }.onSuccess {result ->
+                result.onSuccess { tracks ->
+                    val musicItems = tracks.map { songItem ->
+                        MusicItem(
+                            videoId = songItem.id,
+                            title = songItem.title,
+                            artist = songItem.artists.firstOrNull()?.name ?: "Unknown Artist",
+                            imageUrl = songItem.thumbnail.encodeURLPath(),
+                            type = 0
+                        )
+                    }
+                    _listTrackItems.value = UiState.Success(musicItems)
+                }.onFailure { error ->
+                    _listTrackItems.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            }.onFailure { exception ->
+                _listTrackItems.value = UiState.Error(exception.message ?: "Network error")
+            }
+        }
+    }
+    sealed class UiState<out T> {
+        object Initial : UiState<Nothing>()
+        object Loading : UiState<Nothing>()
+        data class Success<T>(val data: T) : UiState<T>()
+        data class Error(val message: String) : UiState<Nothing>()
     }
 }
