@@ -18,6 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
@@ -80,19 +81,27 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            youtubeViewModel.loadAndPlayVideo(
-                                videoId = musicItem.id,
-                                metadata = YoutubeMetadata(
-                                    title = "",
-                                    artist = "",
-                                    artBitmap = null,
-                                    displayTitle = "",
-                                    displaySubtitle = ""
-                                ),
-                                0L,
-                                context = context
-                            );
-                            // navController.navigate("playlist/${musicItem.id}")
+                            if(musicItem.type == 0){
+                                Log.d("LogNav", "TYPE = 0")
+                                youtubeViewModel.loadAndPlayVideo(
+                                    videoId = musicItem.id,
+                                    metadata = YoutubeMetadata(
+                                        title = musicItem.title,
+                                        artist = musicItem.artist,
+                                        artBitmap = null,
+                                        displayTitle = "",
+                                        displaySubtitle = ""
+                                    ),
+                                    0L,
+                                    context = context
+                                );
+                            } else if(musicItem.type == 1){
+                                navController.navigate("playlist/${musicItem.id}")
+                                Log.d("LogNav", "TYPE = 1 with ${musicItem.id}")
+                            }
+                            else if(musicItem.type == 2){
+                                Log.d("LogNav", "TYPE = 2")
+                            }
                         }
                     )
                 }
@@ -143,6 +152,22 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
+                        onSongClick = {musicItem ->
+                            Log.d("LogNav", "TYPE = 0")
+                            youtubeViewModel.loadAndPlayVideo(
+                                videoId = musicItem.id,
+                                metadata = YoutubeMetadata(
+                                    title = "",
+                                    artist = "",
+                                    artBitmap = null,
+                                    displayTitle = "",
+                                    displaySubtitle = ""
+                                ),
+                                0L,
+                                context = context
+                            );
+
+                        }
                     )
                 }
             }
@@ -151,7 +176,7 @@ fun NavHost(
         // Check if we're in any route within the main navigation
         if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
-                musicItem = MusicItem("", "", "" , ""),
+                musicItem = MusicItem("TestId", "TestTitle", "TestArtist" , "TestUrl", 0),
                 playerViewModel = playerViewModel,
                 youtubeViewModel = youtubeViewModel,
                 visualizerViewModel = visualizerViewModel,

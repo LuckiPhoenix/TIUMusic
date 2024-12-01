@@ -4,34 +4,17 @@ package com.example.TIUMusic.Screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
-import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
 import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.SongData.getBasedOnRecent
-import com.example.TIUMusic.SongData.getPlaylists
-import com.example.TIUMusic.SongData.getRecentItems
-import com.example.TIUMusic.SongData.getTopPicks
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun HomeScreen(
@@ -61,33 +44,8 @@ fun HomeScreen(
                     itemWidth = 200.dp,
                     sectionHeight = 280.dp,
                     onItemClick = onPlaylistClick
-                );
+                )
             }
-//            HorizontalScrollableSection(
-//                title = "Top picks for you",
-//                items = getTopPicks(),
-//                itemWidth = 200.dp,
-//                sectionHeight = 280.dp,
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Recent",
-//                items = getRecentItems(),
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Based on recent activity",
-//                items = getBasedOnRecent(),
-//                onItemClick = onPlaylistClick
-//            )
-//
-//            HorizontalScrollableSection(
-//                title = "Made for you",
-//                items = getPlaylists(),
-//                onItemClick = onPlaylistClick
-//            )
         }
     }
 }
@@ -102,10 +60,25 @@ private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
 }
 
 private fun fromHomeContent(item : HomeContent) : MusicItem {
+    var type = 0
+    var id = ""
+    if (item.browseId != null){
+        type = 2
+        id = item.browseId
+    }
+    if(item.playlistId != null){
+        type = 1
+        id = item.playlistId
+    }
+    if(item.videoId != null) {
+        type = 0
+        id = item.videoId.toString()
+    }
     return MusicItem(
-        id = item.videoId ?: "",
+        id = id ,
         title = item.title,
         artist = item.artists?.firstOrNull()?.name ?: "",
-        imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
+        imageUrl = item.thumbnails.lastOrNull()?.url ?: "",
+        type = type
     )
 }

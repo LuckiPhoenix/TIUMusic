@@ -554,26 +554,41 @@ object YouTube {
     suspend fun getPlaylistFullTracks(playlistId: String): Result<List<SongItem>> =
         runCatching {
             val songs = mutableListOf<SongItem>()
-            val response = ytMusic.playlist(playlistId).body<BrowseResponse>()
+            // Log response details
+            val response =
+            ytMusic
+                .browse(
+                    client = WEB_REMIX,
+                    browseId = "VL$playlistId",
+                    setLogin = true,
+                )
+            val browseResponse = response.body<BrowseResponse>()
             songs.addAll(
-                response.fromPlaylistToTrack()
+                browseResponse.fromPlaylistToTrack().also {
+                    Log.d("PlaylistFetch", "Initial tracks added: ${it.size}")
+                }
             )
-            var continuation = response.getPlaylistContinuation()
+            var continuation = browseResponse.getPlaylistContinuation()
             while (continuation != null) {
                 val continuationResponse = ytMusic.browse(
                     client = WEB_REMIX,
                     setLogin = true,
                     params = null,
                     continuation = continuation
-                ).body<BrowseResponse>()
-                songs.addAll(
-                    continuationResponse.fromPlaylistContinuationToTracks()
                 )
-                continuation = continuationResponse.getContinuePlaylistContinuation()
+                val continueBrowseResponse = continuationResponse.body<BrowseResponse>()
+                songs.addAll(
+                    continueBrowseResponse.fromPlaylistContinuationToTracks().also {
+                        Log.d("PlaylistFetch", "Continuation tracks added: ${it.size}")
+                    }
+                )
+                continuation = continueBrowseResponse.getContinuePlaylistContinuation()
             }
             return@runCatching songs
+        }.onFailure { exception ->
+            Log.e("PlaylistFetch", "Error fetching playlist", exception)
+            exception.printStackTrace()
         }
-
     /**
      * Get the playlist page data from YouTube Music
      * @param playlistId the playlistId

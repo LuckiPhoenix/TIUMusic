@@ -37,77 +37,77 @@ fun NewScreen(navController: NavController, onTabSelected: (Int) -> Unit, onPlay
                 onItemClick = { }
             )
 
-            HorizontalScrollableNewScreenSection3(
-                title = "New Releases",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Viet music",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection4(
-                title = "Updated Playlist",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreenType4(),
-                itemWidth = 150.dp,
-                sectionHeight = 440.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Match Your Mood",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection2(
-                title = "Latest Songs",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSampleNewScreen(),
-                itemWidth = 300.dp,
-                sectionHeight = 260.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Everyone's Talking About",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "Daily Top 100",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
-
-            HorizontalScrollableNewScreenSection3(
-                title = "City Charts",
-                iconHeader = R.drawable.baseline_chevron_right_24,
-                items = SongListSample(),
-                itemWidth = 150.dp,
-                sectionHeight = 220.dp,
-                onItemClick = { }
-            )
+//            HorizontalScrollableNewScreenSection3(
+//                title = "New Releases",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Viet music",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection4(
+//                title = "Updated Playlist",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSampleNewScreenType4(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 440.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Match Your Mood",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection2(
+//                title = "Latest Songs",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSampleNewScreen(),
+//                itemWidth = 300.dp,
+//                sectionHeight = 260.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Everyone's Talking About",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "Daily Top 100",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
+//
+//            HorizontalScrollableNewScreenSection3(
+//                title = "City Charts",
+//                iconHeader = R.drawable.baseline_chevron_right_24,
+//                items = SongListSample(),
+//                itemWidth = 150.dp,
+//                sectionHeight = 220.dp,
+//                onItemClick = { }
+//            )
         }
     }
 }
@@ -119,25 +119,29 @@ fun SongListSampleNewScreen(): List<List<MusicItem>> {
                 "01",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "02",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "03",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "04",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -145,25 +149,29 @@ fun SongListSampleNewScreen(): List<List<MusicItem>> {
                 "05",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "06",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "07",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "08",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -171,25 +179,29 @@ fun SongListSampleNewScreen(): List<List<MusicItem>> {
                 "09",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "10",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "11",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "12",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -197,19 +209,22 @@ fun SongListSampleNewScreen(): List<List<MusicItem>> {
                 "13",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "14",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "15",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             )
         )
     )
@@ -222,13 +237,15 @@ fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
                 "01",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "02",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -236,13 +253,15 @@ fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
                 "03",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "04",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -250,13 +269,15 @@ fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
                 "05",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "06",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         ),
         listOf(
@@ -264,13 +285,15 @@ fun SongListSampleNewScreenType4(): List<List<MusicItem>> {
                 "07",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
             MusicItem(
                 "08",
                 "I Miss You",
                 "Adele",
-                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png"
+                "https://i1.sndcdn.com/artworks-v08j7vI5enr5-0-t500x500.png",
+                0
             ),
         )
     )
