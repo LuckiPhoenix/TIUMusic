@@ -66,22 +66,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
-import com.example.TIUMusic.Libs.Visualizer.VisualizerCircle
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
 @Composable
@@ -114,7 +109,7 @@ public fun ExpandedPlayer(
                 lineHeight = 550.dp.value,
             );
             AsyncImage(
-                model = getYoutubeHDThumbnail(musicItem.id),
+                model = getYoutubeHDThumbnail(musicItem.videoId),
                 contentDescription = "Song Image",
                 contentScale = ContentScale.FillHeight,
                 modifier = Modifier

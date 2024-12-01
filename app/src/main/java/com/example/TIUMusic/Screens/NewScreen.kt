@@ -54,7 +54,7 @@ fun NewScreen(
                             NewReleaseCard(
                                 newRelease.title,
                                 MusicItem(
-                                    id = it.videoId ?: "",
+                                    videoId = it.videoId ?: "",
                                     title = it.title,
                                     artist = it.artists?.firstOrNull()?.name ?: "",
                                     imageUrl = it.thumbnails.lastOrNull()?.url ?: ""
@@ -100,7 +100,7 @@ fun NewScreen(
 
             val newAlbumReleases = newReleases.getOrNull(1)?.contents?.mapNotNull {
                 MusicItem(
-                    id = it?.videoId ?: "",
+                    videoId = it?.videoId ?: "",
                     title = it?.title ?: "",
                     artist = it?.artists?.firstOrNull()?.name ?: "",
                     imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
@@ -119,7 +119,7 @@ fun NewScreen(
 
             val newMusicVideos = newReleases.getOrNull(2)?.contents?.mapNotNull {
                 MusicItem(
-                    id = it?.videoId ?: "",
+                    videoId = it?.videoId ?: "",
                     title = it?.title ?: "",
                     artist = it?.artists?.firstOrNull()?.name ?: "",
                     imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",

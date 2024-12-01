@@ -13,7 +13,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -29,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,7 +50,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,7 +61,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,7 +98,6 @@ import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
-import com.example.TIUMusic.ui.theme.SurfaceColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import kotlinx.coroutines.launch
 
@@ -1082,7 +1077,7 @@ fun NowPlayingSheet(
     }
 
     YoutubeView(
-        youtubeVideoId = musicItem.id,
+        youtubeVideoId = musicItem.videoId,
         youtubeMetadata = YoutubeMetadata(
             title = musicItem.title,
             artist = musicItem.artist,

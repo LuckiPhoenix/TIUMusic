@@ -34,7 +34,6 @@ import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
-import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 
 @Composable
@@ -89,7 +88,7 @@ fun NavHost(
                         onPlaylistClick = { musicItem ->
                             playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
-                                videoId = musicItem.id,
+                                videoId = musicItem.videoId,
                                 metadata = YoutubeMetadata(
                                     title = musicItem.title,
                                     artist = musicItem.artist,
@@ -114,7 +113,7 @@ fun NavHost(
                         3 -> navController.navigate("search")
                     }
                     },onPlaylistClick = { musicItem ->
-                        navController.navigate("playlist/${musicItem.id}")
+                        navController.navigate("playlist/${musicItem.videoId}")
                     },
                     hiltViewModel()
                     )

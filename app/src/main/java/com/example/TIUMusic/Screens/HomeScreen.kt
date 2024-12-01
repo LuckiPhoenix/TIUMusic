@@ -93,17 +93,16 @@ private fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem
     if (useHDImage) {
         val hdImageUrl = if (item.videoId != null) getYoutubeHDThumbnail(item.videoId) else "";
         return MusicItem(
-            id = item.videoId ?: "",
+            videoId = item.videoId ?: "",
             title = item.title,
             artist = item.artists?.firstOrNull()?.name ?: "",
             imageUrl = hdImageUrl
         )
     }
-    else
-        return MusicItem(
-            id = item.videoId ?: "",
-            title = item.title,
-            artist = item.artists?.firstOrNull()?.name ?: "",
-            imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
-        )
+    return MusicItem(
+        videoId = item.videoId ?: "",
+        title = item.title,
+        artist = item.artists?.firstOrNull()?.name ?: "",
+        imageUrl = item.thumbnails.lastOrNull()?.url ?: ""
+    )
 }
