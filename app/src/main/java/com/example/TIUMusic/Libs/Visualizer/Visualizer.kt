@@ -181,7 +181,7 @@ fun VisualizerCircleRGB(
                 )
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
-                // sleep(16);
+                sleep(16);
             }
             println("stop");
         }).start();

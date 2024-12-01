@@ -6,9 +6,16 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -30,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -43,20 +51,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -81,6 +93,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
+import com.example.TIUMusic.ui.theme.SecondaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
@@ -95,69 +108,98 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Spacer(modifier = Modifier.height(128.dp))
-
-        // Album art
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .fillMaxWidth()
-        ) {
-            VisualizerCircleRGB(
-                visualizerViewModel = visualizerViewModel,
-                radius = 330.dp.value,
-                lineHeight = 550.dp.value,
-            );
-            AsyncImage(
-                model = getYoutubeHDThumbnail(musicItem.id),
-                contentDescription = "Song Image",
-                contentScale = ContentScale.FillHeight,
-                modifier = Modifier
-                    .size(240.dp)
-                    .clip(RoundedCornerShape(140.dp))
-                    .background(Color(0xFF404040))
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Title and artist
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            Text(
-                text = musicItem.title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = musicItem.artist,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-
-        PlaybackControls(
-            isPlaying = isPlaying,
-            onPlayPauseClick = onPlayPauseClick,
-            currentTime = currentTime,
-            duration = duration,
-            onSeek = onSeek,
-            onSeekFinished = onSeekFinished
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 50000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
         )
+    )
+    val gradientColors = PrimaryColor
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+        ) {
+            Spacer(modifier = Modifier.height(64.dp))
 
-        VolumeControls()
-        Spacer(modifier = Modifier.height(32.dp))
-    }
+            // Album art
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxSize()
+                    .weight(1f)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                gradientColors.copy(alpha = 0.5f), // Increased visibility
+                                gradientColors.copy(alpha = 0f)
+                            ),
+                            center = Offset.Unspecified, // Center the gradient
+                            radius = 500f // Adjust radius for better coverage
+                        )
+                    )
+            ) {
+                VisualizerCircleRGB(
+                    visualizerViewModel = visualizerViewModel,
+                    radius = 330.dp.value,
+                    lineHeight = 550.dp.value,
+                )
+                AsyncImage(
+                    model = getYoutubeHDThumbnail(musicItem.id),
+                    contentDescription = "Song Image",
+                    contentScale = ContentScale.FillHeight,
+                    modifier = Modifier
+                        .size(240.dp)
+                        .clip(RoundedCornerShape(140.dp))
+                        .background(Color(0xFF404040))
+                        .graphicsLayer(rotationZ = rotation) // Apply rotation
+                )
+            }
+
+
+            Column (
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()){// Title and artist
+                Column(modifier = Modifier.padding(start = 16.dp)) {
+                    Text(
+                        text = musicItem.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = musicItem.artist,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                PlaybackControls(
+                    isPlaying = isPlaying,
+                    onPlayPauseClick = onPlayPauseClick,
+                    currentTime = currentTime,
+                    duration = duration,
+                    onSeek = onSeek,
+                    onSeekFinished = onSeekFinished
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                VolumeControls()
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
 }
 
 
@@ -193,6 +235,18 @@ fun PlaybackControls(
                 onSeekFinished(sliderPosition)
             },
             valueRange = 0f..duration,
+            colors = SliderColors(
+                thumbColor = PrimaryColor,
+                activeTrackColor = SecondaryColor,
+                activeTickColor = SecondaryColor,
+                inactiveTrackColor = Color(0x33FFFFFF),
+                inactiveTickColor = Color(0x33FFFFFF),
+                disabledThumbColor = PrimaryColor,
+                disabledActiveTrackColor = SecondaryColor,
+                disabledActiveTickColor = SecondaryColor,
+                disabledInactiveTrackColor = Color(0x33FFFFFF),
+                disabledInactiveTickColor = Color(0x33FFFFFF)
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
@@ -621,4 +675,3 @@ fun DrawScope.drawTrimmedPath(path: Path, color: Color) {
 }
 
 fun lerp(start: Float, end: Float, t: Float) = start + t * (end - start)
-
