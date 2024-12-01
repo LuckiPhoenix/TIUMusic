@@ -81,7 +81,7 @@ fun NavHost(
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {} // Currently on home
-                                1 -> navController.navigate("artist")
+                                1 -> navController.navigate("new")
                                 2 -> navController.navigate("library")
                                 3 -> navController.navigate("search")
                             }
