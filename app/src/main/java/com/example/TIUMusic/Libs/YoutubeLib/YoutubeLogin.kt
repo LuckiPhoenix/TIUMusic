@@ -6,16 +6,22 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
+import com.example.TIUMusic.ui.theme.BackgroundColor
 
 @Composable
 fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
     if (userViewModel.isLoggedIn()) {
+        Box(modifier = Modifier.background(BackgroundColor).fillMaxSize())
         CookieManager.getInstance().getCookie(LocalContext.current.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
             YouTube.cookie = it
         }
@@ -23,6 +29,7 @@ fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
         return;
     }
     AndroidView(
+        modifier = Modifier.fillMaxSize().background(BackgroundColor),
         factory = {
             WebView(it).apply{
                 settings.javaScriptEnabled = true;

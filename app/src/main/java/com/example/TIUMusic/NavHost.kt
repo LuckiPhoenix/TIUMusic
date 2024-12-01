@@ -89,9 +89,9 @@ fun NavHost(
                             }
                         },
                         onPlaylistClick = { musicItem ->
-                            playerViewModel.setMusicItem(musicItem)
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
+                                playerViewModel.setMusicItem(musicItem)
                                 youtubeViewModel.loadAndPlayVideo(
                                     videoId = musicItem.videoId,
                                     metadata = YoutubeMetadata(
@@ -127,7 +127,31 @@ fun NavHost(
                         3 -> navController.navigate("search")
                     }
                     },onPlaylistClick = { musicItem ->
-                        navController.navigate("playlist/${musicItem.videoId}")
+                        if(musicItem.type == 0){
+                            Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setMusicItem(musicItem)
+                            youtubeViewModel.loadAndPlayVideo(
+                                videoId = musicItem.videoId,
+                                metadata = YoutubeMetadata(
+                                    title = musicItem.title,
+                                    artist = musicItem.artist,
+                                    artBitmapURL = musicItem.imageUrl,
+                                    displayTitle = musicItem.title,
+                                    displaySubtitle = musicItem.artist
+                                ),
+                                0L,
+                                context = context
+                            );
+                        } else if(musicItem.type == 1){
+                            navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                            navController.navigate("playlist/${musicItem.videoId}")
+                            Log.d("LogNav", "TYPE = 1 with ${musicItem.videoId}")
+                        }
+                        else if(musicItem.type == 2){
+                            Log.d("LogNav", "TYPE = 2")
+                        }
                     },
                     hiltViewModel()
                     )

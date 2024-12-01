@@ -112,10 +112,9 @@ fun VisualizerCircleRGB(
     DisposableEffect(Unit) {
         println("INIT");
         val listener = object : VisualizerListener {
-            override fun onChange(newPathLeft: Path, newPathRight: Path) {
+            override fun onChange(newPathLeft: Path, newPathRight: Path, transformedFFT : DoubleArray) {
                 pathLeft = newPathLeft;
                 pathRight = newPathRight;
-                sleep(16);
 
             }
         }

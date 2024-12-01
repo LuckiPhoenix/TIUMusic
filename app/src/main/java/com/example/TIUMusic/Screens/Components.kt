@@ -91,6 +91,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
@@ -1213,7 +1214,7 @@ private fun MiniPlayer(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = musicItem.imageUrl,
+                model = getYoutubeSmallThumbnail(musicItem.videoId),
                 contentDescription = "song image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

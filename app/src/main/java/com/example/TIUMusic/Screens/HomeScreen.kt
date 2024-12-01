@@ -84,7 +84,7 @@ private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
     val musicItems = mutableListOf<MusicItem>();
     for (item in list) {
         if (item != null)
-            musicItems.add(fromHomeContent(item, item.videoId != null));
+            musicItems.add(fromHomeContent(item, item.browseId == null && item.playlistId == null));
     }
     return musicItems;
 }

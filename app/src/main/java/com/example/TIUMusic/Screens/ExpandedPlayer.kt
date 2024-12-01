@@ -113,7 +113,8 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-    val gradientColors = PrimaryColor
+
+    // val gradientColors = PrimaryColor
 
         Column(
             modifier = Modifier

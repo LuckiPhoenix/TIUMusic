@@ -897,7 +897,7 @@ class YtmusicViewModel @Inject constructor(
                             videoId = songItem.id,
                             title = songItem.title,
                             artist = songItem.artists.firstOrNull()?.name ?: "Unknown Artist",
-                            imageUrl = songItem.thumbnail.encodeURLPath(),
+                            imageUrl = songItem.thumbnails?.thumbnails?.firstOrNull()?.url ?: "",
                             type = 0
                         )
                     }
