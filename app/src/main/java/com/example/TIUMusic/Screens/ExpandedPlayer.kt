@@ -126,31 +126,6 @@ public fun ExpandedPlayer(
             // Album art
             Box(
                 contentAlignment = Alignment.Center,
-
-            VisualizerCircleRGB(
-                visualizerViewModel = visualizerViewModel,
-                radius = 330.dp.value,
-                lineHeight = 550.dp.value,
-            );
-            AsyncImage(
-                model = getYoutubeHDThumbnail(musicItem.videoId),
-                contentDescription = "Song Image",
-                contentScale = ContentScale.FillHeight,
-
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxSize()
-                    .weight(1f)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                gradientColors.copy(alpha = 0.5f), // Increased visibility
-                                gradientColors.copy(alpha = 0f)
-                            ),
-                            center = Offset.Unspecified, // Center the gradient
-                            radius = 500f // Adjust radius for better coverage
-                        )
-                    )
             ) {
                 VisualizerCircleRGB(
                     visualizerViewModel = visualizerViewModel,
@@ -158,7 +133,7 @@ public fun ExpandedPlayer(
                     lineHeight = 550.dp.value,
                 )
                 AsyncImage(
-                    model = getYoutubeHDThumbnail(musicItem.id),
+                    model = getYoutubeHDThumbnail(musicItem.videoId),
                     contentDescription = "Song Image",
                     contentScale = ContentScale.FillHeight,
                     modifier = Modifier
@@ -168,7 +143,6 @@ public fun ExpandedPlayer(
                         .graphicsLayer(rotationZ = rotation) // Apply rotation
                 )
             }
-
 
             Column (
                 verticalArrangement = Arrangement.Bottom,
