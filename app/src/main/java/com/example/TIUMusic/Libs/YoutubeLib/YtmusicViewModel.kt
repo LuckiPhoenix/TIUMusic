@@ -899,4 +899,35 @@ class YtmusicViewModel @Inject constructor(
         )
         return result
     }
+
+    fun SongListSample(playlistId: String){
+        viewModelScope.launch {
+            runCatching {
+                YouTube.getPlaylistFullTracks(playlistId)
+            }.onSuccess {result ->
+                result.onSuccess { tracks ->
+                    val musicItems = tracks.map { songItem ->
+                        MusicItem(
+                            videoId = songItem.id,
+                            title = songItem.title,
+                            artist = songItem.artists.firstOrNull()?.name ?: "Unknown Artist",
+                            imageUrl = songItem.thumbnails?.thumbnails?.firstOrNull()?.url ?: "",
+                            type = 0
+                        )
+                    }
+                    _listTrackItems.value = UiState.Success(musicItems)
+                }.onFailure { error ->
+                    _listTrackItems.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            }.onFailure { exception ->
+                _listTrackItems.value = UiState.Error(exception.message ?: "Network error")
+            }
+        }
+    }
+    sealed class UiState<out T> {
+        object Initial : UiState<Nothing>()
+        object Loading : UiState<Nothing>()
+        data class Success<T>(val data: T) : UiState<T>()
+        data class Error(val message: String) : UiState<Nothing>()
+    }
 }

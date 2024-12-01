@@ -90,12 +90,16 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Spacer(modifier = Modifier.height(128.dp))
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 50000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+    // val gradientColors = PrimaryColor
 
         // Album art
         Box(
@@ -103,15 +107,32 @@ public fun ExpandedPlayer(
             modifier = Modifier.align(Alignment.CenterHorizontally)
                 .fillMaxWidth()
         ) {
-            VisualizerCircleRGB(
-                visualizerViewModel = visualizerViewModel,
-                radius = 330.dp.value,
-                lineHeight = 550.dp.value,
-            );
-            AsyncImage(
-                model = getYoutubeHDThumbnail(musicItem.videoId),
-                contentDescription = "Song Image",
-                contentScale = ContentScale.FillHeight,
+
+            Spacer(modifier = Modifier.height(64.dp))
+
+            // Album art
+            Box(
+                contentAlignment = Alignment.Center,
+            ) {
+                VisualizerCircleRGB(
+                    visualizerViewModel = visualizerViewModel,
+                    radius = 330.dp.value,
+                    lineHeight = 550.dp.value,
+                )
+                AsyncImage(
+                    model = getYoutubeHDThumbnail(musicItem.videoId),
+                    contentDescription = "Song Image",
+                    contentScale = ContentScale.FillHeight,
+                    modifier = Modifier
+                        .size(250.dp)
+                        .clip(RoundedCornerShape(140.dp))
+                        .background(Color(0xFF404040))
+                        .graphicsLayer(rotationZ = rotation) // Apply rotation
+                )
+            }
+
+            Column (
+                verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .size(240.dp)
                     .clip(RoundedCornerShape(140.dp))
