@@ -29,6 +29,7 @@ import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.Screens.ArtistPage
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.NewScreen
@@ -189,6 +190,25 @@ fun NavHost(
                             );
 
                         }
+                    )
+                }
+                composable(
+                    route = "artist",
+                ) {
+                    ArtistPage(
+                        BrowseID = "",
+                        onClickMusicItem = {},
+                        onClickAlbum = {},
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        ytmusicViewModel = hiltViewModel(),
+                        navController = navController,
                     )
                 }
             }
