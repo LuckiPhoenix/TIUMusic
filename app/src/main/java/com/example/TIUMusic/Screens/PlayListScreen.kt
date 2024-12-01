@@ -107,7 +107,7 @@ fun PlaylistScreen(
     val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
 
     LaunchedEffect(Unit) {
-        ytMusicViewModel.SongListSample(playlistItem.videoId)
+        ytMusicViewModel.SongListSample(playlistItem.playlistId)
     }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
@@ -123,7 +123,7 @@ fun PlaylistScreen(
         when (val state = playlistState){
             is UiState.Initial -> {
                 // Trạng thái ban đầu
-                Log.d("LogNav", "Initial id : ${playlistItem.videoId}")
+                Log.d("LogNav", "Initial id : ${playlistItem.playlistId}")
             }
             is UiState.Loading -> {
                 CircularProgressIndicator()

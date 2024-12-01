@@ -32,6 +32,20 @@ import kotlinx.coroutines.runBlocking
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        var isPaused = false;
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isPaused = true;
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isPaused = false;
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

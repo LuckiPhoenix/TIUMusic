@@ -27,9 +27,6 @@ class PlayerViewModel : ViewModel() {
     private val _currentTime = mutableFloatStateOf(0.0f);
     val currentTime : State<Float> = _currentTime;
 
-    init {
-        println("lmao");
-    }
 
     fun setMusicItem(item : MusicItem) {
         _musicItem.value = item;

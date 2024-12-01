@@ -108,8 +108,8 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
-                                navController.navigate("playlist/${musicItem.videoId}")
-                                Log.d("LogNav", "TYPE = 1 with ${musicItem.videoId}")
+                                navController.navigate("playlist/${musicItem.playlistId}")
+                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
                             else if(musicItem.type == 2){
                                 Log.d("LogNav", "TYPE = 2")
@@ -146,8 +146,8 @@ fun NavHost(
                             navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                             navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                             navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
-                            navController.navigate("playlist/${musicItem.videoId}")
-                            Log.d("LogNav", "TYPE = 1 with ${musicItem.videoId}")
+                            navController.navigate("playlist/${musicItem.playlistId}")
+                            Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                         }
                         else if(musicItem.type == 2){
                             Log.d("LogNav", "TYPE = 2")
@@ -189,7 +189,14 @@ fun NavHost(
                     val image = savedStateHandle?.get<String>("image") ?: ""
                     PlaylistScreen(
                         navController = navController,
-                        playlistItem = MusicItem(playlistId, title, artist, image, 1),
+                        playlistItem = MusicItem(
+                            videoId = "",
+                            title = title,
+                            artist = artist,
+                            imageUrl = image,
+                            type = 1,
+                            playlistId = playlistId,
+                        ),
                         onTabSelected ={ tabIndex ->
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
@@ -200,6 +207,7 @@ fun NavHost(
                         },
                         onSongClick = {musicItem ->
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.videoId,
                                 metadata = YoutubeMetadata(
