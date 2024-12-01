@@ -113,77 +113,8 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
+
     // val gradientColors = PrimaryColor
-
-        // Album art
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .fillMaxWidth()
-        ) {
-
-            Spacer(modifier = Modifier.height(64.dp))
-
-            // Album art
-            Box(
-                contentAlignment = Alignment.Center,
-            ) {
-                VisualizerCircleRGB(
-                    visualizerViewModel = visualizerViewModel,
-                    radius = 330.dp.value,
-                    lineHeight = 550.dp.value,
-                )
-                AsyncImage(
-                    model = getYoutubeHDThumbnail(musicItem.videoId),
-                    contentDescription = "Song Image",
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .size(250.dp)
-                        .clip(RoundedCornerShape(140.dp))
-                        .background(Color(0xFF404040))
-                        .graphicsLayer(rotationZ = rotation) // Apply rotation
-                )
-            }
-
-            Column (
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .size(240.dp)
-                    .clip(RoundedCornerShape(140.dp))
-                    .background(Color(0xFF404040))
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Title and artist
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            Text(
-                text = musicItem.title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = musicItem.artist,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-        }
-
-
-        PlaybackControls(
-            isPlaying = isPlaying,
-            onPlayPauseClick = onPlayPauseClick,
-            currentTime = currentTime,
-            duration = duration,
-            onSeek = onSeek,
-            onSeekFinished = onSeekFinished
-        )
-    )
-    val gradientColors = PrimaryColor
 
         Column(
             modifier = Modifier

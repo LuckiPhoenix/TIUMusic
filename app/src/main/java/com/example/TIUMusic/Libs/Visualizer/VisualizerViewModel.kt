@@ -1,6 +1,8 @@
 package com.example.TIUMusic.Libs.Visualizer
 
 import android.media.audiofx.Visualizer
+import android.util.Log
+import androidx.collection.emptyLongSet
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
@@ -22,7 +24,7 @@ object VisualizerSettings {
 }
 
 interface VisualizerListener {
-    fun onChange(newPathLeft : Path, newPathRight : Path);
+    fun onChange(newPathLeft : Path, newPathRight : Path, transformedFFT : DoubleArray);
 }
 
 class VisualizerViewModel(
@@ -82,15 +84,16 @@ class VisualizerViewModel(
                 var prevUpdateTime = System.currentTimeMillis();
                 while (true) {
                     if (listeners.isEmpty()) {
-                        sleep(100);
+                        sleep(500);
                         continue;
                     }
-                    val deltaTime : Float = 1 / ((System.currentTimeMillis() - prevUpdateTime) / 1000f);
-                    println("Update Delta Time : $deltaTime")
+                    val fps : Float = 1 / ((System.currentTimeMillis() - prevUpdateTime) / 1000f);
+                    println("Update Delta Time : $fps")
                     prevUpdateTime = System.currentTimeMillis();
+                    val fft = GetTransformedFFT(0, 22050);
                     val newPathLeft = Path();
                     val newPathRight = Path();
-                    val fft = GetTransformedFFT(0, 22050);
+                    val transformedFFT : DoubleArray = DoubleArray(fft.size);
                     val COUNT = fft.size - 1;
                     var minVal = 0.0f;
                     var maxVal = 0.0f;
@@ -117,6 +120,7 @@ class VisualizerViewModel(
                                 ((GetVolumeFrequency(hertz.roundToInt()) - minVal) / scaleFactor
                                         * lerp(0.3f, maxVal, Easing( i.toFloat() / COUNT.toFloat(), EasingType.OutQuad)))
                                 / 5) / 2;
+                        transformedFFT[i] = barHeight.toDouble();
                         // Right
                         val direction = Offset(
                             cos(angle - Math.PI / 2).toFloat(),
@@ -141,6 +145,7 @@ class VisualizerViewModel(
                         )
                         hertz = lerp(minHertz, maxHertz, Easing((i + 1).toFloat() / COUNT.toFloat(), EasingType.InQuad));
                     }
+
                     newPathRight.lineTo(
                         beginOffset.x,
                         beginOffset.y
@@ -150,15 +155,28 @@ class VisualizerViewModel(
                         beginOffset.y
                     )
                     for (listener in listeners) {
-                        listener.onChange(newPathLeft, newPathRight);
+                        listener.onChange(newPathLeft, newPathRight, transformedFFT);
                     }
-                    // sleep(5);
+                    val fpsLimit = 50.0f;
+                    val spfLimit = 1.0f / fpsLimit * 1000.0f;
+                    val frameTime = 1f / fps * 1000f;
+                    val sleepMs = Math.round(spfLimit).toLong() - Math.round(frameTime).toLong();
+                    if (fps > fpsLimit && sleepMs > 0)
+                        sleep(sleepMs);
                 }
                 println("stop");
             });
             thread.priority = Thread.NORM_PRIORITY;
             thread.start();
         }
+    }
+
+    private fun fftEqual(prevFFT : DoubleArray, fft: DoubleArray) : Boolean {
+        for (i in 0 until min(prevFFT.size, fft.size)) {
+            if (prevFFT[i].roundToInt() != fft[i].roundToInt())
+                return false;
+        }
+        return true;
     }
 
     fun addVisualizerListener(
@@ -243,14 +261,17 @@ class VisualizerViewModel(
             return 0.0f;
         var beginHz : Pair<Int, Double> = Pair<Int, Double>(0, 0.0);
         var endHz : Pair<Int, Double> = Pair<Int, Double>(0, 0.0);
-        for (i in 0 until frequencyMap.value.size) {
-            val fre = frequencyMap.value[i];
-            if (fre.first > Hz) {
-                beginHz = frequencyMap.value[i - 1];
-                endHz = frequencyMap.value[i];
-                break;
-            }
-        }
+        var index = binarySearchMap(Hz).coerceIn(1, frequencyMap.value.size);
+        beginHz = frequencyMap.value[index - 1];
+        endHz = frequencyMap.value[index];
+//        for (i in 0 until frequencyMap.value.size) {
+//            val fre = frequencyMap.value[i];
+//            if (fre.first > Hz) {
+//                beginHz = frequencyMap.value[i - 1];
+//                endHz = frequencyMap.value[i];
+//                break;
+//            }
+//        }
         if (endHz.first - beginHz.first == 0)
             return 0f;
         return lerp(
@@ -260,4 +281,16 @@ class VisualizerViewModel(
         )
     }
 
+    private fun binarySearchMap(Hz: Int) : Int {
+        var l = 0;
+        var r = frequencyMap.value.size;
+        while (l < r) {
+            val mid = (l + r) / 2;
+            if (frequencyMap.value[mid].first < Hz)
+                l = mid + 1;
+            else
+                r = mid;
+        }
+        return l;
+    }
 }

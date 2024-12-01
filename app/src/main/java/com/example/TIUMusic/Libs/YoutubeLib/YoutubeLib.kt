@@ -162,8 +162,13 @@ fun YoutubeView(
         }
     )
 }
+
 fun getYoutubeHDThumbnail(videoId: String) : String {
     return "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
+}
+
+fun getYoutubeSmallThumbnail(videoId: String) : String {
+    return "https://img.youtube.com/vi/$videoId/mqdefault.jpg"
 }
 
 fun parseSyncedLyrics(syncedLyrics : String) : List<Line2> {
