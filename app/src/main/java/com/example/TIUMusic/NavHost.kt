@@ -188,18 +188,19 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onPlaylistLoaded = {
-                            playerViewModel.setPlaylist(it)
-                        },
-                        onSongClick = { musicItem, index ->
+                        onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
                             playerViewModel.playSongInPlaylistAtIndex(index, context);
                         },
-                        onShuffleClick = {
+                        onShuffleClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
                             playerViewModel.shufflePlaylist();
                             playerViewModel.playSongInPlaylistAtIndex(0, context);
                         },
-                        onPlayClick = {
+                        onPlayClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
                             playerViewModel.setIsShuffled(false);
                             playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }
@@ -223,18 +224,19 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onSongClick = { musicItem, index ->
+                        onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
                             playerViewModel.playSongInPlaylistAtIndex(index, context);
                         },
-                        onAlbumLoaded = { it ->
-                            playerViewModel.setPlaylist(it.songs)
-                        },
-                        onShuffleClick = {
+                        onShuffleClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
                             playerViewModel.shufflePlaylist();
                             playerViewModel.playSongInPlaylistAtIndex(0, context);
                         },
-                        onPlayClick = {
+                        onPlayClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
                             playerViewModel.setIsShuffled(false);
                             playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }

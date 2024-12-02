@@ -105,22 +105,15 @@ fun PlaylistScreen(
     playlistItem: MusicItem,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onSongClick: (MusicItem, Int) -> Unit,
-    onPlaylistLoaded: (List<MusicItem>) -> Unit,
-    onShuffleClick : () -> Unit,
-    onPlayClick: () -> Unit,
+    onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
+    onShuffleClick : (List<MusicItem>) -> Unit,
+    onPlayClick: (List<MusicItem>) -> Unit,
     ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
 ) {
     val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
 
     LaunchedEffect(Unit) {
         ytMusicViewModel.SongListSample(playlistItem.playlistId)
-    }
-
-    LaunchedEffect(playlistState) {
-        if (playlistState is UiState.Success) {
-            onPlaylistLoaded((playlistState as UiState.Success).data);
-        }
     }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
@@ -176,7 +169,9 @@ fun PlaylistScreen(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
-                                        .clickable(onClick = onPlayClick),
+                                        .clickable {
+                                            onPlayClick(state.data)
+                                        },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -202,7 +197,9 @@ fun PlaylistScreen(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
-                                        .clickable(onClick = onShuffleClick),
+                                        .clickable {
+                                            onShuffleClick(state.data)
+                                        },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -236,7 +233,7 @@ fun PlaylistScreen(
                     itemsIndexed(state.data){ index, item ->
                         SongInPlaylist(
                             item,
-                            onClick = { onSongClick(item, index) }
+                            onClick = { onSongClick(item, index, state.data) }
                         )
                         HorizontalDivider(
                             thickness = 2.dp,
@@ -260,10 +257,9 @@ fun AlbumScreen(
     albumId: String,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onSongClick: (MusicItem, Int) -> Unit,
-    onAlbumLoaded : (AlbumItem) -> Unit,
-    onPlayClick: () -> Unit,
-    onShuffleClick: () -> Unit,
+    onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
+    onPlayClick: (List<MusicItem>) -> Unit,
+    onShuffleClick: (List<MusicItem>) -> Unit,
     ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
 ) {
     val albumState by ytMusicViewModel.albumPage.collectAsState()
@@ -294,7 +290,6 @@ fun AlbumScreen(
             }
             is UiState.Success -> {
                 Log.d("LogNav", "Success")
-                onAlbumLoaded(state.data);
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -326,7 +321,9 @@ fun AlbumScreen(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
-                                        .clickable(onClick = onPlayClick),
+                                        .clickable {
+                                            onPlayClick(state.data.songs)
+                                        },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -352,7 +349,9 @@ fun AlbumScreen(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
-                                        .clickable(onClick = onShuffleClick),
+                                        .clickable {
+                                            onShuffleClick(state.data.songs)
+                                        },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -386,7 +385,7 @@ fun AlbumScreen(
                     itemsIndexed(state.data.songs){ index, item ->
                         SongInPlaylist(
                             item,
-                            onClick = { onSongClick(item, index) }
+                            onClick = { onSongClick(item, index, state.data.songs) }
                         )
                         HorizontalDivider(
                             thickness = 2.dp,
