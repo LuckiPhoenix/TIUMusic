@@ -199,26 +199,6 @@ class YtmusicViewModel @Inject constructor(
                 _homeItems.value = (newHome);
             }
             fetchingContinuation = false;
-            runBlocking {
-                val response = ytMusic.browse(WEB_REMIX, browseId = "FEmusic_home").bodyAsText()
-                // Parse JSON
-                val parsedResponse = response
-                val parsedResponseString = parsedResponse.toString()
-                // Phần còn lại của mã
-                val maxLogSize = 1000
-                for (i in 0..parsedResponseString.length / maxLogSize) {
-                    val start = i * maxLogSize
-                    var end = (i + 1) * maxLogSize
-                    end =
-                        if (end < parsedResponseString.length) end else parsedResponseString.length
-                    if (i == parsedResponseString.length / maxLogSize / 2) {
-                        delay(200);
-                    }
-                    println(parsedResponseString.substring(start, end))
-                }
-                Log.d("messageReturn", "ENDJSON")
-
-            }
         }
         _homeContinuation.intValue++;
     }
