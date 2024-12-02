@@ -50,6 +50,7 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
+import com.example.TIUMusic.SongData.AlbumItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.SecondaryColor
 
@@ -106,6 +107,8 @@ fun PlaylistScreen(
     modifier: Modifier = Modifier,
     onSongClick: (MusicItem, Int) -> Unit,
     onPlaylistLoaded: (List<MusicItem>) -> Unit,
+    onShuffleClick : () -> Unit,
+    onPlayClick: () -> Unit,
     ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
 ) {
     val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
@@ -172,7 +175,8 @@ fun PlaylistScreen(
                                 Card(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
-                                        .padding(4.dp),
+                                        .padding(4.dp)
+                                        .clickable(onClick = onPlayClick),
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -197,7 +201,8 @@ fun PlaylistScreen(
                                 Card(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
-                                        .padding(4.dp),
+                                        .padding(4.dp)
+                                        .clickable(onClick = onShuffleClick),
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -256,6 +261,9 @@ fun AlbumScreen(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onSongClick: (MusicItem, Int) -> Unit,
+    onAlbumLoaded : (AlbumItem) -> Unit,
+    onPlayClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
 ) {
     val albumState by ytMusicViewModel.albumPage.collectAsState()
@@ -286,7 +294,7 @@ fun AlbumScreen(
             }
             is UiState.Success -> {
                 Log.d("LogNav", "Success")
-
+                onAlbumLoaded(state.data);
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -317,7 +325,8 @@ fun AlbumScreen(
                                 Card(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
-                                        .padding(4.dp),
+                                        .padding(4.dp)
+                                        .clickable(onClick = onPlayClick),
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(
@@ -342,7 +351,8 @@ fun AlbumScreen(
                                 Card(
                                     modifier = Modifier
                                         .size(160.dp, 52.dp)
-                                        .padding(4.dp),
+                                        .padding(4.dp)
+                                        .clickable(onClick = onShuffleClick),
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
                                     Row(

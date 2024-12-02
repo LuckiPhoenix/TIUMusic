@@ -127,7 +127,7 @@ public fun ExpandedPlayer(
 
     LaunchedEffect(albumArt) {
         if (albumArt != null) {
-            avgColor = Color(albumArt!!.getPixel(albumArt!!.width / 2, albumArt!!.height / 2));
+            avgColor = Color(albumArt!!.getPixel(0, 0));
             Log.d("Player", avgColor.toString());
 //            val hsv : FloatArray = FloatArray(3);
 //            android.graphics.Color.RGBToHSV(

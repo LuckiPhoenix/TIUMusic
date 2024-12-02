@@ -194,6 +194,14 @@ fun NavHost(
                         onSongClick = { musicItem, index ->
                             Log.d("LogNav", "TYPE = 0")
                             playerViewModel.playSongInPlaylistAtIndex(index, context);
+                        },
+                        onShuffleClick = {
+                            playerViewModel.shufflePlaylist();
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                        },
+                        onPlayClick = {
+                            playerViewModel.setIsShuffled(false);
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }
                     )
                 }
@@ -217,7 +225,18 @@ fun NavHost(
                         },
                         onSongClick = { musicItem, index ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.playSong(musicItem, context);
+                            playerViewModel.playSongInPlaylistAtIndex(index, context);
+                        },
+                        onAlbumLoaded = { it ->
+                            playerViewModel.setPlaylist(it.songs)
+                        },
+                        onShuffleClick = {
+                            playerViewModel.shufflePlaylist();
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                        },
+                        onPlayClick = {
+                            playerViewModel.setIsShuffled(false);
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }
                     )
                 }

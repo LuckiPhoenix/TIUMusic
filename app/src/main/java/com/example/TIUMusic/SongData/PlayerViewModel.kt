@@ -18,6 +18,9 @@ class PlayerViewModel : ViewModel() {
 
     private var _playlist : MutableStateFlow<List<MusicItem>?> = MutableStateFlow(null);
     val playlist = _playlist.asStateFlow();
+    
+    private var shuffledPlaylist : List<MusicItem>? = listOf();
+    private var isShuffled : Boolean = false;
 
     private var _currentPlaylistIndex : MutableState<Int?> = mutableStateOf(null);
     val currentPlaylistIndex : State<Int?> = _currentPlaylistIndex;
@@ -65,20 +68,24 @@ class PlayerViewModel : ViewModel() {
                 in (0 .. playlist.value!!.size - 1)) {
             setCurrentTime(0f);
             _currentPlaylistIndex.value = _currentPlaylistIndex.value!! + (if (nextSong) 1 else -1);
-            playSong(playlist.value!![currentPlaylistIndex.value!!], context);
+            playSongInPlaylistAtIndex(_currentPlaylistIndex.value, context);
             return true;
         }
         return false;
     }
 
     fun shufflePlaylist() {
-        _playlist.value?.shuffled();
+        setIsShuffled(true);
+        shuffledPlaylist = _playlist.value?.shuffled();
     }
 
     fun playSongInPlaylistAtIndex(index : Int?, context: android.content.Context) {
         _currentPlaylistIndex.value = index;
         if (index != null && playlist.value != null) {
-            playSong(_playlist.value!![currentPlaylistIndex.value!!], context);
+            if (!isShuffled && playlist.value != null)
+                playSong(_playlist.value!![currentPlaylistIndex.value!!], context);
+            else if (isShuffled && shuffledPlaylist != null)
+                playSong(shuffledPlaylist!![currentPlaylistIndex.value!!], context);
         }
     }
 
@@ -97,6 +104,10 @@ class PlayerViewModel : ViewModel() {
 
     fun setDuration(duration : Float) {
         _duration.floatValue = duration;
+    }
+
+    fun setIsShuffled(value : Boolean) {
+        isShuffled = value;
     }
 
     fun setPlaying(playing: Boolean) {
