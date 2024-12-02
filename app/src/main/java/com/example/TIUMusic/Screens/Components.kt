@@ -95,6 +95,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
@@ -1192,7 +1193,7 @@ fun NowPlayingSheet(
                                     ytPlayerHelper.seekTo(0f);
                                 }
                                 else {
-                                    playerViewModel.changeSong(isNextSong, context)
+                                    playerViewModel.changeSong(isNextSong, MainActivity.applicationContext)
                                 }
                             },
                             visualizerViewModel = visualizerViewModel

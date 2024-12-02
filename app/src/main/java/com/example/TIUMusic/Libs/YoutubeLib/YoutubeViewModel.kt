@@ -8,28 +8,22 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.ServiceCompat.startForeground
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil3.ImageLoader
-import coil3.PlatformContext
-import coil3.compose.LocalPlatformContext
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.toBitmap
-import coil3.util.CoilUtils
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
@@ -87,7 +81,7 @@ object YoutubeSettings {
     var NotificationEnabled = false;
 }
 
-class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel() {
+class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
     private var _mediaSession : MutableStateFlow<MediaSession?> = MutableStateFlow(null);
     val mediaSession : StateFlow<MediaSession?> = _mediaSession.asStateFlow();
 
@@ -161,7 +155,7 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
             }
 
             override fun onSkipToNext() {
-                playerViewModel.changeSong(true, context)
+                playerViewModel.changeSong(true, MainActivity.applicationContext)
             }
 
             override fun onSkipToPrevious() {
@@ -169,7 +163,7 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
                     ytHelper.value.seekTo(0f);
                 }
                 else {
-                    playerViewModel.changeSong(false, context)
+                    playerViewModel.changeSong(false, MainActivity.applicationContext)
                 }
             }
 
@@ -252,6 +246,36 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
             )
             it;
         }
+        if (state == PlayerConstants.PlayerState.PLAYING) {
+            notificationBuilder?.setOngoing(true);
+            with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
+                if (ActivityCompat.checkSelfPermission(
+                        MainActivity.applicationContext,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    println("nope");
+                    return@with
+                }
+                // notificationId is a unique int for each notification that you must define.
+                notify(MediaNotificationID, notificationBuilder!!.build());
+            }
+        }
+        else {
+            notificationBuilder?.setOngoing(true);
+            with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
+                if (ActivityCompat.checkSelfPermission(
+                        MainActivity.applicationContext,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    println("nope");
+                    return@with
+                }
+                // notificationId is a unique int for each notification that you must define.
+                notify(MediaNotificationID, notificationBuilder!!.build());
+            }
+        }
     }
 
     fun updatePlaybackState(state : Int, position : Long, playbackSpeed : Float) {
@@ -301,6 +325,10 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
             .setContentText(artist)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.value!!.sessionToken))
+            .setAutoCancel(false)
+            .setOngoing(true)
+        if (Build.VERSION.SDK_INT >= 30)
+            notificationBuilder!!.setFlag(Notification.FLAG_NO_CLEAR, true);
         if (albumArt != null)
             notificationBuilder!!.setLargeIcon(albumArt);
         with(NotificationManagerCompat.from(context)) {
@@ -313,7 +341,7 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
                 return@with
             }
             // notificationId is a unique int for each notification that you must define.
-            notify(NotificationID, notificationBuilder!!.build());
+            notify(MediaNotificationID, notificationBuilder!!.build());
         }
     }
 
@@ -392,7 +420,7 @@ fun createTestBitmap(context: Context) {
 }
 
 
-val NotificationID = 0;
+val MediaNotificationID = 0;
 
 fun createNotificationChannel(context: Context): NotificationChannel {
     // Create the NotificationChannel, but only on API 26+ because

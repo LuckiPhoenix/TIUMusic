@@ -7,6 +7,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.MainActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -62,6 +63,7 @@ class PlayerViewModel : ViewModel() {
             currentPlaylistIndex.value != null &&
             currentPlaylistIndex.value!! + (if (nextSong) 1 else -1)
                 in (0 .. playlist.value!!.size - 1)) {
+            setCurrentTime(0f);
             _currentPlaylistIndex.value = _currentPlaylistIndex.value!! + (if (nextSong) 1 else -1);
             playSong(playlist.value!![currentPlaylistIndex.value!!], context);
             return true;

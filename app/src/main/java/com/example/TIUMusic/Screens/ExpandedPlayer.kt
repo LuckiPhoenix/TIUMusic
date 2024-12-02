@@ -94,6 +94,7 @@ import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -126,8 +127,21 @@ public fun ExpandedPlayer(
 
     LaunchedEffect(albumArt) {
         if (albumArt != null) {
-            avgColor = Color(albumArt!!.getPixel(0, 0));
+            avgColor = Color(albumArt!!.getPixel(albumArt!!.width / 2, albumArt!!.height / 2));
             Log.d("Player", avgColor.toString());
+//            val hsv : FloatArray = FloatArray(3);
+//            android.graphics.Color.RGBToHSV(
+//                avgColor.red.toInt() * 255,
+//                avgColor.green.toInt() * 255,
+//                avgColor.blue.toInt() * 255,
+//                hsv);
+//            avgColor = Color.hsv(hsv[0], hsv[1], min(hsv[2] * 2, 1.0f));
+            avgColor = avgColor.copy(
+                alpha = 1.0f,
+                red = min(1.0f, avgColor.red * 1.5f),
+                green = min(1.0f, avgColor.green * 1.5f),
+                blue = min(1.0f, avgColor.blue * 1.5f)
+            )
         }
     }
 
@@ -137,8 +151,8 @@ public fun ExpandedPlayer(
             Modifier.fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        0f to avgColor,
-                        0.7f to avgColor.copy(alpha = 0f),
+                        0f to avgColor.copy(alpha = 0.8f),
+                        0.6f to avgColor.copy(alpha = 0f),
                     )
                 )
     ) {

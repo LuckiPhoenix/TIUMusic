@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject2
 import com.example.TIUMusic.Libs.YoutubeLib.models.Line2
 import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics2
+import com.example.TIUMusic.MainActivity
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -100,21 +102,15 @@ fun YoutubeView(
     onState: (YouTubePlayer, PlayerConstants.PlayerState) -> Unit,
     youtubeViewModel: YoutubeViewModel
 ) {
-    var ytPlayerView : YouTubePlayerView? by remember { mutableStateOf(null) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle;
     val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
     val mediaSession by youtubeViewModel.mediaSession.collectAsState()
-    DisposableEffect(LocalContext.current) {
-        onDispose {
-            ytPlayerView?.release();
-        }
-    }
 
     println(youtubeVideoId);
     AndroidView(
         modifier = Modifier.size(0.dp),
         factory = { context ->
             YouTubePlayerView(context = context).apply {
-                ytPlayerView = this;
                 //lifecycleOwner.lifecycle.addObserver(this);
                 enableBackgroundPlayback(true);
 
@@ -137,6 +133,7 @@ fun YoutubeView(
                                 position = 0,
                                 playbackSpeed = 1.0f
                             );
+                            ytPlayerHelper.play();
                         }
                     }
 
@@ -151,6 +148,10 @@ fun YoutubeView(
                         onState(youTubePlayer, state);
                         if (state == PlayerConstants.PlayerState.UNSTARTED)
                             return;
+                        if (state == PlayerConstants.PlayerState.ENDED) {
+                            ytPlayerHelper.seekToTime = 0f;
+                            youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
+                        }
                         youtubeViewModel.updateVideoDuration(ytPlayerHelper.ytVideoTracker.videoDuration.toLong() * 1000L);
                         youtubeViewModel.updatePlaybackState(
                             state = state,
