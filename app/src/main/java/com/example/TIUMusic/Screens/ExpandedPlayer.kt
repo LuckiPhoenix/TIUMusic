@@ -6,6 +6,8 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -16,6 +18,11 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -81,6 +88,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
@@ -93,6 +101,7 @@ import com.example.TIUMusic.ui.theme.SecondaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
     musicItem: MusicItem,
@@ -114,19 +123,34 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-    // val gradientColors = PrimaryColor
+    val gradientColors = PrimaryColor
+
+    val lyric = listOf("hello", "world")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
     ) {
-
         Spacer(modifier = Modifier.height(64.dp))
 
         // Album art
         Box(
             contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .fillMaxSize()
+                .weight(1f)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            gradientColors.copy(alpha = 0.5f),
+                            gradientColors.copy(alpha = 0f)
+                        ),
+                        center = Offset.Unspecified,
+                        radius = 500f
+                    )
+                )
         ) {
             VisualizerCircleRGB(
                 visualizerViewModel = visualizerViewModel,
@@ -141,9 +165,20 @@ public fun ExpandedPlayer(
                     .size(240.dp)
                     .clip(RoundedCornerShape(140.dp))
                     .background(Color(0xFF404040))
-                    .graphicsLayer(rotationZ = rotation) // Apply rotation
+                    .graphicsLayer(rotationZ = rotation)
             )
+            if(lyric.isNotEmpty()){
+                Text(
+                    text = lyric.get(0), //lyric here
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                        .align(Alignment.BottomCenter)
+                )
+            }
         }
+
 
         Column (
             verticalArrangement = Arrangement.Bottom,
@@ -163,7 +198,7 @@ public fun ExpandedPlayer(
                     text = musicItem.artist,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center
                 )
             }
