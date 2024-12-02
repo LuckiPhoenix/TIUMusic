@@ -3,6 +3,7 @@ package com.example.TIUMusic.SongData
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 
 data class MusicItem(
@@ -18,6 +19,16 @@ data class MusicItem(
     fun getHDThumbnail() : String = getYoutubeHDThumbnail(videoId);
     fun getSmallThumbnail() : String = getYoutubeSmallThumbnail(videoId);
 }
+
+data class AlbumItem(
+    val title: String,
+    val description: String?,
+    val artist: String,
+    val year: Int?,
+    val imageUrl: String,
+    val duration: String?,
+    val songs: List<MusicItem>
+)
 
 data class NewReleaseCard(
     val type: String,
@@ -45,7 +56,7 @@ fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem {
         type = 1
         id = item.playlistId
     }
-    if(item.videoId != null){
+    if(item.videoId != null && item.videoId != ""){
         type = 0
         id = item.videoId
     }

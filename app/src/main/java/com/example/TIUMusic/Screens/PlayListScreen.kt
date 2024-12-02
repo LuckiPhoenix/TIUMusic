@@ -249,6 +249,151 @@ fun PlaylistScreen(
     }
 }
 
+@Composable
+fun AlbumScreen(
+    navController: NavController,
+    albumId: String,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    onSongClick: (MusicItem, Int) -> Unit,
+    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
+) {
+    val albumState by ytMusicViewModel.albumPage.collectAsState()
+
+    LaunchedEffect(Unit) {
+        ytMusicViewModel.fetchAlbumSongs(albumId)
+    }
+
+    Scaffold(
+        topBar = { TopPlaylistBar("Album", navController) },
+        bottomBar = {
+            CustomBottomNavigation(
+                selectedTab = 2,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+            )
+        },
+        containerColor = BackgroundColor
+    ) { paddingValues ->
+        when (val state = albumState){
+            is UiState.Initial -> {
+                // Trạng thái ban đầu
+                Log.d("LogNav", "Initial id : ${albumId}")
+            }
+            is UiState.Loading -> {
+                CircularProgressIndicator()
+                Log.d("LogNav", "Loading")
+            }
+            is UiState.Success -> {
+                Log.d("LogNav", "Success")
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(start = 8.dp, end = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        // Header content
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            AsyncImage(
+                                model = state.data.imageUrl,
+                                contentDescription = "Album Art",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(160.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF282828))
+                            )
+                            Text(text = state.data.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
+                            Text(text = state.data.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
+                            state.data.description?.let { Text(text = it, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Card(
+                                    modifier = Modifier
+                                        .size(160.dp, 52.dp)
+                                        .padding(4.dp),
+                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.play_solid),
+                                            contentDescription = "Play Button",
+                                            modifier = Modifier.padding(12.dp),
+                                            tint = PrimaryColor
+                                        )
+                                        Text(
+                                            text = "Play",
+                                            fontSize = 18.sp,
+                                            color = PrimaryColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Card(
+                                    modifier = Modifier
+                                        .size(160.dp, 52.dp)
+                                        .padding(4.dp),
+                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.shuffle_button),
+                                            contentDescription = "Play Button",
+                                            modifier = Modifier.padding(12.dp),
+                                            tint = PrimaryColor
+                                        )
+                                        Text(
+                                            text = "Shuffle",
+                                            fontSize = 18.sp,
+                                            color = PrimaryColor,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                            HorizontalDivider(
+                                thickness = 2.dp,
+                                color = ButtonColor,
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
+                            )
+                        }
+                    }
+                    // Song list
+                    itemsIndexed(state.data.songs){ index, item ->
+                        SongInPlaylist(
+                            item,
+                            onClick = { onSongClick(item, index) }
+                        )
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            color = ButtonColor,
+                            modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                        )
+                    }
+                }
+            }
+            is UiState.Error -> {
+
+            }
+        }
+
+    }
+}
+
 
 @Composable
 fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {

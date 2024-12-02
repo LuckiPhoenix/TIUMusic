@@ -26,6 +26,7 @@ import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.Screens.AlbumScreen
 import com.example.TIUMusic.Screens.ArtistPage
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
@@ -97,6 +98,7 @@ fun NavHost(
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
                             else if(musicItem.type == 2){
+                                navController.navigate("album/${musicItem.browseId}")
                                 Log.d("LogNav", "TYPE = 2")
                             }
                         }
@@ -192,6 +194,30 @@ fun NavHost(
                         onSongClick = { musicItem, index ->
                             Log.d("LogNav", "TYPE = 0")
                             playerViewModel.playSongInPlaylistAtIndex(index, context);
+                        }
+                    )
+                }
+                composable(
+                    route = "album/{albumId}",
+                    arguments = listOf(
+                        navArgument("albumId") { type = NavType.StringType },
+                    )
+                ){backStackEntry ->
+                    val browseId = backStackEntry.arguments?.getString("albumId") ?: ""
+                    AlbumScreen(
+                        navController = navController,
+                        albumId = browseId,
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        onSongClick = { musicItem, index ->
+                            Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.playSong(musicItem, context);
                         }
                     )
                 }

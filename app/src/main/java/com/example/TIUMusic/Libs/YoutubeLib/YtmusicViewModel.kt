@@ -2,6 +2,7 @@ package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.UiThread
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
@@ -28,9 +29,11 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
+import com.example.TIUMusic.Libs.YoutubeLib.pages.AlbumPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
+import com.example.TIUMusic.SongData.AlbumItem
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.Module
 import dagger.Provides
@@ -83,6 +86,9 @@ class YtmusicViewModel @Inject constructor(
     private var _listTrackItems = MutableStateFlow<UiState<List<MusicItem>>>(UiState.Initial)
     val listTrackItems : StateFlow<UiState<List<MusicItem>>> = _listTrackItems.asStateFlow();
 
+    private var _albumPage = MutableStateFlow<UiState<AlbumItem>>(UiState.Initial)
+    val albumPage : StateFlow<UiState<AlbumItem>> = _albumPage.asStateFlow()
+
     private var _homeContinuation = mutableIntStateOf(0);
     val homeContinuation = _homeContinuation.asIntState();
 
@@ -97,7 +103,7 @@ class YtmusicViewModel @Inject constructor(
                 withContext(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
                     Log.e("viewModelTest", "Lỗi trong coroutine: ${throwable.message}")
                 }) {
-                    val client = YouTubeClient.WEB_REMIX
+                    val client = WEB_REMIX
                     val response = ytmusic.search(client = client, query).body<SearchResponse>()
 
                     videoInfos = extractVideoInfo(response)
@@ -929,6 +935,59 @@ class YtmusicViewModel @Inject constructor(
                 }
             }.onFailure { exception ->
                 _listTrackItems.value = UiState.Error(exception.message ?: "Network error")
+            }
+        }
+    }
+
+    fun fetchAlbumSongs(albumId: String){
+        viewModelScope.launch {
+            runCatching {
+                YouTube.album(albumId)
+            }.onSuccess { result ->
+                result.onSuccess { albumPages ->
+                    val title = albumPages.album.title
+                    val description = albumPages.description
+                    var artists = ""
+                    for (artist in albumPages.album.artists!!){
+                        if(artists == ""){
+                            artists += artist.name
+                        }
+                        else{
+                            artists += " | " + artist.name
+                        }
+                    }
+                    val year = albumPages.album.year
+                    val image = albumPages.album.thumbnail
+                    val duration = albumPages.duration
+                    val songs = albumPages.songs.map { songItem ->
+                        val thumbnail = songItem.thumbnails?.thumbnails?.lastOrNull();
+                        var thumbnailUrl = "";
+                        if (thumbnail != null && songItem.id.isNotEmpty()) {
+                            thumbnailUrl = getYoutubeHDThumbnail(songItem.id);
+                        }
+                        MusicItem(
+                            videoId = songItem.id,
+                            title = songItem.title,
+                            artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
+                            imageUrl = thumbnailUrl,
+                            type = 0
+                        )
+                    }
+                    _albumPage.value = UiState.Success(
+                        AlbumItem(
+                            title = title,
+                            description = description,
+                            artist = artists,
+                            year = year,
+                            imageUrl = image,
+                            duration = duration,
+                            songs = songs)
+                    )
+                }.onFailure {error ->
+                    _albumPage.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            }.onFailure {error ->
+                _albumPage.value = UiState.Error(error.message ?: "Network error")
             }
         }
     }
