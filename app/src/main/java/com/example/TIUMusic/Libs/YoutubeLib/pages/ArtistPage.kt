@@ -131,7 +131,14 @@ data class ArtistPage(
                             ?.watchPlaylistEndpoint?.playlistId
                             ?: renderer.navigationEndpoint.browseEndpoint.browseId.removePrefix("VL"),
                         title = renderer.title.runs?.firstOrNull()?.text ?: return null,
-                        artists = null,
+                        artists = listOfNotNull(
+                            renderer.subtitle?.runs?.lastOrNull()?.let {
+                                Artist(
+                                    name = it.text ?: "",
+                                    id = it.navigationEndpoint?.browseEndpoint?.browseId ?: ""
+                                )
+                            }
+                        ),
                         year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl()
                             ?: return null,

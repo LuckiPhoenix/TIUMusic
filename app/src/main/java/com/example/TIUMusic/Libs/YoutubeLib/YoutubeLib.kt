@@ -95,7 +95,6 @@ fun ensurePlayerNotificationPermissionAllowed(
 @Composable
 fun YoutubeView(
     youtubeVideoId: String,
-    youtubeMetadata: YoutubeMetadata,
     onSecond: (YouTubePlayer, Float) -> Unit,
     onDurationLoaded: (YouTubePlayer, Float) -> Unit,
     onState: (YouTubePlayer, PlayerConstants.PlayerState) -> Unit,
@@ -109,6 +108,8 @@ fun YoutubeView(
             ytPlayerView?.release();
         }
     }
+
+    println(youtubeVideoId);
     AndroidView(
         modifier = Modifier.size(0.dp),
         factory = { context ->

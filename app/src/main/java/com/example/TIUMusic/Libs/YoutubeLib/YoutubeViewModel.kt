@@ -153,34 +153,15 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
 
         _mediaSession.value!!.setCallback(object : MediaSession.Callback() {
             override fun onPlay() {
-                _ytHelper.update { current ->
-                    current.play();
-                    current;
-                }
+                _ytHelper.value.play();
             }
 
             override fun onPause() {
-                _ytHelper.update { current ->
-                    current.pause();
-                    current;
-                }
+                _ytHelper.value.pause()
             }
 
             override fun onSkipToNext() {
-                if (playerViewModel.changeSong(true)) {
-                    val musicItem = playerViewModel.musicItem.value;
-                    loadAndPlayVideo(
-                        videoId = musicItem.videoId,
-                        metadata = YoutubeMetadata(
-                            title = musicItem.title,
-                            artist = musicItem.artist,
-                            artBitmapURL = musicItem.imageUrl,
-                            displayTitle = musicItem.title,
-                        ),
-                        durationMs = 0,
-                        context = context
-                    )
-                }
+                playerViewModel.changeSong(true, context)
             }
 
             override fun onSkipToPrevious() {
@@ -188,27 +169,13 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
                     ytHelper.value.seekTo(0f);
                 }
                 else {
-                    if (playerViewModel.changeSong(false)) {
-                        val musicItem = playerViewModel.musicItem.value;
-                        loadAndPlayVideo(
-                            videoId = musicItem.videoId,
-                            metadata = YoutubeMetadata(
-                                title = musicItem.title,
-                                artist = musicItem.artist,
-                                artBitmapURL = musicItem.imageUrl
-                            ),
-                            durationMs = 0,
-                            context = context
-                        )
-                    }
+                    playerViewModel.changeSong(false, context)
                 }
             }
 
             override fun onSeekTo(pos: Long) {
-                _ytHelper.update { current ->
-                    current.seekTo(pos / 1000f);
-                    current;
-                }
+
+                ytHelper.value.seekTo(pos / 1000f);
             }
         })
     }
@@ -377,6 +344,7 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
             it!!.setMetadata(mediaMetadataBuilder.build());
             it;
         }
+        mediaNotification(title, artist, null, context);
         if (artBitmapUrl == "")
             return;
         var imageBitmap : Bitmap? = null;
@@ -402,14 +370,16 @@ class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel
                 return@invokeOnCompletion;
             }
             Log.d("MediaMetadata", "Load image Successful");
-            mediaNotification(title, artist, imageBitmap, context);
-            mediaMetadataBuilder.apply {
-                if (imageBitmap != null)
+
+            if (imageBitmap != null) {
+                mediaNotification(title, artist, imageBitmap, context);
+                mediaMetadataBuilder.apply {
                     putBitmap(MediaMetadata.METADATA_KEY_ART, imageBitmap)
-            }
-            _mediaSession.update { it ->
-                it!!.setMetadata(mediaMetadataBuilder.build());
-                it;
+                }
+                _mediaSession.update { it ->
+                    it!!.setMetadata(mediaMetadataBuilder.build());
+                    it;
+                }
             }
         }
 

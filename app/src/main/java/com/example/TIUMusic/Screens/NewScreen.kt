@@ -28,8 +28,7 @@ fun NewScreen(
     onTabSelected: (Int) -> Unit,
     onPlaylistClick: (MusicItem) -> Unit,
     ytmusicViewModel: YtmusicViewModel,
-    playerViewModel: PlayerViewModel,
-    youtubeViewModel: YoutubeViewModel
+    playerViewModel: PlayerViewModel
 ) {
     val context = LocalContext.current;
     val trendingItem by ytmusicViewModel.chart.collectAsState();
@@ -85,21 +84,8 @@ fun NewScreen(
                     itemWidth = 300.dp,
                     sectionHeight = 260.dp,
                     onItemClick = { musicItem ->
-                        playerViewModel.setPlaylist(null);
-                        playerViewModel.setCurrentPlaylistIndex(null);
-                        playerViewModel.setMusicItem(musicItem)
-                        youtubeViewModel.loadAndPlayVideo(
-                            videoId = musicItem.videoId,
-                            metadata = YoutubeMetadata(
-                                title = musicItem.title,
-                                artist = musicItem.artist,
-                                artBitmapURL = musicItem.imageUrl,
-                                displayTitle = musicItem.title,
-                                displaySubtitle = musicItem.artist
-                            ),
-                            0L,
-                            context = context
-                        );
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
                     }
                 )
             }
@@ -114,21 +100,8 @@ fun NewScreen(
                     sectionHeight = 220.dp,
                     onItemClick = { musicItem ->
                         Log.d("LogNav", "TYPE = 0")
-                        playerViewModel.setPlaylist(null);
-                        playerViewModel.setCurrentPlaylistIndex(null);
-                        playerViewModel.setMusicItem(musicItem)
-                        youtubeViewModel.loadAndPlayVideo(
-                            videoId = musicItem.videoId,
-                            metadata = YoutubeMetadata(
-                                title = musicItem.title,
-                                artist = musicItem.artist,
-                                artBitmapURL = musicItem.imageUrl,
-                                displayTitle = musicItem.title,
-                                displaySubtitle = musicItem.artist
-                            ),
-                            0L,
-                            context = context
-                        );
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
                     }
                 )
             }
@@ -165,21 +138,8 @@ fun NewScreen(
                     sectionHeight = 220.dp,
                     onItemClick = { musicItem ->
                         Log.d("LogNav", "TYPE = 0")
-                        playerViewModel.setPlaylist(null);
-                        playerViewModel.setCurrentPlaylistIndex(null);
-                        playerViewModel.setMusicItem(musicItem)
-                        youtubeViewModel.loadAndPlayVideo(
-                            videoId = musicItem.videoId,
-                            metadata = YoutubeMetadata(
-                                title = musicItem.title,
-                                artist = musicItem.artist,
-                                artBitmapURL = musicItem.imageUrl,
-                                displayTitle = musicItem.title,
-                                displaySubtitle = musicItem.artist
-                            ),
-                            0L,
-                            context = context
-                        );
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
                     }
                 )
             }

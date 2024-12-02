@@ -155,14 +155,21 @@ class YtmusicViewModel @Inject constructor(
                     if (i == -1){
                         i = 0
                     }
+                    val thumbnail = content.musicResponsiveListItemRenderer?.thumbnail?.
+                        musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull();
+                    var thumbnailURL = "";
+                    val videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId;
+                    if (videoId != null)
+                        thumbnailURL = getYoutubeHDThumbnail(videoId);
+                    else
+                        thumbnailURL = thumbnail?.url ?: "";
                     searchInfos.add(
                         SearchingInfo(
                             title = songRender.text,
                             videoId = songRender.navigationEndpoint?.watchEndpoint?.videoId,
                             artist = artistRender[i].text,
                             artistId = artistRender[i].navigationEndpoint?.browseEndpoint?.browseId,
-                            thumbnailURL = content.musicResponsiveListItemRenderer?.thumbnail?.
-                                musicThumbnailRenderer?.thumbnail?.thumbnails?.firstOrNull()?.url ?: ""
+                            thumbnailURL = thumbnailURL
                         )
                     )
                 }
@@ -192,6 +199,26 @@ class YtmusicViewModel @Inject constructor(
                 _homeItems.value = (newHome);
             }
             fetchingContinuation = false;
+            runBlocking {
+                val response = ytMusic.browse(WEB_REMIX, browseId = "FEmusic_home").bodyAsText()
+                // Parse JSON
+                val parsedResponse = response
+                val parsedResponseString = parsedResponse.toString()
+                // Phần còn lại của mã
+                val maxLogSize = 1000
+                for (i in 0..parsedResponseString.length / maxLogSize) {
+                    val start = i * maxLogSize
+                    var end = (i + 1) * maxLogSize
+                    end =
+                        if (end < parsedResponseString.length) end else parsedResponseString.length
+                    if (i == parsedResponseString.length / maxLogSize / 2) {
+                        delay(200);
+                    }
+                    println(parsedResponseString.substring(start, end))
+                }
+                Log.d("messageReturn", "ENDJSON")
+
+            }
         }
         _homeContinuation.intValue++;
     }
@@ -207,7 +234,7 @@ class YtmusicViewModel @Inject constructor(
                     val data =
                         result.contents?.singleColumnBrowseResultsRenderer?.tabs?.get(0)?.tabRenderer?.content?.sectionListRenderer?.contents;
                     val list: MutableList<HomeItem> = mutableListOf()
-                    // list.addAll(parseHomeScreen(data, context))
+                    list.addAll(parseHomeScreen(data, context))
                     var count = 0
                     while (count < _homeContinuation.intValue && continueParam != null) {
                         YouTube.customQuery(browseId = "", continuation = continueParam)
@@ -330,39 +357,31 @@ class YtmusicViewModel @Inject constructor(
                                     val artists =
                                         ytItem
                                             ?.artists
-                                            ?.map {
-                                                Artist(
-                                                    name = it.name,
-                                                    id = it.id,
-                                                )
-                                            }?.toMutableList()
-                                    if (artists?.lastOrNull()?.id == null &&
-                                        artists?.lastOrNull()?.name?.contains(Regex("\\d")) == true
-                                    ) {
-                                        runCatching { artists.removeAt(artists.lastIndex) }
-                                            .onSuccess {
-                                                Log.i(
-                                                    "parse_mixed_content",
-                                                    "Removed last artist"
-                                                )
-                                            }.onFailure {
-                                                Log.e(
-                                                    "parse_mixed_content",
-                                                    "Failed to remove last artist"
-                                                )
-                                                it.printStackTrace()
-                                            }
-                                    }
+                                            ?.map { Artist(name = it.name,id = it.id,) }?.toMutableList()
+//                                    if (artists?.lastOrNull()?.id == null &&
+//                                        artists?.lastOrNull()?.name?.contains(Regex("\\d")) == true
+//                                    ) {
+//                                        runCatching { artists.removeAt(artists.lastIndex) }
+//                                            .onSuccess {
+//                                                Log.i(
+//                                                    "parse_mixed_content",
+//                                                    "Removed last artist"
+//                                                )
+//                                            }.onFailure {
+//                                                Log.e(
+//                                                    "parse_mixed_content",
+//                                                    "Failed to remove last artist"
+//                                                )
+//                                                it.printStackTrace()
+//                                            }
+//                                    }
                                     Log.w("Song", ytItem.toString())
                                     if (ytItem != null) {
                                         listContent.add(
                                             HomeContent(
                                                 album =
                                                 ytItem.album?.let {
-                                                    Album(
-                                                        name = it.name,
-                                                        id = it.id
-                                                    )
+                                                    Album(name = it.name,id = it.id)
                                                 },
                                                 artists = artists,
                                                 description = null,
@@ -398,25 +417,25 @@ class YtmusicViewModel @Inject constructor(
                                                     id = it.id,
                                                 )
                                             }?.toMutableList()
-                                    if (artists?.lastOrNull()?.id == null &&
-                                        artists?.lastOrNull()?.name?.contains(
-                                            Regex("\\d"),
-                                        ) == true
-                                    ) {
-                                        runCatching { artists.removeAt(artists.lastIndex) }
-                                            .onSuccess {
-                                                Log.i(
-                                                    "parse_mixed_content",
-                                                    "Removed last artist"
-                                                )
-                                            }.onFailure {
-                                                Log.e(
-                                                    "parse_mixed_content",
-                                                    "Failed to remove last artist"
-                                                )
-                                                it.printStackTrace()
-                                            }
-                                    }
+//                                    if (artists?.lastOrNull()?.id == null &&
+//                                        artists?.lastOrNull()?.name?.contains(
+//                                            Regex("\\d"),
+//                                        ) == true
+//                                    ) {
+//                                        runCatching { artists.removeAt(artists.lastIndex) }
+//                                            .onSuccess {
+//                                                Log.i(
+//                                                    "parse_mixed_content",
+//                                                    "Removed last artist"
+//                                                )
+//                                            }.onFailure {
+//                                                Log.e(
+//                                                    "parse_mixed_content",
+//                                                    "Failed to remove last artist"
+//                                                )
+//                                                it.printStackTrace()
+//                                            }
+//                                    }
                                     if (ytItem != null) {
                                         listContent.add(
                                             HomeContent(
@@ -484,7 +503,14 @@ class YtmusicViewModel @Inject constructor(
                                                     ?: "",
                                                 name = title,
                                             ),
-                                            artists = listOf(),
+                                            artists = listOfNotNull(
+                                                musicTwoRowItemRenderer.subtitle?.runs?.lastOrNull()?.let {
+                                                    Artist(
+                                                        name = it.text ?: "",
+                                                        id = it.navigationEndpoint?.browseEndpoint?.browseId ?: ""
+                                                    )
+                                                }
+                                            ),
                                             description = null,
                                             isExplicit = false,
                                             playlistId = null,
@@ -806,7 +832,6 @@ class YtmusicViewModel @Inject constructor(
     fun getNewReleases(context: Context) {
         viewModelScope.launch {
             _newReleases.value = newRelease(context);
-
         }
     }
 
@@ -927,6 +952,7 @@ class YtmusicViewModel @Inject constructor(
             }
         }
     }
+
     sealed class UiState<out T> {
         object Initial : UiState<Nothing>()
         object Loading : UiState<Nothing>()

@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class PlayerViewModel : ViewModel() {
     private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", 0));
@@ -34,21 +36,34 @@ class PlayerViewModel : ViewModel() {
     private val _currentTime = mutableFloatStateOf(0.0f);
     val currentTime : State<Float> = _currentTime;
 
-    fun setMusicItem(item : MusicItem) {
+    var ytViewModel = YoutubeViewModel(this);
+
+    fun playSong(item : MusicItem, context : android.content.Context) {
         _musicItem.value = item;
+        ytViewModel.loadAndPlayVideo(
+            videoId = item.videoId,
+            metadata = YoutubeMetadata(
+                title = item.title,
+                artist = item.artist,
+                artBitmapURL = item.imageUrl,
+                displayTitle = item.title,
+            ),
+            durationMs = 0,
+            context = context
+        )
     }
 
     fun setPlaylist(items : List<MusicItem>?) {
         _playlist.value = items;
     }
 
-    fun changeSong(nextSong: Boolean) : Boolean {
+    fun changeSong(nextSong: Boolean, context: android.content.Context) : Boolean {
         if (playlist.value != null &&
             currentPlaylistIndex.value != null &&
             currentPlaylistIndex.value!! + (if (nextSong) 1 else -1)
                 in (0 .. playlist.value!!.size - 1)) {
             _currentPlaylistIndex.value = _currentPlaylistIndex.value!! + (if (nextSong) 1 else -1);
-            setMusicItem(playlist.value!![currentPlaylistIndex.value!!]);
+            playSong(playlist.value!![currentPlaylistIndex.value!!], context);
             return true;
         }
         return false;
@@ -58,15 +73,24 @@ class PlayerViewModel : ViewModel() {
         _playlist.value?.shuffled();
     }
 
-    fun setCurrentPlaylistIndex(index : Int?) {
+    fun playSongInPlaylistAtIndex(index : Int?, context: android.content.Context) {
+        _currentPlaylistIndex.value = index;
         if (index != null && playlist.value != null) {
-            _currentPlaylistIndex.value = index;
-            setMusicItem(_playlist.value!![currentPlaylistIndex.value!!]);
+            playSong(_playlist.value!![currentPlaylistIndex.value!!], context);
         }
+    }
+
+    fun resetPlaylist() {
+        _playlist.value = null;
+        _currentPlaylistIndex.value = null;
     }
 
     fun setCurrentTime(currTime : Float) {
         _currentTime.floatValue = currTime;
+    }
+
+    fun seekTo(time : Float) {
+        ytViewModel.ytHelper.value.seekTo(time);
     }
 
     fun setDuration(duration : Float) {
@@ -75,6 +99,10 @@ class PlayerViewModel : ViewModel() {
 
     fun setPlaying(playing: Boolean) {
         _isPlaying.value = playing
+//        if (playing)
+//            ytViewModel.ytHelper.value.play();
+//        else
+//            ytViewModel.ytHelper.value.pause();
     }
 
     fun setExpanded(expand: Boolean) {

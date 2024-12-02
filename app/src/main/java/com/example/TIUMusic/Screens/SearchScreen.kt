@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
+import com.example.TIUMusic.SongData.MusicItem
 
 val heightItemCategorySearch = 140.dp
 
@@ -31,10 +32,12 @@ val heightItemCategorySearch = 140.dp
 fun SearchScreen(
     navController: NavController,
     onTabSelected: (Int) -> Unit,
+    onClick: (MusicItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScrollableSearchScreen (
         searchViewModel = hiltViewModel(),
+        onClick = onClick,
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
@@ -288,5 +291,5 @@ fun SearchScreen(
 @Composable
 fun SearchScreenPreview() {
     val navController = rememberNavController()
-    SearchScreen(navController = navController, {})
+    SearchScreen(navController = navController, {}, onClick = {})
 }
