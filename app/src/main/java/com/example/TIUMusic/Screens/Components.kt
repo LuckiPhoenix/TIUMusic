@@ -1178,6 +1178,27 @@ fun NowPlayingSheet(
                                 playerViewModel.setCurrentTime(newPosition);
                                 ytPlayerHelper.seekTo(newPosition);
                             },
+                            onChangeSong = { isNextSong ->
+                                if (!isNextSong && youtubeViewModel.ytHelper.value.currentSecond >= 5) {
+                                    youtubeViewModel.ytHelper.value.seekTo(0f);
+                                }
+                                else {
+                                    if (playerViewModel.changeSong(isNextSong)) {
+                                        val musicItem = playerViewModel.musicItem.value;
+                                        youtubeViewModel.loadAndPlayVideo(
+                                            videoId = musicItem.videoId,
+                                            metadata = YoutubeMetadata(
+                                                title = musicItem.title,
+                                                artist = musicItem.artist,
+                                                artBitmapURL = musicItem.imageUrl,
+                                                displayTitle = musicItem.title,
+                                            ),
+                                            durationMs = 0,
+                                            context = context
+                                        )
+                                    }
+                                }
+                            },
                             visualizerViewModel = visualizerViewModel
                         )
                     }

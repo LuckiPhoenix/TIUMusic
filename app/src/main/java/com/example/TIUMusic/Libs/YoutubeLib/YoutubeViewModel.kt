@@ -33,6 +33,7 @@ import coil3.util.CoilUtils
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
@@ -86,7 +87,7 @@ object YoutubeSettings {
     var NotificationEnabled = false;
 }
 
-class YoutubeViewModel() : ViewModel() {
+class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel() {
     private var _mediaSession : MutableStateFlow<MediaSession?> = MutableStateFlow(null);
     val mediaSession : StateFlow<MediaSession?> = _mediaSession.asStateFlow();
 
@@ -165,6 +166,44 @@ class YoutubeViewModel() : ViewModel() {
                 }
             }
 
+            override fun onSkipToNext() {
+                if (playerViewModel.changeSong(true)) {
+                    val musicItem = playerViewModel.musicItem.value;
+                    loadAndPlayVideo(
+                        videoId = musicItem.videoId,
+                        metadata = YoutubeMetadata(
+                            title = musicItem.title,
+                            artist = musicItem.artist,
+                            artBitmapURL = musicItem.imageUrl,
+                            displayTitle = musicItem.title,
+                        ),
+                        durationMs = 0,
+                        context = context
+                    )
+                }
+            }
+
+            override fun onSkipToPrevious() {
+                if (ytHelper.value.currentSecond >= 5) {
+                    ytHelper.value.seekTo(0f);
+                }
+                else {
+                    if (playerViewModel.changeSong(false)) {
+                        val musicItem = playerViewModel.musicItem.value;
+                        loadAndPlayVideo(
+                            videoId = musicItem.videoId,
+                            metadata = YoutubeMetadata(
+                                title = musicItem.title,
+                                artist = musicItem.artist,
+                                artBitmapURL = musicItem.imageUrl
+                            ),
+                            durationMs = 0,
+                            context = context
+                        )
+                    }
+                }
+            }
+
             override fun onSeekTo(pos: Long) {
                 _ytHelper.update { current ->
                     current.seekTo(pos / 1000f);
@@ -229,6 +268,7 @@ class YoutubeViewModel() : ViewModel() {
         context: Context
     ) {
         reloadDuration = true;
+        ytHelper.value.pause();
         _ytHelper.value.ytPlayer?.loadVideo(videoId, 0f);
         updateMediaMetadata(metadata, durationMs, context);
     }

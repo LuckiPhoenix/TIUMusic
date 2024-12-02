@@ -13,16 +13,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
-import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.toMusicItemsList
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
     onTabSelected: (Int) -> Unit = {},
-    onPlaylistClick: (MusicItem) -> Unit = {},
+    onItemClick: (MusicItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current;
@@ -45,56 +44,12 @@ fun HomeScreen(
             homeItems.forEach {
                 HorizontalScrollableSection(
                     title = it.title,
-                    items = toHomeContentsList(it.contents),
+                    items = toMusicItemsList(it.contents),
                     itemWidth = 200.dp,
                     sectionHeight = 280.dp,
-                    onItemClick = onPlaylistClick
+                    onItemClick = onItemClick
                 );
             }
         }
     }
-}
-
-
-private fun toHomeContentsList(list : List<HomeContent?>) : List<MusicItem> {
-    val musicItems = mutableListOf<MusicItem>();
-    for (item in list) {
-        if (item != null)
-            musicItems.add(fromHomeContent(item, item.browseId == null && item.playlistId == null));
-    }
-    return musicItems;
-}
-
-private fun fromHomeContent(item : HomeContent, useHDImage: Boolean) : MusicItem {
-    var type = 0
-    var id = ""
-    if(item.browseId != null){
-        type = 2
-        id = item.browseId
-    }
-    if(item.playlistId != null){
-        type = 1
-        id = item.playlistId
-    }
-    if(item.videoId != null){
-        type = 0
-        id = item.videoId
-    }
-    val thumbnail = item.thumbnails.lastOrNull();
-    var thumbnailUrl = "";
-    if (thumbnail != null) {
-        if ((thumbnail.width ?: 0) <= 200 && item.videoId != null)
-            thumbnailUrl = getYoutubeHDThumbnail(item.videoId);
-        else
-            thumbnailUrl = thumbnail.url
-    }
-    return MusicItem(
-        videoId = item.videoId ?: "",
-        browseId = item.browseId ?: "",
-        playlistId = item.playlistId ?: "",
-        title = item.title,
-        artist = item.artists?.firstOrNull()?.name ?: "",
-        imageUrl = thumbnailUrl,
-        type = type
-    )
 }

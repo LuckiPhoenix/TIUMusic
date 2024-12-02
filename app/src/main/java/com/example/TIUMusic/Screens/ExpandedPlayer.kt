@@ -102,6 +102,7 @@ public fun ExpandedPlayer(
     onPlayPauseClick: () -> Unit,
     onSeek: (Float) -> Unit,
     onSeekFinished: (Float) -> Unit,
+    onChangeSong: (Boolean) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
     val infiniteTransition = rememberInfiniteTransition()
@@ -113,76 +114,76 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-
     // val gradientColors = PrimaryColor
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+    ) {
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        // Album art
+        Box(
+            contentAlignment = Alignment.Center,
         ) {
-
-            Spacer(modifier = Modifier.height(64.dp))
-
-            // Album art
-            Box(
-                contentAlignment = Alignment.Center,
-            ) {
-                VisualizerCircleRGB(
-                    visualizerViewModel = visualizerViewModel,
-                    radius = 330.dp.value,
-                    lineHeight = 550.dp.value,
-                )
-                AsyncImage(
-                    model = getYoutubeHDThumbnail(musicItem.videoId),
-                    contentDescription = "Song Image",
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .size(240.dp)
-                        .clip(RoundedCornerShape(140.dp))
-                        .background(Color(0xFF404040))
-                        .graphicsLayer(rotationZ = rotation) // Apply rotation
-                )
-            }
-
-            Column (
-                verticalArrangement = Arrangement.Bottom,
+            VisualizerCircleRGB(
+                visualizerViewModel = visualizerViewModel,
+                radius = 330.dp.value,
+                lineHeight = 550.dp.value,
+            )
+            AsyncImage(
+                model = musicItem.imageUrl,
+                contentDescription = "Song Image",
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()){// Title and artist
-                Column(modifier = Modifier.padding(start = 16.dp)) {
-                    Text(
-                        text = musicItem.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = musicItem.artist,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                PlaybackControls(
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = onPlayPauseClick,
-                    currentTime = currentTime,
-                    duration = duration,
-                    onSeek = onSeek,
-                    onSeekFinished = onSeekFinished
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                VolumeControls()
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+                    .size(240.dp)
+                    .clip(RoundedCornerShape(140.dp))
+                    .background(Color(0xFF404040))
+                    .graphicsLayer(rotationZ = rotation) // Apply rotation
+            )
         }
+
+        Column (
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxSize()){// Title and artist
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                Text(
+                    text = musicItem.title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = musicItem.artist,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            PlaybackControls(
+                isPlaying = isPlaying,
+                onPlayPauseClick = onPlayPauseClick,
+                currentTime = currentTime,
+                duration = duration,
+                onSeek = onSeek,
+                onSeekFinished = onSeekFinished,
+                onChangeSong = { isNextSong ->  onChangeSong(isNextSong) }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            VolumeControls()
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
 }
 
 
@@ -192,8 +193,9 @@ fun PlaybackControls(
     currentTime: Float,
     duration: Float,
     onPlayPauseClick: () -> Unit,
+    onChangeSong : (Boolean) -> Unit,
     onSeek: (Float) -> Unit, // User changes the time
-    onSeekFinished: (Float) -> Unit
+    onSeekFinished: (Float) -> Unit,
 ) {
     // Local state for handling slider interactions
     var sliderPosition by remember { mutableStateOf(currentTime) }
@@ -253,7 +255,7 @@ fun PlaybackControls(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* Handle previous action */ }) {
+            IconButton(onClick = { onChangeSong(false) }) {
                 Icon(
                     painter = painterResource(R.drawable.prev_song),
                     contentDescription = "Previous",
@@ -278,7 +280,7 @@ fun PlaybackControls(
                 )
             }
 
-            IconButton(onClick = { /* Handle next action */ }) {
+            IconButton(onClick = { onChangeSong(true) }) {
                 Icon(
                     painter = painterResource(R.drawable.next_song),
                     contentDescription = "Next",

@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -49,6 +50,7 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
@@ -102,12 +104,20 @@ fun PlaylistScreen(
     playlistItem: MusicItem,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onSongClick: (MusicItem) -> Unit = {},
-    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),) {
+    onSongClick: (MusicItem, Int) -> Unit,
+    onPlaylistLoaded: (List<MusicItem>) -> Unit,
+    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
+) {
     val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
 
     LaunchedEffect(Unit) {
         ytMusicViewModel.SongListSample(playlistItem.playlistId)
+    }
+
+    LaunchedEffect(playlistState) {
+        if (playlistState is UiState.Success) {
+            onPlaylistLoaded((playlistState as UiState.Success).data);
+        }
     }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
@@ -131,6 +141,7 @@ fun PlaylistScreen(
             }
             is UiState.Success -> {
                 Log.d("LogNav", "Success")
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -217,10 +228,11 @@ fun PlaylistScreen(
                         }
                     }
                     // Song list
-                    items(state.data){item ->
+                    itemsIndexed(state.data){ index, item ->
                         SongInPlaylist(
                             item,
-                            onClick = {onSongClick(item)} )
+                            onClick = { onSongClick(item, index) }
+                        )
                         HorizontalDivider(
                             thickness = 2.dp,
                             color = ButtonColor,
@@ -241,7 +253,7 @@ fun PlaylistScreen(
 @Composable
 fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
     val title = item.title
-    val albumCover = item.imageUrl
+    val albumCover = item.getSmallThumbnail()
     val artist = item.artist
     Row(
         verticalAlignment = Alignment.CenterVertically,

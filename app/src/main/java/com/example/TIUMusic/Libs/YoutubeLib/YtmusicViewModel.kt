@@ -905,11 +905,16 @@ class YtmusicViewModel @Inject constructor(
             }.onSuccess {result ->
                 result.onSuccess { tracks ->
                     val musicItems = tracks.map { songItem ->
+                        val thumbnail = songItem.thumbnails?.thumbnails?.lastOrNull();
+                        var thumbnailUrl = "";
+                        if (thumbnail != null && songItem.id.isNotEmpty()) {
+                            thumbnailUrl = getYoutubeHDThumbnail(songItem.id);
+                        }
                         MusicItem(
                             videoId = songItem.id,
                             title = songItem.title,
-                            artist = songItem.artists.firstOrNull()?.name ?: "Unknown Artist",
-                            imageUrl = songItem.thumbnails?.thumbnails?.firstOrNull()?.url ?: "",
+                            artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
+                            imageUrl = thumbnailUrl,
                             type = 0
                         )
                     }

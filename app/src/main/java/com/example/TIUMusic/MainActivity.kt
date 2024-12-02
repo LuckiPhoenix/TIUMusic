@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val playerViewModel = PlayerViewModel() // Could be a bad idea
         val visualizerViewModel = VisualizerViewModel()
-        val youtubeViewModel = YoutubeViewModel()
+        val youtubeViewModel = YoutubeViewModel(playerViewModel)
         requestPermissions(
             activity = this,
             onAccepted = { name ->

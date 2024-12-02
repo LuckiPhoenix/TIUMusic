@@ -88,7 +88,7 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onPlaylistClick = { musicItem ->
+                        onItemClick = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.setMusicItem(musicItem)
@@ -129,6 +129,8 @@ fun NavHost(
                     },onPlaylistClick = { musicItem ->
                         if(musicItem.type == 0){
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setPlaylist(null);
+                            playerViewModel.setCurrentPlaylistIndex(null);
                             playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.videoId,
@@ -153,7 +155,9 @@ fun NavHost(
                             Log.d("LogNav", "TYPE = 2")
                         }
                     },
-                    hiltViewModel()
+                    hiltViewModel(),
+                    youtubeViewModel = youtubeViewModel,
+                    playerViewModel = playerViewModel
                     )
                 }
                 composable("search") { SearchScreen(
@@ -197,7 +201,7 @@ fun NavHost(
                             type = 1,
                             playlistId = playlistId,
                         ),
-                        onTabSelected ={ tabIndex ->
+                        onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -205,8 +209,12 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onSongClick = {musicItem ->
+                        onPlaylistLoaded = {
+                            playerViewModel.setPlaylist(it)
+                        },
+                        onSongClick = { musicItem, index ->
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setCurrentPlaylistIndex(index);
                             playerViewModel.setMusicItem(musicItem)
                             youtubeViewModel.loadAndPlayVideo(
                                 videoId = musicItem.videoId,
@@ -219,8 +227,7 @@ fun NavHost(
                                 ),
                                 0L,
                                 context = context
-                            );
-
+                            )
                         }
                     )
                 }
