@@ -310,7 +310,7 @@ fun AlbumScreen(
                             )
                             Text(text = state.data.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
                             Text(text = state.data.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
-                            state.data.description?.let { Text(text = it, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
+                            state.data.description?.let { Text(text = /*it*/"", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
