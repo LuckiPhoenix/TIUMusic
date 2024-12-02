@@ -82,6 +82,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -163,7 +164,7 @@ public fun ExpandedPlayer(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
         ) {
             Spacer(modifier = Modifier.height(64.dp))
             // Album art
@@ -194,33 +195,37 @@ public fun ExpandedPlayer(
                         .background(Color(0xFF404040))
                         .graphicsLayer(rotationZ = rotation)
                 )
-                if (lyric.isNotEmpty()) {
-                    Text(
-                        text = syncedLine.words, //lyric here
-                        fontSize = 24.sp,
-                        textAlign = TextAlign.Center,
-                        color = Color.White,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Alignment.BottomCenter)
-                    )
-                }
             }
 
+            if (lyric.isNotEmpty()) {
+                Text(
+                    text = syncedLine.words, //lyric here
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .height(48.dp)
+                        .fillMaxWidth()
+                )
+            }
 
             Column(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize()
-            ) {// Title and artist
+            ) {
+                // Title and artist
                 Column(modifier = Modifier.padding(start = 16.dp)) {
                     Text(
                         text = musicItem.title,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
