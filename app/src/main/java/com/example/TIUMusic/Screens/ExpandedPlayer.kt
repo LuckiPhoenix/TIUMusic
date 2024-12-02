@@ -136,11 +136,9 @@ public fun ExpandedPlayer(
         modifier =
             Modifier.fillMaxSize()
                 .background(
-                    brush = Brush.radialGradient(
+                    brush = Brush.verticalGradient(
                         0f to avgColor,
-                        1f to avgColor.copy(alpha = 0f),
-                        center = Offset.Zero,
-                        radius = 900f
+                        0.7f to avgColor.copy(alpha = 0f),
                     )
                 )
     ) {
