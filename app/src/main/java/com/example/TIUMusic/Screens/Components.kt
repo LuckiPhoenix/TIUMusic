@@ -1196,7 +1196,8 @@ fun NowPlayingSheet(
                                     playerViewModel.changeSong(isNextSong, MainActivity.applicationContext)
                                 }
                             },
-                            visualizerViewModel = visualizerViewModel
+                            visualizerViewModel = visualizerViewModel,
+                            playerViewModel = playerViewModel
                         )
                     }
                 }

@@ -40,7 +40,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-interface MediaNotificationSeek {
+interface SeekListener {
     fun onSeek(seekTime : Float);
 }
 
@@ -49,20 +49,20 @@ class YoutubePlayerHelper {
     var ytPlayer : YouTubePlayer? = null;
     var ytVideoTracker : YouTubePlayerTracker = YouTubePlayerTracker();
     var seekToTime : Float = 0.0f
-    var mediaNotificationSeekListeners = ArrayList<MediaNotificationSeek>();
+    var seekListenerListeners = ArrayList<SeekListener>();
 
     val duration : Float get() = ytVideoTracker.videoDuration;
     val currentSecond : Float get() = ytVideoTracker.currentSecond;
 
-    public fun addMediaNotificationSeekListener(listener : MediaNotificationSeek) {
-        mediaNotificationSeekListeners.add(listener);
+    public fun addSeekListener(listener : SeekListener) {
+        seekListenerListeners.add(listener);
     }
 
     public fun seekTo(second : Float) {
         if (ytPlayer != null) {
             seekToTime = second;
             ytPlayer!!.seekTo(seekToTime);
-            for (listener in mediaNotificationSeekListeners)
+            for (listener in seekListenerListeners)
                 listener.onSeek(second);
         }
     }
@@ -107,6 +107,7 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         .setState(PlaybackState.STATE_NONE, 0, 1.0f);
 
     var videoDuration : Long = 0;
+    var onSecond : (Float) -> Unit = {};
 
     companion object {
         var ___ran : Boolean = false;
@@ -172,6 +173,8 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
                 ytHelper.value.seekTo(pos / 1000f);
             }
         })
+
+
     }
 
     fun updateYoutubePlayerView(youTubePlayerView: YouTubePlayerView) {
@@ -300,11 +303,9 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         }
     }
 
-    fun addMediaNotificationSeekListener(listener: MediaNotificationSeek) {
-        if (!YoutubeSettings.NotificationEnabled)
-            return;
+    fun addSeekListener(listener: SeekListener) {
         _ytHelper.update { it ->
-            it.addMediaNotificationSeekListener(listener);
+            it.addSeekListener(listener);
             it;
         }
     }

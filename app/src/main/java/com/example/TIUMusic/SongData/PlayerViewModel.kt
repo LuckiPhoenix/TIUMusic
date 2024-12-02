@@ -5,12 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.lifecycle.viewModelScope
+import com.example.TIUMusic.Libs.YoutubeLib.SeekListener
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
-import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.Libs.YoutubeLib.getLRCLIBLyrics
+import com.example.TIUMusic.Libs.YoutubeLib.models.Line
+import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class PlayerViewModel : ViewModel() {
     private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", 0));
@@ -24,6 +29,11 @@ class PlayerViewModel : ViewModel() {
 
     private var _currentPlaylistIndex : MutableState<Int?> = mutableStateOf(null);
     val currentPlaylistIndex : State<Int?> = _currentPlaylistIndex;
+
+    var lyrics : Lyrics? = null;
+    var currentSyncedIndex : Int = 0
+    private var _syncedLine = MutableStateFlow<Line>(Line(0f, ""))
+    val syncedLine = _syncedLine.asStateFlow();
 
     private val _isPlaying = mutableStateOf(false)
     val isPlaying: State<Boolean> = _isPlaying
@@ -41,9 +51,39 @@ class PlayerViewModel : ViewModel() {
     val currentTime : State<Float> = _currentTime;
 
     var ytViewModel = YoutubeViewModel(this);
+    val syncedLyricsBuffer : Float = 0.2f;
+
+    init {
+        ytViewModel.onSecond = { second ->
+            if (lyrics != null && lyrics!!.isSynced) {
+                if (currentSyncedIndex < lyrics!!.lines.size &&
+                    second + syncedLyricsBuffer >= lyrics!!.lines[currentSyncedIndex].startSeconds
+                ) {
+                    _syncedLine.value = lyrics!!.lines[currentSyncedIndex];
+                    currentSyncedIndex++;
+                }
+            }
+            else
+                _syncedLine.value = Line(0f, "");
+        }
+        ytViewModel.addSeekListener(object : SeekListener {
+            override fun onSeek(seekTime: Float) {
+                currentSyncedIndex = 0;
+                _syncedLine.value = Line(0f, "");
+                if (lyrics != null && lyrics!!.isSynced){
+                    currentSyncedIndex = lyrics!!.lines.indexOfFirst { it ->
+                        ytViewModel.ytHelper.value.seekToTime < it.startSeconds;
+                    } - 1
+                }
+                else
+                    _syncedLine.value = Line(0f, "");
+            }
+        });
+    }
 
     fun playSong(item : MusicItem, context : android.content.Context) {
         _musicItem.value = item;
+        getLyrics(item.title, item.artist);
         ytViewModel.loadAndPlayVideo(
             videoId = item.videoId,
             metadata = YoutubeMetadata(
@@ -92,6 +132,15 @@ class PlayerViewModel : ViewModel() {
     fun resetPlaylist() {
         _playlist.value = null;
         _currentPlaylistIndex.value = null;
+    }
+
+    fun getLyrics(track: String, artist : String) {
+        currentSyncedIndex = 0;
+        lyrics = null;
+        _syncedLine.value = Line(0f, "");
+        viewModelScope.launch {
+            lyrics = getLRCLIBLyrics(YouTube.ytMusic, track, artist);
+        }
     }
 
     fun setCurrentTime(currTime : Float) {

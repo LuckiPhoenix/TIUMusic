@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -92,6 +93,7 @@ import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 import kotlin.math.min
@@ -109,7 +111,8 @@ public fun ExpandedPlayer(
     onSeek: (Float) -> Unit,
     onSeekFinished: (Float) -> Unit,
     onChangeSong: (Boolean) -> Unit,
-    visualizerViewModel: VisualizerViewModel
+    visualizerViewModel: VisualizerViewModel,
+    playerViewModel: PlayerViewModel
 ) {
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(
@@ -124,6 +127,7 @@ public fun ExpandedPlayer(
     var albumArt : Bitmap? by remember { mutableStateOf(null) }
     val lyric = listOf("hello", "world")
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
+    val syncedLine by playerViewModel.syncedLine.collectAsState()
 
     LaunchedEffect(albumArt) {
         if (albumArt != null) {
@@ -192,7 +196,7 @@ public fun ExpandedPlayer(
                 )
                 if (lyric.isNotEmpty()) {
                     Text(
-                        text = lyric.get(0), //lyric here
+                        text = syncedLine.words, //lyric here
                         fontSize = 24.sp,
                         textAlign = TextAlign.Center,
                         color = Color.White,
