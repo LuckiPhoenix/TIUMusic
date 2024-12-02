@@ -1,6 +1,6 @@
 package com.example.TIUMusic.Libs.YoutubeLib.models
 
-data class Line2 (
+data class Line (
     val startSeconds : Float,
     val words : String,
 )

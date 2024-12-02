@@ -104,33 +104,35 @@ fun NavHost(
                         }
                     )
                 }
-                composable("new") { NewScreen(
-                    navController,
-                    onTabSelected = { tabIndex ->
-                    when (tabIndex) {
-                        0 -> {navController.navigate("home")}
-                        1 -> {}
-                        2 -> navController.navigate("library")
-                        3 -> navController.navigate("search")
-                    }
-                    },onPlaylistClick = { musicItem ->
-                        if(musicItem.type == 0){
-                            Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.resetPlaylist();
-                            playerViewModel.playSong(musicItem, context)
-                        } else if(musicItem.type == 1){
-                            navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
-                            navController.navigate("playlist/${musicItem.playlistId}")
-                            Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
-                        }
-                        else if(musicItem.type == 2){
-                            Log.d("LogNav", "TYPE = 2")
-                        }
-                    },
-                    hiltViewModel(),
-                    playerViewModel = playerViewModel
+                composable("new") {
+                    NewScreen(
+                        navController,
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> {}
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        }, onItemClick = { musicItem ->
+                            if(musicItem.type == 0){
+                                Log.d("LogNav", "TYPE = 0")
+                                playerViewModel.resetPlaylist();
+                                playerViewModel.playSong(musicItem, context)
+                            } else if(musicItem.type == 1){
+                                navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.navigate("playlist/${musicItem.playlistId}")
+                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
+                            }
+                            else if(musicItem.type == 2){
+                                navController.navigate("album/${musicItem.browseId}")
+                                Log.d("LogNav", "TYPE = 2")
+                            }
+                        },
+                        hiltViewModel(),
+                        playerViewModel = playerViewModel,
                     )
                 }
                 composable("search") { SearchScreen(
@@ -188,12 +190,21 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onPlaylistLoaded = {
-                            playerViewModel.setPlaylist(it)
-                        },
-                        onSongClick = { musicItem, index ->
+                        onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
                             playerViewModel.playSongInPlaylistAtIndex(index, context);
+                        },
+                        onShuffleClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.shufflePlaylist();
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                        },
+                        onPlayClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }
                     )
                 }
@@ -215,9 +226,21 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onSongClick = { musicItem, index ->
+                        onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.playSong(musicItem, context);
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
+                            playerViewModel.playSongInPlaylistAtIndex(index, context);
+                        },
+                        onShuffleClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.shufflePlaylist();
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                        },
+                        onPlayClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist);
+                            playerViewModel.setIsShuffled(false);
+                            playerViewModel.playSongInPlaylistAtIndex(0, context);
                         }
                     )
                 }

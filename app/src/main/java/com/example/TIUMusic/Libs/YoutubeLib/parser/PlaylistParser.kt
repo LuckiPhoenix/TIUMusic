@@ -1,6 +1,7 @@
 package com.example.TIUMusic.Libs.YoutubeLib.parser
 
 import android.util.Log
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicResponsiveListItemRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
@@ -122,6 +123,15 @@ fun MusicShelfRenderer.Content.toSongItem(): SongItem? {
     val flexColumns = this.musicResponsiveListItemRenderer?.flexColumns
     val fixedColumns = this.musicResponsiveListItemRenderer?.fixedColumns
     val menu = this.musicResponsiveListItemRenderer?.menu
+    val artistRun =
+        flexColumns?.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull();
+    var artist : Artist? = null;
+    if (artistRun != null) {
+        artist = Artist(
+            artistRun.text,
+            artistRun.navigationEndpoint?.browseEndpoint?.browseId
+        )
+    }
     return SongItem(
         id =
             flexColumns
@@ -141,21 +151,7 @@ fun MusicShelfRenderer.Content.toSongItem(): SongItem? {
                 ?.runs
                 ?.firstOrNull()
                 ?.text ?: return null,
-        artists =
-            flexColumns
-                .apply {
-                    Log.w("PlaylistParser", "Artists: ${this.map {
-                        it.musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()?.text
-                    }}")
-                }
-                .filter {
-                it.musicResponsiveListItemFlexColumnRenderer.isArtist()
-            }.apply {
-                    Log.w("PlaylistParser", "Artists after filter: ${this.map {
-                        it.musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()?.text
-                    }}")
-                }
-                .mapNotNull { it.musicResponsiveListItemFlexColumnRenderer.toArtist() },
+        artists = if (artist != null) listOf(artist) else listOf(),
         album =
             flexColumns.find {
                 it.musicResponsiveListItemFlexColumnRenderer.isAlbum()

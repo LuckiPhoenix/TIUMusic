@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.ui.theme.BackgroundColor
@@ -25,6 +26,7 @@ fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
         CookieManager.getInstance().getCookie(LocalContext.current.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
             YouTube.cookie = it
         }
+        navController.popBackStack(0, inclusive =  true);
         navController.navigate("home");
         return;
     }
@@ -72,7 +74,8 @@ fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
 //                                view.clearSslPreferences()
                             }
                             // Pop back stack
-                            navController.navigate("login");
+                            navController.popBackStack(0, inclusive =  true);
+                            navController.navigate("home");
                         }
                     }
                 }

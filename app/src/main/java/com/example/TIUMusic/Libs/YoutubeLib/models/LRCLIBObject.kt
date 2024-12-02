@@ -3,7 +3,7 @@ package com.example.TIUMusic.Libs.YoutubeLib.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LrclibObject(
+data class LRCLIBObject (
     val id: Int,
     val name: String,
     val trackName: String?,

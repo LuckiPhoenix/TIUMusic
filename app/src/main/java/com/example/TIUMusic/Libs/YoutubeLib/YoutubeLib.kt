@@ -1,38 +1,31 @@
 package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
-import android.content.IntentSender.OnFinished
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject2
-import com.example.TIUMusic.Libs.YoutubeLib.models.Line2
-import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics2
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject
+import com.example.TIUMusic.Libs.YoutubeLib.models.Line
+import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
+import com.example.TIUMusic.MainActivity
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import io.ktor.client.call.body
-import okhttp3.internal.notify
+import kotlin.math.abs
 
 fun ensurePlayerNotificationPermissionAllowed(
     activity : ComponentActivity,
@@ -100,21 +93,15 @@ fun YoutubeView(
     onState: (YouTubePlayer, PlayerConstants.PlayerState) -> Unit,
     youtubeViewModel: YoutubeViewModel
 ) {
-    var ytPlayerView : YouTubePlayerView? by remember { mutableStateOf(null) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle;
     val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
     val mediaSession by youtubeViewModel.mediaSession.collectAsState()
-    DisposableEffect(LocalContext.current) {
-        onDispose {
-            ytPlayerView?.release();
-        }
-    }
 
     println(youtubeVideoId);
     AndroidView(
         modifier = Modifier.size(0.dp),
         factory = { context ->
             YouTubePlayerView(context = context).apply {
-                ytPlayerView = this;
                 //lifecycleOwner.lifecycle.addObserver(this);
                 enableBackgroundPlayback(true);
 
@@ -129,6 +116,7 @@ fun YoutubeView(
                         if (mediaSession != null && (!mediaSession!!.isActive || youtubeViewModel.reloadDuration))
                         {
                             youtubeViewModel.reloadDuration = false;
+                            youtubeViewModel.onDurationLoaded(duration);
                             youtubeViewModel.updateVideoDuration(durationMs = duration.toLong() * 1000L);
                             youtubeViewModel.setMediaSessionActive(true);
                             // println("Playing");
@@ -137,11 +125,13 @@ fun YoutubeView(
                                 position = 0,
                                 playbackSpeed = 1.0f
                             );
+                            ytPlayerHelper.play();
                         }
                     }
 
                     override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                         onSecond(youTubePlayer, second);
+                        youtubeViewModel.onSecond(second);
                     }
 
                     override fun onStateChange(
@@ -151,6 +141,10 @@ fun YoutubeView(
                         onState(youTubePlayer, state);
                         if (state == PlayerConstants.PlayerState.UNSTARTED)
                             return;
+                        if (state == PlayerConstants.PlayerState.ENDED) {
+                            ytPlayerHelper.seekToTime = 0f;
+                            youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
+                        }
                         youtubeViewModel.updateVideoDuration(ytPlayerHelper.ytVideoTracker.videoDuration.toLong() * 1000L);
                         youtubeViewModel.updatePlaybackState(
                             state = state,
@@ -172,8 +166,8 @@ fun getYoutubeSmallThumbnail(videoId: String) : String {
     return "https://img.youtube.com/vi/$videoId/mqdefault.jpg"
 }
 
-fun parseSyncedLyrics(syncedLyrics : String) : List<Line2> {
-    var line2s : MutableList<Line2> = mutableListOf();
+fun parseSyncedLyrics(syncedLyrics : String) : List<Line> {
+    val lines : MutableList<Line> = mutableListOf();
     syncedLyrics.split('\n').forEach { it ->
         // retarded certified
         var i : Int = 1;
@@ -193,34 +187,45 @@ fun parseSyncedLyrics(syncedLyrics : String) : List<Line2> {
             multiplierCount++;
             i++;
         }
-        line2s.add(Line2(startSeconds = seconds, words = it.substring(i + 1)))
+        lines.add(Line(startSeconds = seconds, words = it.substring(i + 1)))
     };
 
-    return line2s;
+    return lines;
 }
 
-fun parsePlainLyrics(plainLyrics : String) : List<Line2> {
-    var line2s : MutableList<Line2> = mutableListOf();
+fun parsePlainLyrics(plainLyrics : String) : List<Line> {
+    var lines : MutableList<Line> = mutableListOf();
     plainLyrics.split('\n').forEach{ it ->
-        line2s.add(Line2(startSeconds = 0f, words = it));
+        lines.add(Line(startSeconds = 0f, words = it));
     };
-    return line2s;
+    return lines;
 }
 
-suspend fun getLyrics(ytMusic : Ytmusic, track : String, artist : String) : Lyrics2 {
-    var line2s : List<Line2> = emptyList();
+suspend fun getLRCLIBLyrics(ytMusic : Ytmusic, track : String, artist : String, duration : Float) : Lyrics? {
+    var lines : List<Line> = emptyList();
     var isSynced = false;
-    val lyricsList = ytMusic.searchLrclibLyrics("it's not litter if you bin it", "Niko B").body<List<LRCLIBObject2>>();
+    val lyricsList = ytMusic.searchLrclibLyrics(track, artist).body<List<LRCLIBObject>>();
     if (lyricsList.isNotEmpty()) {
-        val lrclibObj = lyricsList.first();
+        var bestMatchDuration : Float = Float.MAX_VALUE;
+        var lrclibObj : LRCLIBObject = lyricsList.reduce { result, item ->
+            if (abs(item.duration - duration) < bestMatchDuration) {
+                bestMatchDuration = item.duration - duration;
+                return@reduce item;
+            }
+            result;
+        };
         if (lrclibObj.syncedLyrics != null) {
-            lrclibObj.syncedLyrics.let { line2s = parseSyncedLyrics(it) };
+            lrclibObj.syncedLyrics!!.let { lines = parseSyncedLyrics(it) };
             isSynced = true;
         }
         else if (lrclibObj.plainLyrics != null) {
-            lrclibObj.plainLyrics.let { line2s = parsePlainLyrics(it) };
+            lrclibObj.plainLyrics!!.let { lines = parsePlainLyrics(it) };
             isSynced = false;
         }
+        Log.d("Lyrics", "${lrclibObj.duration}");
     }
-    return Lyrics2(line2s = line2s, isSynced = true);
+    if (lines.isEmpty())
+        return null;
+    else
+        return Lyrics(lines = lines, isSynced = isSynced);
 }

@@ -95,6 +95,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
@@ -634,11 +635,12 @@ fun HorizontalScrollableNewScreenSection(
 
     Column {
         if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
+            SectionTitle(title)
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
         }
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
@@ -678,13 +680,14 @@ fun HorizontalScrollableNewScreenSection2(
     val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
 
     Column(modifier = Modifier.padding(top = 20.dp)) {
-        if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
-        }
+        SectionTitle(title ?: "")
+//        if (title?.isNotEmpty() == true) {
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
+//        }
         LazyHorizontalGrid(
             state = rememberLazyGridState(),
             rows = GridCells.Fixed(1),
@@ -727,11 +730,12 @@ fun HorizontalScrollableNewScreenSection3(
 
     Column(modifier = Modifier.padding(top = 20.dp)) {
         if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
+            SectionTitle(title)
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
         }
         LazyHorizontalGrid(
             state = rememberLazyGridState(),
@@ -1192,10 +1196,11 @@ fun NowPlayingSheet(
                                     ytPlayerHelper.seekTo(0f);
                                 }
                                 else {
-                                    playerViewModel.changeSong(isNextSong, context)
+                                    playerViewModel.changeSong(isNextSong, MainActivity.applicationContext)
                                 }
                             },
-                            visualizerViewModel = visualizerViewModel
+                            visualizerViewModel = visualizerViewModel,
+                            playerViewModel = playerViewModel
                         )
                     }
                 }

@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -92,8 +93,10 @@ import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -108,7 +111,8 @@ public fun ExpandedPlayer(
     onSeek: (Float) -> Unit,
     onSeekFinished: (Float) -> Unit,
     onChangeSong: (Boolean) -> Unit,
-    visualizerViewModel: VisualizerViewModel
+    visualizerViewModel: VisualizerViewModel,
+    playerViewModel: PlayerViewModel
 ) {
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(
@@ -123,11 +127,25 @@ public fun ExpandedPlayer(
     var albumArt : Bitmap? by remember { mutableStateOf(null) }
     val lyric = listOf("hello", "world")
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
+    val syncedLine by playerViewModel.syncedLine.collectAsState()
 
     LaunchedEffect(albumArt) {
         if (albumArt != null) {
             avgColor = Color(albumArt!!.getPixel(0, 0));
             Log.d("Player", avgColor.toString());
+//            val hsv : FloatArray = FloatArray(3);
+//            android.graphics.Color.RGBToHSV(
+//                avgColor.red.toInt() * 255,
+//                avgColor.green.toInt() * 255,
+//                avgColor.blue.toInt() * 255,
+//                hsv);
+//            avgColor = Color.hsv(hsv[0], hsv[1], min(hsv[2] * 2, 1.0f));
+            avgColor = avgColor.copy(
+                alpha = 1.0f,
+                red = min(1.0f, avgColor.red * 1.5f),
+                green = min(1.0f, avgColor.green * 1.5f),
+                blue = min(1.0f, avgColor.blue * 1.5f)
+            )
         }
     }
 
@@ -137,8 +155,8 @@ public fun ExpandedPlayer(
             Modifier.fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        0f to avgColor,
-                        0.7f to avgColor.copy(alpha = 0f),
+                        0f to avgColor.copy(alpha = 0.8f),
+                        0.6f to avgColor.copy(alpha = 0f),
                     )
                 )
     ) {
@@ -178,7 +196,7 @@ public fun ExpandedPlayer(
                 )
                 if (lyric.isNotEmpty()) {
                     Text(
-                        text = lyric.get(0), //lyric here
+                        text = syncedLine.words, //lyric here
                         fontSize = 24.sp,
                         textAlign = TextAlign.Center,
                         color = Color.White,

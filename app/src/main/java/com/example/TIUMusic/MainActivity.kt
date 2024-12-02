@@ -1,6 +1,8 @@
 package com.example.TIUMusic
 
 import android.Manifest
+import android.app.NotificationManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,31 +11,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat.checkSelfPermission
-import coil3.ImageLoader
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
+import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.createNotificationChannel
 import com.example.TIUMusic.Libs.YoutubeLib.createTestBitmap
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.ktor.client.call.body
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object {
         var isPaused = false;
+
+        private lateinit var appContext : Context;
+
+        public val applicationContext: Context
+            get() = appContext;
     }
 
     override fun onPause() {
@@ -46,9 +43,17 @@ class MainActivity : ComponentActivity() {
         isPaused = false;
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        val notificationManager: NotificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(MediaNotificationID);
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        appContext = this;
         val playerViewModel = PlayerViewModel() // Could be a bad idea
         val visualizerViewModel = VisualizerViewModel()
         requestPermissions(
@@ -79,6 +84,7 @@ class MainActivity : ComponentActivity() {
         createTestBitmap(this);
         setContent {
             TIUMusicTheme {
+
                 NavHost(
                     playerViewModel = playerViewModel,
                     visualizerViewModel = visualizerViewModel

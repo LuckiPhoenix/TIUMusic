@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 fun NewScreen(
     navController: NavController,
     onTabSelected: (Int) -> Unit,
-    onPlaylistClick: (MusicItem) -> Unit,
+    onItemClick: (MusicItem) -> Unit,
     ytmusicViewModel: YtmusicViewModel,
     playerViewModel: PlayerViewModel
 ) {
@@ -71,7 +72,9 @@ fun NewScreen(
                     items = newReleaseMusicItems,
                     itemWidth = 300.dp,
                     sectionHeight = 300.dp,
-                    onItemClick = { }
+                    onItemClick = { musicItem ->
+                        onItemClick(musicItem)
+                    }
                 )
             }
 
@@ -84,8 +87,7 @@ fun NewScreen(
                     itemWidth = 300.dp,
                     sectionHeight = 260.dp,
                     onItemClick = { musicItem ->
-                        playerViewModel.resetPlaylist();
-                        playerViewModel.playSong(musicItem, context)
+                        onItemClick(musicItem);
                     }
                 )
             }
@@ -99,9 +101,7 @@ fun NewScreen(
                     itemWidth = 150.dp,
                     sectionHeight = 220.dp,
                     onItemClick = { musicItem ->
-                        Log.d("LogNav", "TYPE = 0")
-                        playerViewModel.resetPlaylist();
-                        playerViewModel.playSong(musicItem, context)
+                        onItemClick(musicItem);
                     }
                 )
             }
@@ -119,7 +119,9 @@ fun NewScreen(
                     items = newAlbumReleases,
                     itemWidth = 150.dp,
                     sectionHeight = 220.dp,
-                    onItemClick = { }
+                    onItemClick = { it ->
+                        onItemClick(it);
+                    }
                 )
             }
 
@@ -137,9 +139,7 @@ fun NewScreen(
                     itemWidth = 150.dp,
                     sectionHeight = 220.dp,
                     onItemClick = { musicItem ->
-                        Log.d("LogNav", "TYPE = 0")
-                        playerViewModel.resetPlaylist();
-                        playerViewModel.playSong(musicItem, context)
+                        onItemClick(musicItem);
                     }
                 )
             }
