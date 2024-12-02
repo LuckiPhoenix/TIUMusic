@@ -108,6 +108,7 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
 
     var videoDuration : Long = 0;
     var onSecond : (Float) -> Unit = {};
+    var onDurationLoaded : (Float) -> Unit = {};
 
     companion object {
         var ___ran : Boolean = false;

@@ -635,11 +635,12 @@ fun HorizontalScrollableNewScreenSection(
 
     Column {
         if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
+            SectionTitle(title)
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
         }
         LazyHorizontalGrid(
             rows = GridCells.Fixed(1),
@@ -679,13 +680,14 @@ fun HorizontalScrollableNewScreenSection2(
     val calculatedSectionHeight = sectionHeight ?: (calculatedItemWidth + 80.dp)
 
     Column(modifier = Modifier.padding(top = 20.dp)) {
-        if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
-        }
+        SectionTitle(title ?: "")
+//        if (title?.isNotEmpty() == true) {
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
+//        }
         LazyHorizontalGrid(
             state = rememberLazyGridState(),
             rows = GridCells.Fixed(1),
@@ -728,11 +730,12 @@ fun HorizontalScrollableNewScreenSection3(
 
     Column(modifier = Modifier.padding(top = 20.dp)) {
         if (title?.isNotEmpty() == true) {
-            if (iconHeader == null) {
-                SectionTitle(title)
-            } else {
-                SectionTitleWithIcon(title, iconHeader)
-            }
+            SectionTitle(title)
+//            if (iconHeader == null) {
+//                SectionTitle(title)
+//            } else {
+//                SectionTitleWithIcon(title, iconHeader)
+//            }
         }
         LazyHorizontalGrid(
             state = rememberLazyGridState(),

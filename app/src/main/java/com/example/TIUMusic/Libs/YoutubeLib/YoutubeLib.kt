@@ -3,6 +3,7 @@ package com.example.TIUMusic.Libs.YoutubeLib
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.size
@@ -24,6 +25,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import io.ktor.client.call.body
+import kotlin.math.abs
 
 fun ensurePlayerNotificationPermissionAllowed(
     activity : ComponentActivity,
@@ -114,6 +116,7 @@ fun YoutubeView(
                         if (mediaSession != null && (!mediaSession!!.isActive || youtubeViewModel.reloadDuration))
                         {
                             youtubeViewModel.reloadDuration = false;
+                            youtubeViewModel.onDurationLoaded(duration);
                             youtubeViewModel.updateVideoDuration(durationMs = duration.toLong() * 1000L);
                             youtubeViewModel.setMediaSessionActive(true);
                             // println("Playing");
@@ -198,15 +201,15 @@ fun parsePlainLyrics(plainLyrics : String) : List<Line> {
     return lines;
 }
 
-suspend fun getLRCLIBLyrics(ytMusic : Ytmusic, track : String, artist : String) : Lyrics? {
+suspend fun getLRCLIBLyrics(ytMusic : Ytmusic, track : String, artist : String, duration : Float) : Lyrics? {
     var lines : List<Line> = emptyList();
     var isSynced = false;
     val lyricsList = ytMusic.searchLrclibLyrics(track, artist).body<List<LRCLIBObject>>();
     if (lyricsList.isNotEmpty()) {
         var bestMatchDuration : Float = Float.MAX_VALUE;
         var lrclibObj : LRCLIBObject = lyricsList.reduce { result, item ->
-            if (item.duration < bestMatchDuration) {
-                bestMatchDuration = item.duration;
+            if (abs(item.duration - duration) < bestMatchDuration) {
+                bestMatchDuration = item.duration - duration;
                 return@reduce item;
             }
             result;
@@ -219,6 +222,7 @@ suspend fun getLRCLIBLyrics(ytMusic : Ytmusic, track : String, artist : String) 
             lrclibObj.plainLyrics!!.let { lines = parsePlainLyrics(it) };
             isSynced = false;
         }
+        Log.d("Lyrics", "${lrclibObj.duration}");
     }
     if (lines.isEmpty())
         return null;

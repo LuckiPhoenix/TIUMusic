@@ -51,7 +51,7 @@ class PlayerViewModel : ViewModel() {
     val currentTime : State<Float> = _currentTime;
 
     var ytViewModel = YoutubeViewModel(this);
-    val syncedLyricsBuffer : Float = 0.2f;
+    val syncedLyricsBuffer : Float = 0.0f;
 
     init {
         ytViewModel.onSecond = { second ->
@@ -66,14 +66,17 @@ class PlayerViewModel : ViewModel() {
             else
                 _syncedLine.value = Line(0f, "");
         }
+        ytViewModel.onDurationLoaded = { second ->
+            getLyrics(musicItem.value.title, musicItem.value.artist, second);
+        }
         ytViewModel.addSeekListener(object : SeekListener {
             override fun onSeek(seekTime: Float) {
                 currentSyncedIndex = 0;
                 _syncedLine.value = Line(0f, "");
                 if (lyrics != null && lyrics!!.isSynced){
-                    currentSyncedIndex = lyrics!!.lines.indexOfFirst { it ->
+                    currentSyncedIndex = (lyrics!!.lines.indexOfFirst { it ->
                         ytViewModel.ytHelper.value.seekToTime < it.startSeconds;
-                    } - 1
+                    } - 1).coerceIn(0, lyrics!!.lines.size - 1);
                 }
                 else
                     _syncedLine.value = Line(0f, "");
@@ -83,7 +86,6 @@ class PlayerViewModel : ViewModel() {
 
     fun playSong(item : MusicItem, context : android.content.Context) {
         _musicItem.value = item;
-        getLyrics(item.title, item.artist);
         ytViewModel.loadAndPlayVideo(
             videoId = item.videoId,
             metadata = YoutubeMetadata(
@@ -134,12 +136,12 @@ class PlayerViewModel : ViewModel() {
         _currentPlaylistIndex.value = null;
     }
 
-    fun getLyrics(track: String, artist : String) {
+    fun getLyrics(track: String, artist : String, duration: Float) {
         currentSyncedIndex = 0;
         lyrics = null;
         _syncedLine.value = Line(0f, "");
         viewModelScope.launch {
-            lyrics = getLRCLIBLyrics(YouTube.ytMusic, track, artist);
+            lyrics = getLRCLIBLyrics(YouTube.ytMusic, track, artist, duration);
         }
     }
 
