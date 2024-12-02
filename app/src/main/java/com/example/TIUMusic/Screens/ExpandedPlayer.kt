@@ -2,13 +2,16 @@ package com.example.TIUMusic.Screens
 
 import android.content.Context
 import android.database.ContentObserver
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ImageDecoder
+import android.graphics.drawable.BitmapDrawable
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import androidx.compose.animation.AnimatedContent
+import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -18,11 +21,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -58,7 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -70,7 +67,6 @@ import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -91,15 +87,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import coil3.toBitmap
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import kotlin.math.roundToInt
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -111,6 +107,7 @@ public fun ExpandedPlayer(
     onPlayPauseClick: () -> Unit,
     onSeek: (Float) -> Unit,
     onSeekFinished: (Float) -> Unit,
+    onChangeSong: (Boolean) -> Unit,
     visualizerViewModel: VisualizerViewModel
 ) {
     val infiniteTransition = rememberInfiniteTransition()
@@ -123,98 +120,115 @@ public fun ExpandedPlayer(
         )
     )
     val gradientColors = PrimaryColor
-
+    var albumArt : Bitmap? by remember { mutableStateOf(null) }
     val lyric = listOf("hello", "world")
+    var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Spacer(modifier = Modifier.height(64.dp))
+    LaunchedEffect(albumArt) {
+        if (albumArt != null) {
+            avgColor = Color(albumArt!!.getPixel(0, 0));
+            Log.d("Player", avgColor.toString());
+        }
+    }
 
-        // Album art
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxSize()
-                .weight(1f)
+    Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier =
+            Modifier.fillMaxSize()
                 .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            gradientColors.copy(alpha = 0.5f),
-                            gradientColors.copy(alpha = 0f)
-                        ),
-                        center = Offset.Unspecified,
-                        radius = 500f
+                    brush = Brush.verticalGradient(
+                        0f to avgColor,
+                        0.7f to avgColor.copy(alpha = 0f),
                     )
                 )
-        ) {
-            VisualizerCircleRGB(
-                visualizerViewModel = visualizerViewModel,
-                radius = 330.dp.value,
-                lineHeight = 550.dp.value,
-            )
-            AsyncImage(
-                model = getYoutubeHDThumbnail(musicItem.videoId),
-                contentDescription = "Song Image",
-                contentScale = ContentScale.FillHeight,
-                modifier = Modifier
-                    .size(240.dp)
-                    .clip(RoundedCornerShape(140.dp))
-                    .background(Color(0xFF404040))
-                    .graphicsLayer(rotationZ = rotation)
-            )
-            if(lyric.isNotEmpty()){
-                Text(
-                    text = lyric.get(0), //lyric here
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.White,
-                    modifier = Modifier.padding(16.dp)
-                        .align(Alignment.BottomCenter)
-                )
-            }
-        }
-
-
-        Column (
-            verticalArrangement = Arrangement.Bottom,
+    ) {
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxSize()){// Title and artist
-            Column(modifier = Modifier.padding(start = 16.dp)) {
-                Text(
-                    text = musicItem.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
+                .fillMaxSize()
+                .padding(16.dp),
+        ) {
+            Spacer(modifier = Modifier.height(64.dp))
+            // Album art
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxSize()
+                    .weight(1f)
+
+            ) {
+                VisualizerCircleRGB(
+                    visualizerViewModel = visualizerViewModel,
+                    radius = 330.dp.value,
+                    lineHeight = 550.dp.value,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = musicItem.artist,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
+                AsyncImage(
+                    model = musicItem.imageUrl,
+                    contentDescription = "Song Image",
+                    contentScale = ContentScale.FillHeight,
+                    onSuccess = { result ->
+                        albumArt =
+                            result.result.image.toBitmap().copy(Bitmap.Config.ARGB_8888, true);
+                    },
+                    modifier = Modifier
+                        .size(240.dp)
+                        .clip(RoundedCornerShape(140.dp))
+                        .background(Color(0xFF404040))
+                        .graphicsLayer(rotationZ = rotation)
                 )
+                if (lyric.isNotEmpty()) {
+                    Text(
+                        text = lyric.get(0), //lyric here
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.BottomCenter)
+                    )
+                }
             }
 
-            PlaybackControls(
-                isPlaying = isPlaying,
-                onPlayPauseClick = onPlayPauseClick,
-                currentTime = currentTime,
-                duration = duration,
-                onSeek = onSeek,
-                onSeekFinished = onSeekFinished
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+            ) {// Title and artist
+                Column(modifier = Modifier.padding(start = 16.dp)) {
+                    Text(
+                        text = musicItem.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = musicItem.artist,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Normal,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
-            VolumeControls()
-            Spacer(modifier = Modifier.height(16.dp))
+                PlaybackControls(
+                    isPlaying = isPlaying,
+                    onPlayPauseClick = onPlayPauseClick,
+                    currentTime = currentTime,
+                    duration = duration,
+                    onSeek = onSeek,
+                    onSeekFinished = onSeekFinished,
+                    onChangeSong = { isNextSong -> onChangeSong(isNextSong) }
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                VolumeControls()
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }
@@ -226,8 +240,9 @@ fun PlaybackControls(
     currentTime: Float,
     duration: Float,
     onPlayPauseClick: () -> Unit,
+    onChangeSong : (Boolean) -> Unit,
     onSeek: (Float) -> Unit, // User changes the time
-    onSeekFinished: (Float) -> Unit
+    onSeekFinished: (Float) -> Unit,
 ) {
     // Local state for handling slider interactions
     var sliderPosition by remember { mutableStateOf(currentTime) }
@@ -287,7 +302,7 @@ fun PlaybackControls(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* Handle previous action */ }) {
+            IconButton(onClick = { onChangeSong(false) }) {
                 Icon(
                     painter = painterResource(R.drawable.prev_song),
                     contentDescription = "Previous",
@@ -312,7 +327,7 @@ fun PlaybackControls(
                 )
             }
 
-            IconButton(onClick = { /* Handle next action */ }) {
+            IconButton(onClick = { onChangeSong(true) }) {
                 Icon(
                     painter = painterResource(R.drawable.next_song),
                     contentDescription = "Next",

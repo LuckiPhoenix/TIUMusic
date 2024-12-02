@@ -1,6 +1,5 @@
 package com.example.TIUMusic
 
-import android.os.Parcelable
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,8 +20,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
@@ -42,8 +39,7 @@ import com.example.TIUMusic.SongData.PlayerViewModel
 @Composable
 fun NavHost(
     playerViewModel: PlayerViewModel,
-    visualizerViewModel: VisualizerViewModel,
-    youtubeViewModel: YoutubeViewModel
+    visualizerViewModel: VisualizerViewModel
 ) {
     val context = LocalContext.current;
     val navController = rememberNavController()
@@ -88,22 +84,11 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onPlaylistClick = { musicItem ->
+                        onItemClick = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.setMusicItem(musicItem)
-                                youtubeViewModel.loadAndPlayVideo(
-                                    videoId = musicItem.videoId,
-                                    metadata = YoutubeMetadata(
-                                        title = musicItem.title,
-                                        artist = musicItem.artist,
-                                        artBitmapURL = musicItem.imageUrl,
-                                        displayTitle = musicItem.title,
-                                        displaySubtitle = musicItem.artist
-                                    ),
-                                    0L,
-                                    context = context
-                                );
+                                playerViewModel.resetPlaylist();
+                                playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -129,19 +114,8 @@ fun NavHost(
                     },onPlaylistClick = { musicItem ->
                         if(musicItem.type == 0){
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.setMusicItem(musicItem)
-                            youtubeViewModel.loadAndPlayVideo(
-                                videoId = musicItem.videoId,
-                                metadata = YoutubeMetadata(
-                                    title = musicItem.title,
-                                    artist = musicItem.artist,
-                                    artBitmapURL = musicItem.imageUrl,
-                                    displayTitle = musicItem.title,
-                                    displaySubtitle = musicItem.artist
-                                ),
-                                0L,
-                                context = context
-                            );
+                            playerViewModel.resetPlaylist();
+                            playerViewModel.playSong(musicItem, context)
                         } else if(musicItem.type == 1){
                             navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                             navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -153,19 +127,26 @@ fun NavHost(
                             Log.d("LogNav", "TYPE = 2")
                         }
                     },
-                    hiltViewModel()
+                    hiltViewModel(),
+                    playerViewModel = playerViewModel
                     )
                 }
                 composable("search") { SearchScreen(
-                    navController,
-                    onTabSelected = { tabIndex ->
-                        when (tabIndex) {
-                            0 -> navController.navigate("home")
-                            1 -> navController.navigate("new")
-                            2 -> navController.navigate("library")
-                            3 -> navController.navigate("search")
+                        navController,
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> navController.navigate("home")
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        onClick = {
+                            playerViewModel.resetPlaylist();
+                            playerViewModel.playSong(it, context);
                         }
-                    }) }
+                    )
+                }
                 composable("library") { LibraryScreen(navController,
                     onTabSelected = { tabIndex ->
                         when (tabIndex) {
@@ -197,7 +178,7 @@ fun NavHost(
                             type = 1,
                             playlistId = playlistId,
                         ),
-                        onTabSelected ={ tabIndex ->
+                        onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -205,22 +186,12 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onSongClick = {musicItem ->
+                        onPlaylistLoaded = {
+                            playerViewModel.setPlaylist(it)
+                        },
+                        onSongClick = { musicItem, index ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.setMusicItem(musicItem)
-                            youtubeViewModel.loadAndPlayVideo(
-                                videoId = musicItem.videoId,
-                                metadata = YoutubeMetadata(
-                                    title = musicItem.title,
-                                    artist = musicItem.artist,
-                                    artBitmapURL = musicItem.imageUrl,
-                                    displayTitle = musicItem.title,
-                                    displaySubtitle = musicItem.artist
-                                ),
-                                0L,
-                                context = context
-                            );
-
+                            playerViewModel.playSongInPlaylistAtIndex(index, context);
                         }
                     )
                 }
@@ -250,7 +221,6 @@ fun NavHost(
         if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
-                youtubeViewModel = youtubeViewModel,
                 visualizerViewModel = visualizerViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

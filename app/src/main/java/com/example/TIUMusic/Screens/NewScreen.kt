@@ -1,5 +1,6 @@
 package com.example.TIUMusic.Screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -10,10 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.NewReleaseCard
+import com.example.TIUMusic.SongData.PlayerViewModel
+import com.example.TIUMusic.SongData.fromHomeContent
 import kotlinx.coroutines.launch
 
 
@@ -22,7 +27,8 @@ fun NewScreen(
     navController: NavController,
     onTabSelected: (Int) -> Unit,
     onPlaylistClick: (MusicItem) -> Unit,
-    ytmusicViewModel: YtmusicViewModel
+    ytmusicViewModel: YtmusicViewModel,
+    playerViewModel: PlayerViewModel
 ) {
     val context = LocalContext.current;
     val trendingItem by ytmusicViewModel.chart.collectAsState();
@@ -53,13 +59,7 @@ fun NewScreen(
                         newReleaseMusicItems.add(
                             NewReleaseCard(
                                 newRelease.title,
-                                MusicItem(
-                                    videoId = it.videoId ?: "",
-                                    title = it.title,
-                                    artist = it.artists?.firstOrNull()?.name ?: "",
-                                    imageUrl = it.thumbnails.lastOrNull()?.url ?: "",
-                                    type = 0
-                                )
+                                fromHomeContent(it, false),
                             )
                         )
                     }
@@ -83,7 +83,10 @@ fun NewScreen(
                     items = trendingSongList,
                     itemWidth = 300.dp,
                     sectionHeight = 260.dp,
-                    onItemClick = { }
+                    onItemClick = { musicItem ->
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
+                    }
                 )
             }
 
@@ -95,20 +98,21 @@ fun NewScreen(
                     items = topMusicVideos,
                     itemWidth = 150.dp,
                     sectionHeight = 220.dp,
-                    onItemClick = { }
+                    onItemClick = { musicItem ->
+                        Log.d("LogNav", "TYPE = 0")
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
+                    }
                 )
             }
 
             val newAlbumReleases = newReleases.getOrNull(1)?.contents?.mapNotNull {
-                MusicItem(
-                    videoId = it?.videoId ?: "",
-                    title = it?.title ?: "",
-                    artist = it?.artists?.firstOrNull()?.name ?: "",
-                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
-                    type = 0
-                )
+                if (it != null) {
+                    return@mapNotNull fromHomeContent(it, false);
+                }
+                return@mapNotNull null;
             };
-            if (newAlbumReleases != null) {
+            if (!newAlbumReleases.isNullOrEmpty()) {
                 HorizontalScrollableNewScreenSection3(
                     title = "New Album Releases",
                     iconHeader = R.drawable.baseline_chevron_right_24,
@@ -120,22 +124,23 @@ fun NewScreen(
             }
 
             val newMusicVideos = newReleases.getOrNull(2)?.contents?.mapNotNull {
-                MusicItem(
-                    videoId = it?.videoId ?: "",
-                    title = it?.title ?: "",
-                    artist = it?.artists?.firstOrNull()?.name ?: "",
-                    imageUrl = it?.thumbnails?.lastOrNull()?.url ?: "",
-                    type = 0
-                )
+                if (it != null) {
+                    return@mapNotNull fromHomeContent(it, false);
+                }
+                return@mapNotNull null;
             }
-            if (newMusicVideos != null && newMusicVideos.isNotEmpty()) {
+            if (!newMusicVideos.isNullOrEmpty()) {
                 HorizontalScrollableNewScreenSection3(
                     title = "New music videos",
                     iconHeader = R.drawable.baseline_chevron_right_24,
                     items =  newMusicVideos,
                     itemWidth = 150.dp,
                     sectionHeight = 220.dp,
-                    onItemClick = { }
+                    onItemClick = { musicItem ->
+                        Log.d("LogNav", "TYPE = 0")
+                        playerViewModel.resetPlaylist();
+                        playerViewModel.playSong(musicItem, context)
+                    }
                 )
             }
 //

@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -92,6 +93,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -230,6 +232,7 @@ fun ScrollableScreen(
 @Composable
 fun ScrollableSearchScreen(
     searchViewModel: YtmusicViewModel = hiltViewModel(),
+    onClick: (MusicItem) -> Unit,
     onTabSelected: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -367,11 +370,23 @@ fun ScrollableSearchScreen(
                     ) {
                         searchResults.forEach {
 //                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
-                            Column {
+                            Column(modifier = Modifier.clickable(
+                                onClick = {
+                                    onClick(MusicItem(
+                                        videoId = it.videoId ?: "",
+                                        title = it.title ?: "",
+                                        artist = it.artist ?: "",
+                                        imageUrl = it.thumbnailURL ?: "",
+                                        type = 0
+                                    ))
+                                }
+                            )) {
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
-
+                                    var thumbnailURL = it.thumbnailURL;
+                                    if (it.videoId != null)
+                                        thumbnailURL = getYoutubeSmallThumbnail(it.videoId);
                                     AsyncImage(
-                                        model = it.thumbnailURL,
+                                        model = thumbnailURL,
                                         contentDescription = "Album art for",
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
@@ -1040,13 +1055,12 @@ fun AlbumCardNewScreenListVertical(
 fun NowPlayingSheet(
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
-    youtubeViewModel: YoutubeViewModel,
     visualizerViewModel: VisualizerViewModel
 ) {
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
-    val ytPlayerHelper by youtubeViewModel.ytHelper.collectAsState()
+    val ytPlayerHelper by playerViewModel.ytViewModel.ytHelper.collectAsState()
     val musicItem by playerViewModel.musicItem.collectAsState()
     // Su dung de check user dang seek hay khong
     // Set true tai onSeek khi user dang keo slider
@@ -1078,13 +1092,9 @@ fun NowPlayingSheet(
         val newProgress = (dragProgress.value - delta / maxHeight.value).coerceIn(0f, 1f)
         dragProgress.value = newProgress
     }
-
     YoutubeView(
         youtubeVideoId = musicItem.videoId,
-        youtubeMetadata = YoutubeMetadata(
-            title = musicItem.title,
-            artist = musicItem.artist,
-        ),
+        youtubeViewModel = playerViewModel.ytViewModel,
         onSecond = { ytPlayer, second ->
             if (!isSeeking)
                 playerViewModel.setCurrentTime(second);
@@ -1110,8 +1120,7 @@ fun NowPlayingSheet(
                     // Set Loading
                 }
             }
-        },
-        youtubeViewModel = youtubeViewModel
+        }
     )
     Box(
         modifier = modifier
@@ -1177,6 +1186,14 @@ fun NowPlayingSheet(
                                 playerViewModel.setPlaying(false);
                                 playerViewModel.setCurrentTime(newPosition);
                                 ytPlayerHelper.seekTo(newPosition);
+                            },
+                            onChangeSong = { isNextSong ->
+                                if (!isNextSong && ytPlayerHelper.currentSecond >= 5) {
+                                    ytPlayerHelper.seekTo(0f);
+                                }
+                                else {
+                                    playerViewModel.changeSong(isNextSong, context)
+                                }
                             },
                             visualizerViewModel = visualizerViewModel
                         )

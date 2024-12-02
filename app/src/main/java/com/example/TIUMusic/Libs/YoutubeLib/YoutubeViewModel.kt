@@ -33,6 +33,7 @@ import coil3.util.CoilUtils
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
@@ -86,7 +87,7 @@ object YoutubeSettings {
     var NotificationEnabled = false;
 }
 
-class YoutubeViewModel() : ViewModel() {
+class YoutubeViewModel(private val playerViewModel: PlayerViewModel) : ViewModel() {
     private var _mediaSession : MutableStateFlow<MediaSession?> = MutableStateFlow(null);
     val mediaSession : StateFlow<MediaSession?> = _mediaSession.asStateFlow();
 
@@ -152,24 +153,29 @@ class YoutubeViewModel() : ViewModel() {
 
         _mediaSession.value!!.setCallback(object : MediaSession.Callback() {
             override fun onPlay() {
-                _ytHelper.update { current ->
-                    current.play();
-                    current;
-                }
+                _ytHelper.value.play();
             }
 
             override fun onPause() {
-                _ytHelper.update { current ->
-                    current.pause();
-                    current;
+                _ytHelper.value.pause()
+            }
+
+            override fun onSkipToNext() {
+                playerViewModel.changeSong(true, context)
+            }
+
+            override fun onSkipToPrevious() {
+                if (ytHelper.value.currentSecond >= 5) {
+                    ytHelper.value.seekTo(0f);
+                }
+                else {
+                    playerViewModel.changeSong(false, context)
                 }
             }
 
             override fun onSeekTo(pos: Long) {
-                _ytHelper.update { current ->
-                    current.seekTo(pos / 1000f);
-                    current;
-                }
+
+                ytHelper.value.seekTo(pos / 1000f);
             }
         })
     }
@@ -229,6 +235,7 @@ class YoutubeViewModel() : ViewModel() {
         context: Context
     ) {
         reloadDuration = true;
+        ytHelper.value.pause();
         _ytHelper.value.ytPlayer?.loadVideo(videoId, 0f);
         updateMediaMetadata(metadata, durationMs, context);
     }
@@ -337,6 +344,7 @@ class YoutubeViewModel() : ViewModel() {
             it!!.setMetadata(mediaMetadataBuilder.build());
             it;
         }
+        mediaNotification(title, artist, null, context);
         if (artBitmapUrl == "")
             return;
         var imageBitmap : Bitmap? = null;
@@ -362,14 +370,16 @@ class YoutubeViewModel() : ViewModel() {
                 return@invokeOnCompletion;
             }
             Log.d("MediaMetadata", "Load image Successful");
-            mediaNotification(title, artist, imageBitmap, context);
-            mediaMetadataBuilder.apply {
-                if (imageBitmap != null)
+
+            if (imageBitmap != null) {
+                mediaNotification(title, artist, imageBitmap, context);
+                mediaMetadataBuilder.apply {
                     putBitmap(MediaMetadata.METADATA_KEY_ART, imageBitmap)
-            }
-            _mediaSession.update { it ->
-                it!!.setMetadata(mediaMetadataBuilder.build());
-                it;
+                }
+                _mediaSession.update { it ->
+                    it!!.setMetadata(mediaMetadataBuilder.build());
+                    it;
+                }
             }
         }
 

@@ -51,7 +51,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val playerViewModel = PlayerViewModel() // Could be a bad idea
         val visualizerViewModel = VisualizerViewModel()
-        val youtubeViewModel = YoutubeViewModel()
         requestPermissions(
             activity = this,
             onAccepted = { name ->
@@ -62,7 +61,7 @@ class MainActivity : ComponentActivity() {
                     }
                     Manifest.permission.POST_NOTIFICATIONS -> {
                         YoutubeSettings.NotificationEnabled = true;
-                        youtubeViewModel.init(this);
+                        playerViewModel.ytViewModel.init(this);
                     }
                 }
             },
@@ -82,8 +81,7 @@ class MainActivity : ComponentActivity() {
             TIUMusicTheme {
                 NavHost(
                     playerViewModel = playerViewModel,
-                    visualizerViewModel = visualizerViewModel,
-                    youtubeViewModel = youtubeViewModel
+                    visualizerViewModel = visualizerViewModel
                 )
             }
         }
