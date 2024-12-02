@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -313,7 +314,7 @@ fun AlbumScreen(
                             )
                             Text(text = state.data.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
                             Text(text = state.data.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
-                            state.data.description?.let { Text(text = it, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
+                            state.data.description?.let { Text(text = /*it*/"", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -429,11 +430,18 @@ fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFF282828))
             )
+
+
+
             Column(
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .height(70.dp)
             ) {
                 Text(
                     text = title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     color = Color.White,
                 )
                 Spacer(
@@ -446,13 +454,5 @@ fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
                 )
             }
         }
-        Icon(
-            painter = painterResource(R.drawable.ellipsis_vertical_button),
-            contentDescription = "Option Button",
-            modifier = Modifier
-                .padding(4.dp)
-                .size(16.dp),
-            tint = Color.White,
-        )
     }
 }
