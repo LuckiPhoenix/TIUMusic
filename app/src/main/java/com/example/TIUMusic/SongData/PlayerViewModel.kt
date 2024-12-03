@@ -10,6 +10,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.SeekListener
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getLRCLIBLyrics
 import com.example.TIUMusic.Libs.YoutubeLib.models.Line
 import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
@@ -101,6 +102,14 @@ class PlayerViewModel : ViewModel() {
 
     fun setPlaylist(items : List<MusicItem>?) {
         _playlist.value = items;
+    }
+
+    fun setRadio(song: MusicItem) {
+        viewModelScope.launch {
+            resetPlaylist();
+            _currentPlaylistIndex.value = 0;
+            setPlaylist(YtmusicViewModel.getRadio(song.videoId, song)?.tracks);
+        }
     }
 
     fun changeSong(nextSong: Boolean, context: android.content.Context) : Boolean {

@@ -101,7 +101,7 @@ fun YoutubeView(
     AndroidView(
         modifier = Modifier.size(0.dp),
         factory = { context ->
-            YouTubePlayerView(context = context).apply {
+            YouTubePlayerView(context = MainActivity.applicationContext).apply {
                 //lifecycleOwner.lifecycle.addObserver(this);
                 enableBackgroundPlayback(true);
 
@@ -125,8 +125,16 @@ fun YoutubeView(
                                 position = 0,
                                 playbackSpeed = 1.0f
                             );
-                            ytPlayerHelper.play();
+                            // ytPlayerHelper.play();
                         }
+                    }
+
+                    override fun onError(
+                        youTubePlayer: YouTubePlayer,
+                        error: PlayerConstants.PlayerError
+                    ) {
+                        super.onError(youTubePlayer, error)
+                        println(error.name);
                     }
 
                     override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
@@ -202,27 +210,31 @@ fun parsePlainLyrics(plainLyrics : String) : List<Line> {
 }
 
 suspend fun getLRCLIBLyrics(ytMusic : Ytmusic, track : String, artist : String, duration : Float) : Lyrics? {
+    if (track.isEmpty() && artist.isEmpty())
+        return null;
     var lines : List<Line> = emptyList();
     var isSynced = false;
-    val lyricsList = ytMusic.searchLrclibLyrics(track, artist).body<List<LRCLIBObject>>();
-    if (lyricsList.isNotEmpty()) {
-        var bestMatchDuration : Float = Float.MAX_VALUE;
-        var lrclibObj : LRCLIBObject = lyricsList.reduce { result, item ->
-            if (abs(item.duration - duration) < bestMatchDuration) {
-                bestMatchDuration = item.duration - duration;
-                return@reduce item;
+    runCatching {
+        val lyricsList = ytMusic.searchLrclibLyrics(track, artist).body<List<LRCLIBObject>>();
+        if (lyricsList.isNotEmpty()) {
+            var bestMatchDuration : Float = Float.MAX_VALUE;
+            var lrclibObj : LRCLIBObject = lyricsList.reduce { result, item ->
+                if (abs(item.duration - duration) < bestMatchDuration) {
+                    bestMatchDuration = item.duration - duration;
+                    return@reduce item;
+                }
+                result;
+            };
+            if (lrclibObj.syncedLyrics != null) {
+                lrclibObj.syncedLyrics!!.let { lines = parseSyncedLyrics(it) };
+                isSynced = true;
             }
-            result;
-        };
-        if (lrclibObj.syncedLyrics != null) {
-            lrclibObj.syncedLyrics!!.let { lines = parseSyncedLyrics(it) };
-            isSynced = true;
+            else if (lrclibObj.plainLyrics != null) {
+                lrclibObj.plainLyrics!!.let { lines = parsePlainLyrics(it) };
+                isSynced = false;
+            }
+            Log.d("Lyrics", "${lrclibObj.duration}");
         }
-        else if (lrclibObj.plainLyrics != null) {
-            lrclibObj.plainLyrics!!.let { lines = parsePlainLyrics(it) };
-            isSynced = false;
-        }
-        Log.d("Lyrics", "${lrclibObj.duration}");
     }
     if (lines.isEmpty())
         return null;

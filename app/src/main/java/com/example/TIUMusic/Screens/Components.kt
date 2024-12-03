@@ -232,7 +232,7 @@ fun ScrollableScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScrollableSearchScreen(
-    searchViewModel: YtmusicViewModel = hiltViewModel(),
+    searchViewModel: YtmusicViewModel,
     onClick: (MusicItem) -> Unit,
     onTabSelected: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit

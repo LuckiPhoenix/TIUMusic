@@ -251,6 +251,8 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
             it;
         }
         if (state == PlayerConstants.PlayerState.PLAYING) {
+            if (!MainActivity.wifiLock.isHeld())
+                MainActivity.wifiLock.acquire();
             notificationBuilder?.setOngoing(true);
             with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
                 if (ActivityCompat.checkSelfPermission(
@@ -266,6 +268,8 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
             }
         }
         else {
+            if (MainActivity.wifiLock.isHeld())
+                MainActivity.wifiLock.release();
             notificationBuilder?.setOngoing(true);
             with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
                 if (ActivityCompat.checkSelfPermission(
@@ -414,11 +418,6 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         }
 
     }
-}
-
-var testBitmap : Bitmap? = null;
-fun createTestBitmap(context: Context) {
-    testBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.tiumusicdarkbackground);
 }
 
 

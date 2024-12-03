@@ -1,49 +1,27 @@
 package com.example.TIUMusic.Screens
 
-import android.content.ClipData.Item
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Login.reusableInputField
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.ArtistNameColor
@@ -51,9 +29,6 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
-import com.example.TIUMusic.SongData.AlbumItem
-import com.example.TIUMusic.SongData.PlayerViewModel
-import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
 fun TopPlaylistBar(
@@ -109,12 +84,12 @@ fun PlaylistScreen(
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onShuffleClick : (List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
-    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
+    ytmusicViewModel: YtmusicViewModel,
 ) {
-    val playlistState by ytMusicViewModel.listTrackItems.collectAsState()
+    val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
 
     LaunchedEffect(Unit) {
-        ytMusicViewModel.SongListSample(playlistItem.playlistId)
+        ytmusicViewModel.SongListSample(playlistItem.playlistId)
     }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
@@ -262,7 +237,7 @@ fun AlbumScreen(
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
     onShuffleClick: (List<MusicItem>) -> Unit,
-    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
+    ytMusicViewModel: YtmusicViewModel,
 ) {
     val albumState by ytMusicViewModel.albumPage.collectAsState()
 
