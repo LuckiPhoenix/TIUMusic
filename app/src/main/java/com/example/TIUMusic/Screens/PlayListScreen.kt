@@ -394,6 +394,7 @@ fun AlbumScreen(
                             modifier = Modifier.padding(start = 66.dp, end = 8.dp)
                         )
                     }
+                    item { Spacer(modifier = Modifier.height(68.dp)) }
                 }
             }
             is UiState.Error -> {

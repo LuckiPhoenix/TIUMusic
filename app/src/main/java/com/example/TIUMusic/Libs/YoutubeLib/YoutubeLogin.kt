@@ -27,7 +27,7 @@ fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
             YouTube.cookie = it
         }
         navController.popBackStack(0, inclusive =  true);
-        navController.navigate("home");
+        navController.navigate("login");
         return;
     }
     AndroidView(
