@@ -23,6 +23,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.compression.ContentEncoding
@@ -99,71 +100,6 @@ class Ytmusic {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    private fun createSpotifyClient() =
-        HttpClient(OkHttp) {
-            expectSuccess = true
-            followRedirects = false
-            if (cachePath != null) {
-                engine {
-                    config {
-                        cache(
-                            okhttp3.Cache(cachePath!!, 50L * 1024 * 1024),
-                        )
-                    }
-                    if (cacheControlInterceptor != null) {
-                        addNetworkInterceptor(cacheControlInterceptor!!)
-                    }
-                    if (forceCacheInterceptor != null) {
-                        addInterceptor(forceCacheInterceptor!!)
-                    }
-                }
-            }
-            install(HttpCache)
-            install(HttpSend) {
-                maxSendCount = 100
-            }
-            install(HttpCookies) {
-                storage = AcceptAllCookiesStorage()
-            }
-            install(ContentNegotiation) {
-                register(
-                    ContentType.Text.Plain,
-                    KotlinxSerializationConverter(
-                        Json {
-                            prettyPrint = true
-                            isLenient = true
-                            ignoreUnknownKeys = true
-                            explicitNulls = false
-                            encodeDefaults = true
-                        },
-                    ),
-                )
-                json(
-                    Json {
-                        prettyPrint = true
-                        isLenient = true
-                        ignoreUnknownKeys = true
-                        explicitNulls = false
-                        encodeDefaults = true
-                    },
-                )
-                protobuf(
-                    ProtoBuf {
-                        encodeDefaults = true
-                    },
-                )
-            }
-            install(ContentEncoding) {
-                brotli(1.0F)
-                gzip(0.9F)
-                deflate(0.8F)
-            }
-            defaultRequest {
-                url("https://api.spotify.com")
-            }
-        }
-
-    @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() =
         HttpClient(OkHttp) {
             expectSuccess = true
@@ -206,7 +142,10 @@ class Ytmusic {
                 gzip(0.9F)
                 deflate(0.8F)
             }
-
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 5)
+                exponentialDelay()
+            }
             if (proxy != null) {
                 engine {
                     proxy = this@Ytmusic.proxy

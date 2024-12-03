@@ -84,7 +84,7 @@ class VisualizerViewModel(
                 var prevUpdateTime = System.currentTimeMillis();
                 while (true) {
                     if (listeners.isEmpty() || MainActivity.isPaused) {
-                        sleep(500);
+                        sleep(1000);
                         continue;
                     }
                     val fps : Float = 1 / ((System.currentTimeMillis() - prevUpdateTime) / 1000f);
