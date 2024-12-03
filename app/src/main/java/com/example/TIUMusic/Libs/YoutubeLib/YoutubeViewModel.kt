@@ -50,6 +50,7 @@ class YoutubePlayerHelper {
     var ytVideoTracker : YouTubePlayerTracker = YouTubePlayerTracker();
     var seekToTime : Float = 0.0f
     var seekListenerListeners = ArrayList<SeekListener>();
+    var isSeekBuffering : Boolean = false;
 
     val duration : Float get() = ytVideoTracker.videoDuration;
     val currentSecond : Float get() = ytVideoTracker.currentSecond;
@@ -62,6 +63,7 @@ class YoutubePlayerHelper {
         if (ytPlayer != null) {
             seekToTime = second;
             ytPlayer!!.seekTo(seekToTime);
+            isSeekBuffering = true;
             for (listener in seekListenerListeners)
                 listener.onSeek(second);
         }
@@ -250,38 +252,44 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
             )
             it;
         }
-        if (state == PlayerConstants.PlayerState.PLAYING) {
-            if (!MainActivity.wifiLock.isHeld())
-                MainActivity.wifiLock.acquire();
-            notificationBuilder?.setOngoing(true);
-            with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
-                if (ActivityCompat.checkSelfPermission(
-                        MainActivity.applicationContext,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    println("nope");
-                    return@with
+        when (state) {
+            PlayerConstants.PlayerState.PLAYING -> {
+                _ytHelper.value.isSeekBuffering = false;
+                if (!MainActivity.wifiLock.isHeld())
+                    MainActivity.wifiLock.acquire();
+                notificationBuilder?.setOngoing(true);
+                with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
+                    if (ActivityCompat.checkSelfPermission(
+                            MainActivity.applicationContext,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        println("nope");
+                        return@with
+                    }
+                    // notificationId is a unique int for each notification that you must define.
+                    notify(MediaNotificationID, notificationBuilder!!.build());
                 }
-                // notificationId is a unique int for each notification that you must define.
-                notify(MediaNotificationID, notificationBuilder!!.build());
             }
-        }
-        else {
-            if (MainActivity.wifiLock.isHeld())
-                MainActivity.wifiLock.release();
-            notificationBuilder?.setOngoing(true);
-            with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
-                if (ActivityCompat.checkSelfPermission(
-                        MainActivity.applicationContext,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    println("nope");
-                    return@with
+            else -> {
+                if (state == PlayerConstants.PlayerState.PAUSED ||
+                    state == PlayerConstants.PlayerState.ENDED )
+                    _ytHelper.value.isSeekBuffering = false;
+                if (MainActivity.wifiLock.isHeld())
+                    MainActivity.wifiLock.release();
+                notificationBuilder?.setOngoing(true);
+                with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
+                    if (ActivityCompat.checkSelfPermission(
+                            MainActivity.applicationContext,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        println("nope");
+                        return@with
+                    }
+                    // notificationId is a unique int for each notification that you must define.
+                    notify(MediaNotificationID, notificationBuilder!!.build());
                 }
-                // notificationId is a unique int for each notification that you must define.
-                notify(MediaNotificationID, notificationBuilder!!.build());
             }
         }
     }

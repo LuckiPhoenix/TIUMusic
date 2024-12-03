@@ -153,6 +153,8 @@ fun YoutubeView(
                             ytPlayerHelper.seekToTime = 0f;
                             youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
                         }
+                        if (!ytPlayerHelper.isSeekBuffering)
+                            ytPlayerHelper.seekToTime = ytPlayerHelper.ytVideoTracker.currentSecond;
                         youtubeViewModel.updateVideoDuration(ytPlayerHelper.ytVideoTracker.videoDuration.toLong() * 1000L);
                         youtubeViewModel.updatePlaybackState(
                             state = state,
