@@ -21,15 +21,6 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 
 @Composable
 fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
-    if (userViewModel.isLoggedIn()) {
-        Box(modifier = Modifier.background(BackgroundColor).fillMaxSize())
-        CookieManager.getInstance().getCookie(LocalContext.current.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
-            YouTube.cookie = it
-        }
-        navController.popBackStack(0, inclusive =  true);
-        navController.navigate("login");
-        return;
-    }
     AndroidView(
         modifier = Modifier.fillMaxSize().background(BackgroundColor),
         factory = {
@@ -75,7 +66,7 @@ fun YoutubeLogin(navController: NavController, userViewModel: UserViewModel) {
                             }
                             // Pop back stack
                             navController.popBackStack(0, inclusive =  true);
-                            navController.navigate("home");
+                            navController.navigate("login");
                         }
                     }
                 }

@@ -132,7 +132,7 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
                             WebStorage.getInstance().deleteAllData()
                             CookieManager.getInstance().removeAllCookies(null)
                             CookieManager.getInstance().flush()
-                            navController.navigate("login") {
+                            navController.navigate("youtubeLogin") {
                                 popUpTo("library") { inclusive = true }
                             }
                         },

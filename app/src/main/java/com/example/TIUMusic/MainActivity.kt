@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
+import android.net.wifi.WifiManager.WifiLock
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -15,11 +17,21 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
-import com.example.TIUMusic.Libs.YoutubeLib.createTestBitmap
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.models.Endpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
+import com.example.TIUMusic.Libs.YoutubeLib.models.response.NextResponse
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,6 +43,10 @@ class MainActivity : ComponentActivity() {
 
         public val applicationContext: Context
             get() = appContext;
+
+        private lateinit var _wifiLock : WifiLock;
+        public val wifiLock : WifiLock
+            get() = _wifiLock;
     }
 
     override fun onPause() {
@@ -54,8 +70,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         appContext = this;
+        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
+        if (Build.VERSION.SDK_INT >= 34)
+            _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "mylock");
+        else
+            _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "mylock");
         val playerViewModel = PlayerViewModel() // Could be a bad idea
         val visualizerViewModel = VisualizerViewModel()
+        val ytmusicViewModel = YtmusicViewModel(ytmusic = ytMusic)
         requestPermissions(
             activity = this,
             onAccepted = { name ->
@@ -81,13 +103,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-        createTestBitmap(this);
         setContent {
             TIUMusicTheme {
-
                 NavHost(
                     playerViewModel = playerViewModel,
-                    visualizerViewModel = visualizerViewModel
+                    visualizerViewModel = visualizerViewModel,
+                    ytmusicViewModel = ytmusicViewModel
                 )
             }
         }

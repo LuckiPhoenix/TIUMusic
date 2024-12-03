@@ -1,6 +1,7 @@
 package com.example.TIUMusic
 
 import android.util.Log
+import android.webkit.CookieManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
@@ -20,11 +20,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.AlbumScreen
 import com.example.TIUMusic.Screens.ArtistPage
@@ -40,14 +42,21 @@ import com.example.TIUMusic.SongData.PlayerViewModel
 @Composable
 fun NavHost(
     playerViewModel: PlayerViewModel,
-    visualizerViewModel: VisualizerViewModel
+    visualizerViewModel: VisualizerViewModel,
+    ytmusicViewModel: YtmusicViewModel
 ) {
     val context = LocalContext.current;
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
     val userViewModel: UserViewModel = viewModel()
-    val startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
+    var startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
+
+    if (userViewModel.isLoggedIn() && YouTube.cookie == null) {
+        CookieManager.getInstance().getCookie(context.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
+            YouTube.cookie = it
+        }
+    }
 
     Log.d("NavHost", "Current route: $currentRoute")
 
@@ -72,11 +81,11 @@ fun NavHost(
                 }
             }
 
-            navigation(startDestination = "youtubeLogin", route = "main") {
-                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
+            navigation(startDestination = "home", route = "main") {
                 composable("home") {
                     HomeScreen(
                         navController = navController,
+                        ytMusicViewModel = ytmusicViewModel,
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {} // Currently on home
@@ -89,6 +98,7 @@ fun NavHost(
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist();
+                                playerViewModel.setRadio(musicItem);
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -118,6 +128,7 @@ fun NavHost(
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist();
+                                playerViewModel.setRadio(musicItem);
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -131,7 +142,7 @@ fun NavHost(
                                 Log.d("LogNav", "TYPE = 2")
                             }
                         },
-                        hiltViewModel(),
+                        ytmusicViewModel = ytmusicViewModel,
                         playerViewModel = playerViewModel,
                     )
                 }
@@ -188,6 +199,7 @@ fun NavHost(
                     val image = savedStateHandle?.get<String>("image") ?: ""
                     PlaylistScreen(
                         navController = navController,
+                        ytmusicViewModel = ytmusicViewModel,
                         playlistItem = MusicItem(
                             videoId = "",
                             title = title,
@@ -231,6 +243,7 @@ fun NavHost(
                     val browseId = backStackEntry.arguments?.getString("albumId") ?: ""
                     AlbumScreen(
                         navController = navController,
+                        ytMusicViewModel = ytmusicViewModel,
                         albumId = browseId,
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
@@ -273,7 +286,7 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        ytmusicViewModel = hiltViewModel(),
+                        ytmusicViewModel = ytmusicViewModel,
                         navController = navController,
                     )
                 }

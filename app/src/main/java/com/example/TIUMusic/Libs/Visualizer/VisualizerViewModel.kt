@@ -88,7 +88,7 @@ class VisualizerViewModel(
                         continue;
                     }
                     val fps : Float = 1 / ((System.currentTimeMillis() - prevUpdateTime) / 1000f);
-                    // println("Update Delta Time : $fps")
+                    //println("Update Delta Time : $fps")
                     prevUpdateTime = System.currentTimeMillis();
                     val fft = GetTransformedFFT(0, 22050);
                     val newPathLeft = Path();

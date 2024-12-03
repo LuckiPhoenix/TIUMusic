@@ -20,11 +20,13 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.Chart
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.PlaylistBrowse
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingSong
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.TrendingVideo
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.parseSongArtists
 import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
@@ -93,6 +95,73 @@ class YtmusicViewModel @Inject constructor(
     val homeContinuation = _homeContinuation.asIntState();
 
     var fetchingContinuation : Boolean = false;
+
+    companion object {
+        // Here because this class aint gonna use this
+        suspend fun getRadio(videoId : String, originalTrack : MusicItem) : PlaylistBrowse? {
+            val radioId = "RDAMVM$videoId";
+            runCatching {
+                YouTube
+                    .next(endpoint = WatchEndpoint(playlistId = radioId))
+                    .onSuccess { next ->
+                        Log.w("Radio", "Title: ${next.title}")
+                        val data: MutableList<MusicItem> = mutableListOf()
+                        data.add(originalTrack);
+                        data.addAll(next.items.map {
+                            MusicItem(
+                                videoId = it.id,
+                                title = it.title,
+                                artist = it.artists.firstOrNull()?.name ?: "",
+                                imageUrl = it.thumbnails?.thumbnails?.lastOrNull()?.url ?: "",
+                                type = 0,
+                            )
+                        })
+                        var continuation = next.continuation
+                        Log.w("Radio", "data: ${data.size}")
+                        var count = 0
+                        while (continuation != null && count < 3) {
+                            YouTube
+                                .next(
+                                    endpoint = WatchEndpoint(playlistId = radioId),
+                                    continuation = continuation,
+                                ).onSuccess { nextContinue ->
+                                    data.addAll(nextContinue.items.map {
+                                        MusicItem(
+                                            videoId = it.id,
+                                            title = it.title,
+                                            artist = it.artists.firstOrNull()?.name ?: "",
+                                            imageUrl = it.thumbnails?.thumbnails?.firstOrNull()?.url ?: "",
+                                            type = 0,
+                                        )
+                                    })
+                                    continuation = nextContinue.continuation
+                                    if (data.size >= 50) {
+                                        count = 3
+                                    }
+                                    Log.w("Radio", "data: ${data.size}")
+                                    count++
+                                }.onFailure {
+                                    count = 3
+                                }
+                        }
+                        Log.w("Repository", "data: ${data.size}")
+                        val playlistBrowse =
+                            PlaylistBrowse(
+                                id = radioId,
+                                tracks = data,
+                                originalTrack = originalTrack,
+                            )
+                        Log.w("Repository", "playlistBrowse: $playlistBrowse")
+                        return playlistBrowse;
+                    }.onFailure { exception ->
+                        exception.printStackTrace()
+                        return null;
+                    }
+            }
+            return null;
+        }
+
+    }
 
     fun performSearch(query: String){
         var videoInfos: List<MusicItem>

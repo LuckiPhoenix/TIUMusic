@@ -19,7 +19,7 @@ import com.example.TIUMusic.SongData.toMusicItemsList
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    ytMusicViewModel: YtmusicViewModel = hiltViewModel(),
+    ytMusicViewModel: YtmusicViewModel,
     onTabSelected: (Int) -> Unit = {},
     onItemClick: (MusicItem) -> Unit = {},
     modifier: Modifier = Modifier
