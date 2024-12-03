@@ -371,19 +371,11 @@ fun ScrollableSearchScreen(
                         searchResults.forEach {
 //                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
                             Column(modifier = Modifier.clickable(
-                                onClick = {
-                                    onClick(MusicItem(
-                                        videoId = it.videoId ?: "",
-                                        title = it.title ?: "",
-                                        artist = it.artist ?: "",
-                                        imageUrl = it.thumbnailURL ?: "",
-                                        type = 0
-                                    ))
-                                }
+                                onClick = { onClick(it) }
                             )) {
                                 Row(modifier = Modifier.padding(all = 10.dp)) {
-                                    var thumbnailURL = it.thumbnailURL;
-                                    if (it.videoId != null)
+                                    var thumbnailURL = it.imageUrl;
+                                    if (it.videoId != "")
                                         thumbnailURL = getYoutubeSmallThumbnail(it.videoId);
                                     AsyncImage(
                                         model = thumbnailURL,
@@ -402,6 +394,12 @@ fun ScrollableSearchScreen(
                                             .width(0.dp)
                                             .weight(1F)
                                     ) {
+                                        var type = ""
+                                        when (it.type){
+                                            0 -> type += "Song • "
+                                            1 -> type += "Playlist • "
+                                            2 -> type += "Album • "
+                                        }
                                         it.title?.let { it1 ->
                                             Text(
                                                 text = it1,
@@ -413,7 +411,7 @@ fun ScrollableSearchScreen(
                                         }
                                         it.artist?.let { it1 ->
                                             Text(
-                                                text = it1,
+                                                text = type + it1,
                                                 fontSize = 14.sp,
                                                 color = Color.Gray,
                                                 modifier = Modifier.padding(4.dp)

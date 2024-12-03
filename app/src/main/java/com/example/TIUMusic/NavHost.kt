@@ -133,7 +133,8 @@ fun NavHost(
                     playerViewModel = playerViewModel
                     )
                 }
-                composable("search") { SearchScreen(
+                composable("search") {
+                    SearchScreen(
                         navController,
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
@@ -143,9 +144,22 @@ fun NavHost(
                                 3 -> navController.navigate("search")
                             }
                         },
-                        onClick = {
-                            playerViewModel.resetPlaylist();
-                            playerViewModel.playSong(it, context);
+                        onClick = { musicItem ->
+                            if(musicItem.type == 0){
+                                Log.d("LogNav", "TYPE = 0")
+                                playerViewModel.resetPlaylist();
+                                playerViewModel.playSong(musicItem, context)
+                            } else if(musicItem.type == 1){
+                                navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.navigate("playlist/${musicItem.playlistId}")
+                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
+                            }
+                            else if(musicItem.type == 2){
+                                navController.navigate("album/${musicItem.browseId}")
+                                Log.d("LogNav", "TYPE = 2")
+                            }
                         }
                     )
                 }
