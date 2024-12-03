@@ -51,6 +51,9 @@ class PlayerViewModel : ViewModel() {
     private val _currentTime = mutableFloatStateOf(0.0f);
     val currentTime : State<Float> = _currentTime;
 
+    private val _shouldExpand = MutableStateFlow<Boolean>(false);
+    val shouldExpand = _shouldExpand.asStateFlow();
+
     var ytViewModel = YoutubeViewModel(this);
     val syncedLyricsBuffer : Float = 0.0f;
 
@@ -87,6 +90,7 @@ class PlayerViewModel : ViewModel() {
 
     fun playSong(item : MusicItem, context : android.content.Context) {
         _musicItem.value = item;
+        setShouldExpand(true);
         ytViewModel.loadAndPlayVideo(
             videoId = item.videoId,
             metadata = YoutubeMetadata(
@@ -168,6 +172,10 @@ class PlayerViewModel : ViewModel() {
 
     fun setIsShuffled(value : Boolean) {
         isShuffled = value;
+    }
+
+    fun setShouldExpand(should : Boolean) {
+        _shouldExpand.value = should;
     }
 
     fun setPlaying(playing: Boolean) {

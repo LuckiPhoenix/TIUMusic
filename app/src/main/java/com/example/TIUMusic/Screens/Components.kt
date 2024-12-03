@@ -1063,6 +1063,7 @@ fun NowPlayingSheet(
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
     val ytPlayerHelper by playerViewModel.ytViewModel.ytHelper.collectAsState()
+    val shouldExpand by playerViewModel.shouldExpand.collectAsState()
     val musicItem by playerViewModel.musicItem.collectAsState()
     // Su dung de check user dang seek hay khong
     // Set true tai onSeek khi user dang keo slider
@@ -1084,6 +1085,13 @@ fun NowPlayingSheet(
     // Update the expanded state based on progress
     LaunchedEffect(progress) {
         playerViewModel.setExpanded(progress > 0.5f)
+    }
+
+    LaunchedEffect(shouldExpand) {
+        if (shouldExpand == true) {
+            dragProgress.value = 1.0f;
+            playerViewModel.setShouldExpand(false);
+        }
     }
 
     val maxHeight = LocalConfiguration.current.screenHeightDp.dp

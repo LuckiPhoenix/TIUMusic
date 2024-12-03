@@ -53,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -124,9 +125,7 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-    val gradientColors = PrimaryColor
     var albumArt : Bitmap? by remember { mutableStateOf(null) }
-    val lyric = listOf("hello", "world")
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
     val syncedLine by playerViewModel.syncedLine.collectAsState()
 
@@ -134,13 +133,6 @@ public fun ExpandedPlayer(
         if (albumArt != null) {
             avgColor = Color(albumArt!!.getPixel(0, 0));
             Log.d("Player", avgColor.toString());
-//            val hsv : FloatArray = FloatArray(3);
-//            android.graphics.Color.RGBToHSV(
-//                avgColor.red.toInt() * 255,
-//                avgColor.green.toInt() * 255,
-//                avgColor.blue.toInt() * 255,
-//                hsv);
-//            avgColor = Color.hsv(hsv[0], hsv[1], min(hsv[2] * 2, 1.0f));
             avgColor = avgColor.copy(
                 alpha = 1.0f,
                 red = min(1.0f, avgColor.red * 1.5f),
@@ -197,18 +189,17 @@ public fun ExpandedPlayer(
                 )
             }
 
-            if (lyric.isNotEmpty()) {
-                Text(
-                    text = syncedLine.words, //lyric here
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .height(48.dp)
-                        .fillMaxWidth()
-                )
-            }
+            Text(
+                text = syncedLine.words, //lyric here
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                color = Color.White,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .height(48.dp)
+                    .fillMaxWidth()
+            )
+
 
             Column(
                 verticalArrangement = Arrangement.Bottom,
