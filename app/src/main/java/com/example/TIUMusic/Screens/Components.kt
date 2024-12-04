@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -54,6 +55,8 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -314,6 +317,9 @@ fun ScrollableSearchScreen(
             val searchSuggests by searchViewModel.searchSuggests.collectAsState()
             val isLoading by searchViewModel.loading.collectAsState()
 
+            val searchSuggestions = listOf("Playlists", "Songs", "Artists", "Top results", "Albums")
+            var selectedSearchSuggestion by remember { mutableStateOf("") }
+
             Box(
                 modifier = Modifier
                     .background(BackgroundColor)
@@ -353,6 +359,7 @@ fun ScrollableSearchScreen(
                         active = active,
                         onActiveChange = {
                             active = it
+                            selectedSearchSuggestion = ""
                         },
                         placeholder = {
                             Text(
@@ -404,6 +411,41 @@ fun ScrollableSearchScreen(
                             .align(Alignment.CenterStart),
                         shape = RoundedCornerShape(8.dp)
                     ) {
+                        LazyHorizontalGrid(
+                            rows = GridCells.Fixed(1),
+                            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+                            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .height(30.dp)
+                        ) {
+                            items(searchSuggestions) { item ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedSearchSuggestion = item
+                                        },
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = CardColors(
+                                        Color.Gray.copy(alpha = if (selectedSearchSuggestion == item) 0.8F else 0.2F),
+                                        Color.White.copy(alpha = 0.8F),
+                                        Color.Gray,
+                                        Color.Black
+                                    )
+                                ) {
+                                    Text(
+                                        text = item,
+                                        modifier = Modifier
+                                            .height(30.dp)
+                                            .padding(horizontal = 20.dp)
+                                            .wrapContentHeight(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+
                         searchSuggests.forEach{
                             Row(
                                 modifier = Modifier
