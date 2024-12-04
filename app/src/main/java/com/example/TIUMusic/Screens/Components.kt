@@ -3,6 +3,7 @@ package com.example.TIUMusic.Screens
 
 import android.media.AudioManager
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Animatable
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +48,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -308,6 +311,7 @@ fun ScrollableSearchScreen(
             var active by remember { mutableStateOf(false) }
 
             val searchResults by searchViewModel.searchResults.collectAsState()
+            val searchSuggests by searchViewModel.searchSuggests.collectAsState()
             val isLoading by searchViewModel.loading.collectAsState()
 
             Box(
@@ -324,17 +328,27 @@ fun ScrollableSearchScreen(
                 )
                 Box(
                     modifier = Modifier
-                        .padding(top = height - 60.dp, bottom = 10.dp)
+                        .padding(top = if(!active) height - 60.dp else 0.dp, bottom = 10.dp)
                 ) {
+                    val containerColor = remember { Animatable(Color.White) }
 
+                    LaunchedEffect(active) {
+                        // Thực hiện animation khi trạng thái active thay đổi
+                        containerColor.animateTo(
+                            targetValue = if (active) BackgroundColor else Color.White,
+                            animationSpec = tween(durationMillis = 300)
+                        )
+                    }
                     SearchBar(
                         query = text,
                         onQueryChange = {
                             text = it
-                            searchViewModel.performSearch(it) // Gửi truy vấn tìm kiếm
+                            searchViewModel.suggestSearch(it) // Gửi truy vấn tìm kiếm
+                            searchViewModel.performSearch(it)
                         },
                         onSearch = {
                             active = false
+                            searchViewModel.performSearch(text)
                         },
                         active = active,
                         onActiveChange = {
@@ -349,32 +363,84 @@ fun ScrollableSearchScreen(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Search Icon"
+                                contentDescription = "Search Icon",
+                                modifier = Modifier.clickable {
+                                    active = false
+                                    searchViewModel.performSearch(text)
+                                }
                             )
                         },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                active = false
+                                text = ""
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear Icon"
+                                )
+                            }
+                        },
                         colors = SearchBarDefaults.colors(
-                            containerColor = Color.Transparent,
-                            dividerColor = BackgroundColor,
+                            containerColor = containerColor.value,
+                            dividerColor = Color.LightGray,
                             inputFieldColors = SearchBarDefaults.inputFieldColors(
                                 focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
+                                unfocusedTextColor = Color.Black,
 
-                                focusedLeadingIconColor = Color.Gray,
-                                unfocusedLeadingIconColor = Color.Gray,
+                                focusedLeadingIconColor = Color.White,
+                                unfocusedLeadingIconColor = Color.Black,
 
-                                focusedPlaceholderColor = Color.Gray,
-                                unfocusedPlaceholderColor = Color.Gray,
+                                focusedTrailingIconColor = Color.White,
+                                unfocusedTrailingIconColor = Color.Black,
+
+                                focusedPlaceholderColor = Color.LightGray,
+                                unfocusedPlaceholderColor = Color.DarkGray,
                             )
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 15.dp)
+                            .align(Alignment.CenterStart),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
+                        searchSuggests.forEach{
+                            Row(
+                                modifier = Modifier
+                                    .padding(all = 10.dp)
+                                    .clickable(onClick = {
+                                        text = it
+                                        active = false
+                                        searchViewModel.performSearch(it)
+                                    }),
+                                verticalAlignment = Alignment.CenterVertically
+                            ){
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search Icon",
+                                    modifier = Modifier
+                                        .width(20.dp)
+                                        .height(20.dp),
+                                    tint = Color.Gray
+                                )
+                                Text(
+                                    text = it,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(all = 4.dp),
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
                         searchResults.forEach {
-//                            Log.d("ScreenTest", "Title: ${it.title} | ID: ${it.videoId} | A: ${it.artist} | AID: ${it.artistId}")
-                            Column(modifier = Modifier.clickable(
-                                onClick = { onClick(it) }
-                            )) {
-                                Row(modifier = Modifier.padding(all = 10.dp)) {
+                            if(it.type == 0){
+                                Row(modifier = Modifier
+                                    .padding(all = 10.dp)
+                                    .clickable(onClick = {
+                                        onClick(it)
+                                        active = false
+                                    }),
+                                    verticalAlignment = Alignment.CenterVertically) {
                                     var thumbnailURL = it.imageUrl;
                                     if (it.videoId != "")
                                         thumbnailURL = getYoutubeSmallThumbnail(it.videoId);
@@ -401,7 +467,7 @@ fun ScrollableSearchScreen(
                                             1 -> type += "Playlist • "
                                             2 -> type += "Album • "
                                         }
-                                        it.title?.let { it1 ->
+                                        it.title.let { it1 ->
                                             Text(
                                                 text = it1,
                                                 fontWeight = FontWeight.Bold,
@@ -410,7 +476,7 @@ fun ScrollableSearchScreen(
                                                 modifier = Modifier.padding(all = 4.dp)
                                             )
                                         }
-                                        it.artist?.let { it1 ->
+                                        it.artist.let { it1 ->
                                             Text(
                                                 text = type + it1,
                                                 fontSize = 14.sp,
@@ -419,22 +485,7 @@ fun ScrollableSearchScreen(
                                             )
                                         }
                                     }
-
-                                    Icon(
-                                        modifier = Modifier.padding(all = 10.dp),
-                                        painter = painterResource(R.drawable.baseline_more_vert_24),
-                                        contentDescription = "Suggestion Icon",
-                                        tint = Color.White
-                                    )
                                 }
-
-                                Row(
-                                    modifier = Modifier
-                                        .padding(top = 10.dp, bottom = 4.dp)
-                                        .fillMaxWidth()
-                                        .height(1.dp)
-                                        .background(Color.Gray)
-                                ) {}
                             }
                         }
                     }
