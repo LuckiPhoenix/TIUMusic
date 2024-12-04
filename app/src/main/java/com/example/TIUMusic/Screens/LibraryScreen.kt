@@ -149,7 +149,9 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
                     modifier = Modifier
                         .fillMaxSize()
                         .height(600.dp), // Adjust height as needed
-                    contentPadding = PaddingValues(16.dp)
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(getTopPicks()) { item ->
                         AlbumCard(
