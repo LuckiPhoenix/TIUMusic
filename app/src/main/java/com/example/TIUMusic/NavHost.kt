@@ -88,7 +88,10 @@ fun NavHost(
                         ytMusicViewModel = ytmusicViewModel,
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
-                                0 -> {} // Currently on home
+                                0 -> {
+                                    ytmusicViewModel.resetHome()
+                                    ytmusicViewModel.getHomeContinuation(context);
+                                } // Currently on home
                                 1 -> navController.navigate("new")
                                 2 -> navController.navigate("library")
                                 3 -> navController.navigate("search")
@@ -120,7 +123,10 @@ fun NavHost(
                         onTabSelected = { tabIndex ->
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
-                                1 -> {}
+                                1 -> {
+                                    ytmusicViewModel.resetNewScreen();
+                                    ytmusicViewModel.getNewScreen(context = context);
+                                }
                                 2 -> navController.navigate("library")
                                 3 -> navController.navigate("search")
                             }

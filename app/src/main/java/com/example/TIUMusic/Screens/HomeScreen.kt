@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.SongData.MusicItem
@@ -28,7 +27,7 @@ fun HomeScreen(
     val homeItems by ytMusicViewModel.homeItems.collectAsState(emptyList());
 
     LaunchedEffect(Unit) {
-        ytMusicViewModel.getContinuation(context);
+        ytMusicViewModel.getHomeContinuation(context);
     }
 
     ScrollableScreen(
@@ -36,7 +35,7 @@ fun HomeScreen(
         selectedTab = 0,
         itemCount = homeItems.size,
         fetchContinuation = {
-            ytMusicViewModel.getContinuation(context);
+            ytMusicViewModel.getHomeContinuation(context);
         },
         onTabSelected = onTabSelected
     ) { paddingValues ->

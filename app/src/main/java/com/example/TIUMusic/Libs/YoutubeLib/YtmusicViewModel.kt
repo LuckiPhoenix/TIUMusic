@@ -2,19 +2,15 @@ package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.content.Context
 import android.util.Log
-import androidx.annotation.UiThread
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicCarouselShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchingInfo
 import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.Chart
@@ -27,11 +23,9 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.parseSongArtists
 import com.example.TIUMusic.Libs.YoutubeLib.models.Thumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
 import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
-import com.example.TIUMusic.Libs.YoutubeLib.pages.AlbumPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
@@ -43,16 +37,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.call.body
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.encodeURLPath
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -370,7 +360,14 @@ class YtmusicViewModel @Inject constructor(
         return searchInfos
     }
 
-    fun getContinuation(context: Context) {
+    fun resetHome() {
+        if (fetchingContinuation)
+            return;
+        _homeItems.value = listOf();
+    }
+
+
+    fun getHomeContinuation(context: Context) {
         if (fetchingContinuation || homeContinuation.intValue > 15)
             return;
         fetchingContinuation = true;
@@ -851,6 +848,16 @@ class YtmusicViewModel @Inject constructor(
             }
         }
         return list;
+    }
+
+    fun resetNewScreen() {
+        _chart.value = null;
+        _newReleases.value = listOf();
+    }
+
+    fun getNewScreen(countryCode: String = "US", context : Context) {
+        getChart(countryCode);
+        getNewReleases(context);
     }
 
     fun getChart(countryCode: String = "US") {
