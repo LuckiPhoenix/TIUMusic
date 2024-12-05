@@ -76,6 +76,9 @@ class YtmusicViewModel @Inject constructor(
     private val _searchSuggests = MutableStateFlow<List<String>>(emptyList())
     val searchSuggests: StateFlow<List<String>> = _searchSuggests
 
+    private val _searchFilter = MutableStateFlow("Top results")
+    val searchFiler: StateFlow<String> get() = _searchFilter
+
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
@@ -191,7 +194,6 @@ class YtmusicViewModel @Inject constructor(
             }
         }
     }
-    //
     fun suggestSearch(query: String){
         viewModelScope.launch {
             try{
@@ -215,6 +217,10 @@ class YtmusicViewModel @Inject constructor(
             }
         }
     }
+    //Hàm cập nhật bộ lọc cho các kết quả tìm kiếm
+    fun updateSearchFilter(newFilter: String){
+        _searchFilter.value = newFilter
+    }
     // Hàm trích xuất thông tin video ID
     private fun extractVideoInfo(response: SearchResponse): List<MusicItem> {
         // Thông tin trả về
@@ -225,10 +231,10 @@ class YtmusicViewModel @Inject constructor(
             ?:throw Exception(" No renderer")
 
         // Duyệt
-        for (renderer in listShelfRender.take(5)){
+        for (renderer in listShelfRender.take(6)){
             if(renderer.musicCardShelfRenderer == null && renderer.musicShelfRenderer != null){
                 val title = renderer.musicShelfRenderer.title?.runs?.firstOrNull()?.text
-                if (title == "Songs" /*|| title == "Videos"*/){ //Tam bo vi may videos kha xam :v
+                if (title == "Songs" && (searchFiler.value == title || searchFiler.value == "Top results")/*|| title == "Videos"*/){ //Tam bo vi may videos kha xam :v
                     val contents = renderer.musicShelfRenderer.contents
                         ?: throw Exception(" - No content in Renderer found")
                     for(content in contents) {
@@ -264,7 +270,7 @@ class YtmusicViewModel @Inject constructor(
                         )
                     }
                 }
-                else if(title == "Albums"){
+                else if(title == "Albums" && (searchFiler.value == title || searchFiler.value == "Top results")){
                     val contents = renderer.musicShelfRenderer.contents
                         ?: throw Exception(" - No content in Renderer found")
 
@@ -297,7 +303,7 @@ class YtmusicViewModel @Inject constructor(
                         )
                     }
                 }
-                else if(title == "Featured playlists"){
+                else if((title == "Featured playlists" || title == "Community playlists") && (searchFiler.value == "Playlists"|| searchFiler.value == "Top results")){
                     val contents = renderer.musicShelfRenderer.contents
                         ?: throw Exception(" - No content in Renderer found")
 
@@ -330,68 +336,31 @@ class YtmusicViewModel @Inject constructor(
                         )
                     }
                 }
-                else if(title == "Community playlists"){
+                else if(title == "Artists" && (searchFiler.value == title || searchFiler.value == "Top results")){
                     val contents = renderer.musicShelfRenderer.contents
                         ?: throw Exception(" - No content in Renderer found")
 
                     for(content in contents) {
                         val item = content.musicResponsiveListItemRenderer?.flexColumns
                             ?: throw Exception(" - No musicResponsiveListItemFlexColumnRenderer found")
-                        val albumId = content.musicResponsiveListItemRenderer.navigationEndpoint?.browseEndpoint?.browseId?:""
-                        val albumRender =
+                        val artistId = content.musicResponsiveListItemRenderer.navigationEndpoint?.browseEndpoint?.browseId?:""
+                        val artistRender =
                             item[0].musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()
                                 ?: throw Exception(" - No songRenderer found")
-                        val artistRender = item[1].musicResponsiveListItemFlexColumnRenderer.text?.runs
+                        val followersRender = item[1].musicResponsiveListItemFlexColumnRenderer.text?.runs
                             ?: throw Exception(" - No artistRenderer found")
 
-                        var i = artistRender.indexOfFirst { it.navigationEndpoint != null }
-                        if (i == -1){
-                            i = 0
-                        }
                         val thumbnailURL = content.musicResponsiveListItemRenderer.thumbnail?.
                         musicThumbnailRenderer?.getThumbnailUrl()?:""
 
                         searchInfos.add(
                             MusicItem(
                                 videoId = "",
-                                title = albumRender.text,
-                                artist = artistRender[i].text,
-                                imageUrl = thumbnailURL,
-                                type = 1,
-                                playlistId = albumId.removePrefix("VL"),
-                            )
-                        )
-                    }
-                }
-                else if(title == "Artists"){
-                    val contents = renderer.musicShelfRenderer.contents
-                        ?: throw Exception(" - No content in Renderer found")
-
-                    for(content in contents) {
-                        val item = content.musicResponsiveListItemRenderer?.flexColumns
-                            ?: throw Exception(" - No musicResponsiveListItemFlexColumnRenderer found")
-                        val albumId = content.musicResponsiveListItemRenderer.navigationEndpoint?.browseEndpoint?.browseId?:""
-                        val albumRender =
-                            item[0].musicResponsiveListItemFlexColumnRenderer.text?.runs?.firstOrNull()
-                                ?: throw Exception(" - No songRenderer found")
-                        val artistRender = item[1].musicResponsiveListItemFlexColumnRenderer.text?.runs
-                            ?: throw Exception(" - No artistRenderer found")
-
-                        var i = artistRender.indexOfFirst { it.navigationEndpoint != null }
-                        if (i == -1){
-                            i = 0
-                        }
-                        val thumbnailURL = content.musicResponsiveListItemRenderer.thumbnail?.
-                        musicThumbnailRenderer?.getThumbnailUrl()?:""
-
-                        searchInfos.add(
-                            MusicItem(
-                                videoId = "",
-                                title = albumRender.text,
-                                artist = artistRender[i].text,
+                                title = artistRender.text,
+                                artist = followersRender[2].text,
                                 imageUrl = thumbnailURL,
                                 type = 3,
-                                browseId = albumId,
+                                browseId = artistId,
                             )
                         )
                     }

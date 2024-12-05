@@ -317,8 +317,8 @@ fun ScrollableSearchScreen(
             val searchSuggests by searchViewModel.searchSuggests.collectAsState()
             val isLoading by searchViewModel.loading.collectAsState()
 
-            val searchSuggestions = listOf("Playlists", "Songs", "Artists", "Top results", "Albums")
-            var selectedSearchSuggestion by remember { mutableStateOf("") }
+            val searchSuggestions = listOf("Top results", "Songs", "Albums", "Playlists", "Artists" )
+            var selectedSearchSuggestion = searchViewModel.searchFiler.collectAsState()
 
             Box(
                 modifier = Modifier
@@ -332,12 +332,11 @@ fun ScrollableSearchScreen(
                     titleSize = titleSize.sp,
                     height = height
                 )
-                Box(
+                Column(
                     modifier = Modifier
                         .padding(top = if(!active) height - 60.dp else 0.dp, bottom = 10.dp)
                 ) {
                     val containerColor = remember { Animatable(Color.White) }
-
                     LaunchedEffect(active) {
                         // Thực hiện animation khi trạng thái active thay đổi
                         containerColor.animateTo(
@@ -358,8 +357,8 @@ fun ScrollableSearchScreen(
                         },
                         active = active,
                         onActiveChange = {
+                            searchViewModel.updateSearchFilter("Top results")
                             active = it
-                            selectedSearchSuggestion = ""
                         },
                         placeholder = {
                             Text(
@@ -378,14 +377,15 @@ fun ScrollableSearchScreen(
                             )
                         },
                         trailingIcon = {
-                            IconButton(onClick = {
-                                active = false
-                                text = ""
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = "Clear Icon"
-                                )
+                            if(text != ""){
+                                IconButton(onClick = {
+                                    text = ""
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Clear Icon"
+                                    )
+                                }
                             }
                         },
                         colors = SearchBarDefaults.colors(
@@ -407,46 +407,9 @@ fun ScrollableSearchScreen(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 15.dp)
-                            .align(Alignment.CenterStart),
+                            .padding(PaddingValues(top = 15.dp, bottom = 7.dp, start = 16.dp, end = 16.dp)),
                         shape = RoundedCornerShape(8.dp)
-                    ) {
-                        LazyHorizontalGrid(
-                            rows = GridCells.Fixed(1),
-                            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
-                            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
-                            modifier = Modifier
-                                .padding(top = 10.dp)
-                                .height(30.dp)
-                        ) {
-                            items(searchSuggestions) { item ->
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedSearchSuggestion = item
-                                        },
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardColors(
-                                        Color.Gray.copy(alpha = if (selectedSearchSuggestion == item) 0.8F else 0.2F),
-                                        Color.White.copy(alpha = 0.8F),
-                                        Color.Gray,
-                                        Color.Black
-                                    )
-                                ) {
-                                    Text(
-                                        text = item,
-                                        modifier = Modifier
-                                            .height(30.dp)
-                                            .padding(horizontal = 20.dp)
-                                            .wrapContentHeight(),
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
-
-                        searchSuggests.forEach{
+                    ) { searchSuggests.forEach{
                             Row(
                                 modifier = Modifier
                                     .padding(all = 10.dp)
@@ -527,6 +490,43 @@ fun ScrollableSearchScreen(
                                             )
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                    if(searchResults.isNotEmpty()){
+                        LazyHorizontalGrid(
+                            rows = GridCells.Fixed(1),
+                            contentPadding = PaddingValues(horizontal = Dimensions.contentPadding()),
+                            horizontalArrangement = Arrangement.spacedBy(Dimensions.itemSpacing()),
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .height(30.dp)
+                        ) {
+                            items(searchSuggestions) { item ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            searchViewModel.updateSearchFilter(item)
+                                            searchViewModel.performSearch(text)
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardColors(
+                                        Color.Gray.copy(alpha = if (selectedSearchSuggestion.value == item) 0.8F else 0.2F),
+                                        Color.White.copy(alpha = 0.8F),
+                                        Color.Gray,
+                                        Color.Black
+                                    )
+                                ) {
+                                    Text(
+                                        text = item,
+                                        modifier = Modifier
+                                            .height(30.dp)
+                                            .padding(horizontal = 20.dp)
+                                            .wrapContentHeight(),
+                                        textAlign = TextAlign.Center
+                                    )
                                 }
                             }
                         }
