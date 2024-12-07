@@ -333,7 +333,7 @@ fun PlaybackControls(
             ) {
                 Icon(
                     painter = painterResource(
-                        if (isPlaying) R.drawable.pause else R.drawable.play_solid
+                        if (isPlaying) R.drawable.pause_solid else R.drawable.play_solid
                     ),
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White,
