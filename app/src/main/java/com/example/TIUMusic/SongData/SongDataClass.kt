@@ -35,6 +35,12 @@ data class NewReleaseCard(
     val musicItem: MusicItem
 )
 
+data class MoodItem(
+    val title: String,
+    val color: Int,
+    val list: List<MusicItem>
+)
+
 
 fun toMusicItemsList(list : List<HomeContent?>) : List<MusicItem> {
     val musicItems = mutableListOf<MusicItem>();

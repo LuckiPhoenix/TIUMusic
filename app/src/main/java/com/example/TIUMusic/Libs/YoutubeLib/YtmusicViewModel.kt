@@ -6,6 +6,7 @@ import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
@@ -28,8 +29,10 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
+import com.example.TIUMusic.Libs.YoutubeLib.pages.MoodAndGenres
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
 import com.example.TIUMusic.SongData.AlbumItem
+import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.Module
 import dagger.Provides
@@ -60,6 +63,7 @@ class YtmusicViewModel @Inject constructor(
     private val ytmusic: Ytmusic // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
 ) : ViewModel() {
 
+    //Searching Data
     private val _searchResults = MutableStateFlow<List<MusicItem>>(emptyList())
     val searchResults: StateFlow<List<MusicItem>> = _searchResults
 
@@ -72,6 +76,10 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
+    private val _moodList = MutableStateFlow<List<MoodItem>>(emptyList())
+    val moodList : StateFlow<List<MoodItem>> = _moodList
+
+    //Home Data
     private var _homeItems = MutableStateFlow<List<HomeItem>>(listOf());
     val homeItems : StateFlow<List<HomeItem>> = _homeItems.asStateFlow();
 
@@ -1181,6 +1189,48 @@ class YtmusicViewModel @Inject constructor(
                 }
             }.onFailure {error ->
                 _albumPage.value = UiState.Error(error.message ?: "Network error")
+            }
+        }
+    }
+
+    fun fetchMoodAndGenres(){
+        viewModelScope.launch{
+            runCatching {
+                YouTube.moodAndGenres()
+            }.onSuccess { result ->
+                result.onSuccess { genres ->
+                    val moods = mutableListOf<MoodItem>()
+                    for(item in genres[1].items){
+                        Log.d("Mood&Genres", "Title: ${item.title} | Color: ${item.stripeColor} | ID: ${item.endpoint.browseId} |")
+                        YouTube.browse(item.endpoint.browseId, item.endpoint.params)
+                            .onSuccess {
+                                val newlist = mutableListOf<MusicItem>()
+                                val suggestList = it.items.firstOrNull()?.items
+                                if (suggestList != null) {
+                                    for (playlist in suggestList){
+                                        newlist.add(
+                                            MusicItem(
+                                                videoId = "",
+                                                title = playlist.title,
+                                                artist = "",
+                                                imageUrl = playlist.thumbnail,
+                                                type = 1,
+                                                playlistId = playlist.id
+                                            )
+                                        )
+                                    }
+                                }
+                                moods.add(
+                                    MoodItem(
+                                        title = item.title,
+                                        color = item.stripeColor.toInt(),
+                                        list = newlist
+                                    )
+                                )
+                            }
+                    }
+                    _moodList.value = moods
+                }
             }
         }
     }
