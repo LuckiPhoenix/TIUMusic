@@ -107,7 +107,7 @@ fun RegisterScreen(
 
     LaunchedEffect(registerStatus) {
         when (registerStatus) {
-            is Result.Success -> navController.navigate("login")
+            is Result.Success -> navController.navigate("home")
             is Result.Error -> {
                 shouldShake = true
                 delay(300)
