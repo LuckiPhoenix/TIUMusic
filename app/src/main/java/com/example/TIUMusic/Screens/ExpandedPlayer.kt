@@ -145,13 +145,14 @@ public fun ExpandedPlayer(
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier =
-            Modifier.fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        0f to avgColor.copy(alpha = 0.8f),
-                        0.6f to avgColor.copy(alpha = 0f),
-                    )
+        Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    0f to avgColor.copy(alpha = 0.8f),
+                    0.6f to avgColor.copy(alpha = 0f),
                 )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -208,24 +209,40 @@ public fun ExpandedPlayer(
                     .fillMaxSize()
             ) {
                 // Title and artist
-                Column(modifier = Modifier.padding(start = 16.dp)) {
-                    Text(
-                        text = musicItem.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = musicItem.artist,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = TextAlign.Center
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                        Text(
+                            text = musicItem.title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = musicItem.artist,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Normal,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ellipsis_solid),
+                            contentDescription = "More",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
                 PlaybackControls(
