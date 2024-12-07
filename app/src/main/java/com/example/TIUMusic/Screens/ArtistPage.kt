@@ -105,7 +105,7 @@ fun ArtistPage(
                         fontSize = 36.sp,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .padding(16.dp)
+                            .padding(start = 16.dp)
                     )
                 }
             }
@@ -118,7 +118,7 @@ fun ArtistPage(
                     fontSize = 20.sp,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(16.dp)
+                        .padding( start = 16.dp)
                         .fillMaxWidth()
                 )
             }
@@ -149,7 +149,7 @@ fun ArtistPage(
                     iconHeader = R.drawable.baseline_chevron_right_24,
                     items = trendingList,
                     itemWidth = 300.dp,
-                    sectionHeight = 260.dp,
+                    sectionHeight = 180.dp,
                     onItemClick = {musicItem ->
                         onClickMusicItem(musicItem)
                     }
@@ -179,7 +179,7 @@ fun ArtistPage(
                     iconHeader = R.drawable.baseline_chevron_right_24,
                     items = albumList,
                     itemWidth = 300.dp,
-                    sectionHeight = 260.dp,
+//                    sectionHeight = 260.dp,
                     onItemClick = {musicItem ->
                         onClickMusicItem(musicItem)
                     }
