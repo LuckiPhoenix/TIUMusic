@@ -115,7 +115,7 @@ graph TD
 |:---:|:---:|:---:|
 | **🛠️ Team Leader & Fullstack Developer** | Huỳnh Chí Hên | `23520455` |
 | **👁️ Backend Visual & Audio Developer** | Đặng Trần Anh Hào | `23520444` |
-| **🔧 Backend API Developer** | Nguyễn Quốc Hải | `23520419` |
+| **🔧 FullStack API Developer** | Nguyễn Quốc Hải | `23520419` |
 | **🎨 UI Designer & Frontend Developer** | Nguyễn Hữu Duy | `23520374` |
 | **💻 Frontend QA Developer** | Nguyễn Văn Hào | `23520448` |
 
