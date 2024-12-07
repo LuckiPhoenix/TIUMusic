@@ -13,8 +13,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -78,6 +81,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -1358,7 +1363,17 @@ private fun MiniPlayer(
                 Text(
                     text = musicItem.title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    color = Color.White,
+                    modifier = Modifier
+                        .basicMarquee(
+                            animationMode = MarqueeAnimationMode.Immediately,
+                            iterations = Int.MAX_VALUE,
+                            velocity = 50.dp,
+                            initialDelayMillis = 50
+                        )
                 )
                 Text(
                     text = musicItem.artist,
@@ -1375,7 +1390,7 @@ private fun MiniPlayer(
                 .background(Color(0xFF404040), CircleShape)
         ) {
             Icon(
-                painter = painterResource( if (isPlaying) R.drawable.pause else R.drawable.play_solid),
+                painter = painterResource( if (isPlaying) R.drawable.pause_solid else R.drawable.play_solid),
                 contentDescription = if (isPlaying) "Pause" else "Play",
                 tint = Color.White,
                 modifier = Modifier.size(16.dp)
