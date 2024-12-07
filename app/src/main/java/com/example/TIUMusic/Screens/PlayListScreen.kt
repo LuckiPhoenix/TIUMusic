@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -135,7 +136,14 @@ fun PlaylistScreen(
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(Color(0xFF282828))
                             )
-                            Text(text = playlistItem.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(6.dp))
+                            Text(
+                                text = playlistItem.title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.White,
+                                modifier = Modifier.padding(6.dp),
+                                textAlign = TextAlign.Center
+                            )
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -286,8 +294,18 @@ fun AlbumScreen(
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(Color(0xFF282828))
                             )
-                            Text(text = state.data.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
-                            Text(text = state.data.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
+                            Text(
+                                text = state.data.title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp, color = Color.White,
+                                modifier = Modifier.padding(4.dp),
+                                textAlign = TextAlign.Center)
+                            Text(
+                                text = state.data.artist,
+                                fontSize = 16.sp,
+                                color = PrimaryColor,
+                                modifier = Modifier.padding(4.dp)
+                            )
                             state.data.description?.let {  }
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
