@@ -94,6 +94,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
@@ -1151,7 +1152,9 @@ fun AlbumCardNewScreenListVertical(
 fun NowPlayingSheet(
     modifier: Modifier = Modifier,
     playerViewModel: PlayerViewModel,
-    visualizerViewModel: VisualizerViewModel
+    visualizerViewModel: VisualizerViewModel,
+    ytmusicViewModel: YtmusicViewModel,
+    navController: NavController
 ) {
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
@@ -1300,7 +1303,9 @@ fun NowPlayingSheet(
                                 }
                             },
                             visualizerViewModel = visualizerViewModel,
-                            playerViewModel = playerViewModel
+                            playerViewModel = playerViewModel,
+                            ytmusicViewModel = ytmusicViewModel,
+                            navController = navController
                         )
                     }
                 }

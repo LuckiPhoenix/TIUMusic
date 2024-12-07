@@ -338,6 +338,8 @@ fun NavHost(
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
                 visualizerViewModel = visualizerViewModel,
+                navController = navController,
+                ytmusicViewModel = ytmusicViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp)

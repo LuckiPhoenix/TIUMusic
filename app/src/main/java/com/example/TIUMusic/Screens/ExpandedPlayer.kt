@@ -97,10 +97,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -127,7 +131,9 @@ public fun ExpandedPlayer(
     onSeekFinished: (Float) -> Unit,
     onChangeSong: (Boolean) -> Unit,
     visualizerViewModel: VisualizerViewModel,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    ytmusicViewModel: YtmusicViewModel,
+    navController: NavController
 ) {
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(
@@ -278,7 +284,7 @@ public fun ExpandedPlayer(
             }
         }
         if(showBottomSheet == true){
-            PlayMenuBottomSheet()
+            PlayMenuBottomSheet(navController, ytmusicViewModel =ytmusicViewModel, musicItem = musicItem)
         }
         if(showSleepTimerSheet == true){
             SleepTimerSheet(
@@ -313,7 +319,11 @@ fun startTimer(duration: Duration) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayMenuBottomSheet(){
+fun PlayMenuBottomSheet(
+    navController: NavController,
+    ytmusicViewModel:YtmusicViewModel,
+    musicItem: MusicItem
+){
     ModalBottomSheet(
         onDismissRequest = {
             showBottomSheet = false
@@ -342,7 +352,7 @@ fun PlayMenuBottomSheet(){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clickable {  },
+                .clickable { navController.navigate("artist/${musicItem.browseId}") },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
