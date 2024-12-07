@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
 import android.media.AudioManager
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -22,6 +23,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -40,10 +42,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Text
@@ -104,8 +108,13 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 var showBottomSheet : Boolean = false
+var showSleepTimerSheet: Boolean = false
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
@@ -271,7 +280,35 @@ public fun ExpandedPlayer(
         if(showBottomSheet == true){
             PlayMenuBottomSheet()
         }
+        if(showSleepTimerSheet == true){
+            SleepTimerSheet(
+                onDismissRequest = {},
+                onTimerStart = {
+                    time -> startTimer(time)
+                }
+            )
+        }
     }
+}
+fun startTimer(duration: Duration) {
+    //sleep timer
+    var showSleepTimerSheet = false
+    var remainingTime = 0L
+    var isTimerRunning =false
+
+    isTimerRunning = true
+    remainingTime = duration.inWholeMilliseconds
+
+    object : CountDownTimer(duration.inWholeMilliseconds, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            remainingTime = millisUntilFinished
+        }
+
+        override fun onFinish() {
+            isTimerRunning = false
+            exitProcess(0)
+        }
+    }.start()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -284,8 +321,11 @@ fun PlayMenuBottomSheet(){
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {  },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(R.drawable.share_nodes_solid),
@@ -300,8 +340,11 @@ fun PlayMenuBottomSheet(){
         }
         Row(
             modifier = Modifier
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {  },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(R.drawable.image_portrait_solid),
@@ -316,8 +359,13 @@ fun PlayMenuBottomSheet(){
         }
         Row(
             modifier = Modifier
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    showSleepTimerSheet = !showSleepTimerSheet
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(R.drawable.moon_solid),
@@ -332,6 +380,61 @@ fun PlayMenuBottomSheet(){
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SleepTimerSheet(
+    onDismissRequest: () -> Unit,
+    onTimerStart: (Duration) -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest
+    ) {
+        Text(
+            text = "Turn off",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onDismissRequest()
+                }
+        )
+        Text(
+            text = "After 15 minutes",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(15.toDuration(DurationUnit.MINUTES))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+        Text(
+            text = "After 30 minutes",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(30.toDuration(DurationUnit.MINUTES))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+        Text(
+            text = "After 1 hour",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(1.toDuration(DurationUnit.HOURS))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+    }
+}
+
 
 @Composable
 fun PlaybackControls(
