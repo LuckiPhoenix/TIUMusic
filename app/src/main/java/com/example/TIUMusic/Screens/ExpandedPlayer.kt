@@ -35,12 +35,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Text
@@ -51,6 +54,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -101,7 +105,7 @@ import com.example.TIUMusic.ui.theme.SecondaryColor
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-
+var showBottomSheet : Boolean = false
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
@@ -212,7 +216,10 @@ public fun ExpandedPlayer(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                    Column(modifier = Modifier
+                        .padding(start = 16.dp)
+                        .widthIn(max = 250.dp)
+                    ) {
                         Text(
                             text = musicItem.title,
                             style = MaterialTheme.typography.headlineMedium,
@@ -233,7 +240,7 @@ public fun ExpandedPlayer(
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
-                        onClick = {},
+                        onClick = {showBottomSheet = !showBottomSheet},
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
@@ -261,9 +268,70 @@ public fun ExpandedPlayer(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+        if(showBottomSheet == true){
+            PlayMenuBottomSheet()
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayMenuBottomSheet(){
+    ModalBottomSheet(
+        onDismissRequest = {
+            showBottomSheet = false
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.share_nodes_solid),
+                contentDescription = "Share",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Share this song"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.image_portrait_solid),
+                contentDescription = "Artist",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Artist"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.moon_solid),
+                contentDescription = "Sleep timer",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Set a sleep timer"
+            )
+        }
+    }
+}
 
 @Composable
 fun PlaybackControls(
