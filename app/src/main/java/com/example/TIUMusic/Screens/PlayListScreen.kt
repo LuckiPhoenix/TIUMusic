@@ -135,9 +135,7 @@ fun PlaylistScreen(
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(Color(0xFF282828))
                             )
-                            Text(text = playlistItem.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
-                            Text(text = playlistItem.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
-                            Text(text = playlistItem.artist, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp))
+                            Text(text = playlistItem.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(6.dp))
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -217,7 +215,7 @@ fun PlaylistScreen(
                             modifier = Modifier.padding(start = 66.dp, end = 8.dp)
                         )
                     }
-                    item { Spacer(modifier = Modifier.height(68.dp)) }
+                    item { Spacer(modifier = Modifier.height(88.dp)) }
                 }
             }
             is UiState.Error -> {
@@ -290,7 +288,7 @@ fun AlbumScreen(
                             )
                             Text(text = state.data.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White, modifier = Modifier.padding(4.dp))
                             Text(text = state.data.artist, fontSize = 16.sp, color = PrimaryColor, modifier = Modifier.padding(4.dp))
-                            state.data.description?.let { Text(text = /*it*/"", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(4.dp)) }
+                            state.data.description?.let {  }
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -360,8 +358,9 @@ fun AlbumScreen(
                     }
                     // Song list
                     itemsIndexed(state.data.songs){ index, item ->
-                        SongInPlaylist(
+                        SongInAlbumlist(
                             item,
+                            index,
                             onClick = { onSongClick(item, index, state.data.songs) }
                         )
                         HorizontalDivider(
@@ -370,7 +369,7 @@ fun AlbumScreen(
                             modifier = Modifier.padding(start = 66.dp, end = 8.dp)
                         )
                     }
-                    item { Spacer(modifier = Modifier.height(68.dp)) }
+                    item { Spacer(modifier = Modifier.height(88.dp)) }
                 }
             }
             is UiState.Error -> {
@@ -413,7 +412,68 @@ fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .height(70.dp)
+                    .height(70.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.White,
+                )
+                Spacer(
+                    modifier = Modifier.height(4.dp)
+                )
+                Text(
+                    text = artist,
+                    color = ArtistNameColor,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SongInAlbumlist(item: MusicItem, index: Int, onClick: () -> Unit = {}) {
+    val title = item.title
+    val albumCover = item.getSmallThumbnail()
+    val artist = item.artist
+    val index = index + 1
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, bottom = 2.dp, top = 6.dp, end = 4.dp)
+            .clickable {
+                onClick()
+            }
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = index.toString(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(end = 16.dp)
+            )
+            AsyncImage(
+                model = albumCover,
+                contentDescription = "Song Cover",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF282828))
+            )
+
+
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .height(70.dp),
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = title,
