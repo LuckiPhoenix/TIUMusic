@@ -1,5 +1,6 @@
 package com.example.TIUMusic
 
+import android.os.CountDownTimer
 import android.util.Log
 import android.webkit.CookieManager
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +42,7 @@ import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
+import kotlin.time.Duration
 
 @Composable
 fun NavHost(
@@ -51,6 +56,8 @@ fun NavHost(
     val currentRoute = currentBackStackEntry?.destination?.route
     val userViewModel: UserViewModel = viewModel()
     var startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
+
+
 
     if (userViewModel.isLoggedIn() && YouTube.cookie == null) {
         CookieManager.getInstance().getCookie(context.getString(R.string.YOUTUBE_MUSIC_URL))?.let {

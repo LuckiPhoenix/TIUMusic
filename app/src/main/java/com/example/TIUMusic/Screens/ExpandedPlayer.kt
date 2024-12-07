@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
 import android.media.AudioManager
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -22,6 +23,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -35,12 +37,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Text
@@ -51,6 +58,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -100,8 +108,13 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
-
+var showBottomSheet : Boolean = false
+var showSleepTimerSheet: Boolean = false
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
@@ -145,13 +158,14 @@ public fun ExpandedPlayer(
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier =
-            Modifier.fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        0f to avgColor.copy(alpha = 0.8f),
-                        0.6f to avgColor.copy(alpha = 0f),
-                    )
+        Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    0f to avgColor.copy(alpha = 0.8f),
+                    0.6f to avgColor.copy(alpha = 0f),
                 )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -208,24 +222,43 @@ public fun ExpandedPlayer(
                     .fillMaxSize()
             ) {
                 // Title and artist
-                Column(modifier = Modifier.padding(start = 16.dp)) {
-                    Text(
-                        text = musicItem.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = musicItem.artist,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = TextAlign.Center
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier
+                        .padding(start = 16.dp)
+                        .widthIn(max = 250.dp)
+                    ) {
+                        Text(
+                            text = musicItem.title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = musicItem.artist,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Normal,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = {showBottomSheet = !showBottomSheet},
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ellipsis_solid),
+                            contentDescription = "More",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
                 PlaybackControls(
@@ -244,6 +277,161 @@ public fun ExpandedPlayer(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+        if(showBottomSheet == true){
+            PlayMenuBottomSheet()
+        }
+        if(showSleepTimerSheet == true){
+            SleepTimerSheet(
+                onDismissRequest = {},
+                onTimerStart = {
+                    time -> startTimer(time)
+                }
+            )
+        }
+    }
+}
+fun startTimer(duration: Duration) {
+    //sleep timer
+    var showSleepTimerSheet = false
+    var remainingTime = 0L
+    var isTimerRunning =false
+
+    isTimerRunning = true
+    remainingTime = duration.inWholeMilliseconds
+
+    object : CountDownTimer(duration.inWholeMilliseconds, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            remainingTime = millisUntilFinished
+        }
+
+        override fun onFinish() {
+            isTimerRunning = false
+            exitProcess(0)
+        }
+    }.start()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayMenuBottomSheet(){
+    ModalBottomSheet(
+        onDismissRequest = {
+            showBottomSheet = false
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {  },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.share_nodes_solid),
+                contentDescription = "Share",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Share this song"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {  },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.image_portrait_solid),
+                contentDescription = "Artist",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Artist"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    showSleepTimerSheet = !showSleepTimerSheet
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.moon_solid),
+                contentDescription = "Sleep timer",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Set a sleep timer"
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SleepTimerSheet(
+    onDismissRequest: () -> Unit,
+    onTimerStart: (Duration) -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest
+    ) {
+        Text(
+            text = "Turn off",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onDismissRequest()
+                }
+        )
+        Text(
+            text = "After 15 minutes",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(15.toDuration(DurationUnit.MINUTES))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+        Text(
+            text = "After 30 minutes",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(30.toDuration(DurationUnit.MINUTES))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+        Text(
+            text = "After 1 hour",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
+                    onTimerStart(1.toDuration(DurationUnit.HOURS))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
     }
 }
 
@@ -333,7 +521,7 @@ fun PlaybackControls(
             ) {
                 Icon(
                     painter = painterResource(
-                        if (isPlaying) R.drawable.pause else R.drawable.play_solid
+                        if (isPlaying) R.drawable.pause_solid else R.drawable.play_solid
                     ),
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White,
