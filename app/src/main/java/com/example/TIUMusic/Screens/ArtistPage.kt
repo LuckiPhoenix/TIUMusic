@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -46,16 +47,14 @@ import kotlinx.coroutines.launch
 fun ArtistPage(
     BrowseID: String,
     onClickMusicItem: (MusicItem) -> Unit = {},
-    onClickAlbum: (MusicItem) -> Unit = {},
     onTabSelected: (Int) -> Unit,
     ytmusicViewModel: YtmusicViewModel,
     navController: NavController
 ) {
-    val artistImageUrl = "https://i1.sndcdn.com/artworks-BWJgBLZhC32e-0-t500x500.jpg" // Mock image URL
-    val trendingItem by ytmusicViewModel.chart.collectAsState()
+    val artistPage by ytmusicViewModel.artistResult.collectAsState()
 
     LaunchedEffect(Unit) {
-        ytmusicViewModel.getChart("US")
+        ytmusicViewModel.fetchArtist(BrowseID)
     }
 
     // Use LazyColumn for proper scrolling behavior
@@ -75,7 +74,7 @@ fun ArtistPage(
                 ) {
                     // Artist Image
                     AsyncImage(
-                        model = artistImageUrl,
+                        model = artistPage?.artist?.thumbnail,
                         contentDescription = "Artist Image",
                         modifier = Modifier
                             .fillMaxSize()
@@ -83,8 +82,24 @@ fun ArtistPage(
                         contentScale = ContentScale.Crop
                     )
 
+                    // Gradient mờ dần ở phía dưới
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp) // Chiều cao của gradient
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent, // Màu trong suốt
+                                        BackgroundColor
+                                    )
+                                )
+                            )
+                    )
+
                     Text(
-                        text = "BrowseID", //artist name here
+                        text = artistPage?.artist?.title?:"", //artist name here
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 36.sp,
@@ -94,39 +109,83 @@ fun ArtistPage(
                     )
                 }
             }
+            //Description
+            item{
+                Text(
+                    text = artistPage?.subscribers?:"", //artist name here
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                )
+            }
 
             // Trending Songs Section
-            trendingItem?.songsToMusicItem(3)?.let { trendingSongList ->
-                if (trendingSongList.isNotEmpty()) {
-                    item {
-                        HorizontalScrollableNewScreenSection2(
-                            title = "Trending Songs",
-                            iconHeader = R.drawable.baseline_chevron_right_24,
-                            items = trendingSongList,
-                            itemWidth = 300.dp,
-                            sectionHeight = 260.dp,
-                            onItemClick = onClickMusicItem
+            val trendingItem = artistPage?.sections?.firstOrNull()?.items
+            val trendingList = mutableListOf<List<MusicItem>>()
+
+            //Add SongList
+            trendingItem?.chunked(2)?.forEach { chunk ->
+                val newList = mutableListOf<MusicItem>()
+                chunk.forEach{trendingSong ->
+                    newList.add(
+                        MusicItem(
+                            title = trendingSong.title,
+                            videoId = trendingSong.id,
+                            artist = artistPage?.artist?.title?:"",
+                            imageUrl = trendingSong.thumbnail,
+                            type = 0
                         )
-                    }
+                    )
                 }
+                trendingList.add(newList)
+            }
+            item {
+                HorizontalScrollableNewScreenSection2(
+                    title = "Trending Songs",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = trendingList,
+                    itemWidth = 300.dp,
+                    sectionHeight = 260.dp,
+                    onItemClick = {musicItem ->
+                        onClickMusicItem(musicItem)
+                    }
+                )
             }
 
-            trendingItem?.videoPlaylist?.videosToMusicItems()?.let { topMusicVideos ->
-                if (topMusicVideos.isNotEmpty()) {
-                    item {
-                        HorizontalScrollableNewScreenSection3(
-                            title = "Top Music Videos",
-                            iconHeader = R.drawable.baseline_chevron_right_24,
-                            items = topMusicVideos,
-                            itemWidth = 150.dp,
-                            sectionHeight = 220.dp,
-                            onItemClick = onClickAlbum
-                        )
-                    }
-                }
-            }
-            item { Spacer(modifier = Modifier.height(160.dp)) }
+            // Top Albums List
+            val albumItem = artistPage?.sections?.get(1)?.items
+            val albumList = mutableListOf<MusicItem>()
 
+            //Add AlbumList
+            albumItem?.forEach {topAlbum ->
+                albumList.add(
+                    MusicItem(
+                        title = topAlbum.title,
+                        videoId = "",
+                        artist = artistPage?.artist?.title?:"",
+                        imageUrl = topAlbum.thumbnail,
+                        type = 2,
+                        browseId = topAlbum.id
+                    )
+                )
+            }
+            item {
+                HorizontalScrollableNewScreenSection3(
+                    title = "Top Albums",
+                    iconHeader = R.drawable.baseline_chevron_right_24,
+                    items = albumList,
+                    itemWidth = 300.dp,
+                    sectionHeight = 260.dp,
+                    onItemClick = {musicItem ->
+                        onClickMusicItem(musicItem)
+                    }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(200.dp)) }
         }
         IconButton(
             onClick = { navController.popBackStack() },

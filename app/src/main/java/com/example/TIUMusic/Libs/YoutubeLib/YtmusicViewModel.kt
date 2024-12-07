@@ -79,6 +79,10 @@ class YtmusicViewModel @Inject constructor(
     private val _moodList = MutableStateFlow<List<MoodItem>>(emptyList())
     val moodList : StateFlow<List<MoodItem>> = _moodList
 
+    //Artist Data
+    private val _artistResult = MutableStateFlow<ArtistPage?>(null)
+    val artistResult = _artistResult
+
     //Home Data
     private var _homeItems = MutableStateFlow<List<HomeItem>>(listOf());
     val homeItems : StateFlow<List<HomeItem>> = _homeItems.asStateFlow();
@@ -215,10 +219,12 @@ class YtmusicViewModel @Inject constructor(
             }
         }
     }
+
     //Hàm cập nhật bộ lọc cho các kết quả tìm kiếm
     fun updateSearchFilter(newFilter: String){
         _searchFilter.value = newFilter
     }
+
     // Hàm trích xuất thông tin video ID
     private fun extractVideoInfo(response: SearchResponse): List<MusicItem> {
         // Thông tin trả về
@@ -373,7 +379,6 @@ class YtmusicViewModel @Inject constructor(
             return;
         _homeItems.value = listOf();
     }
-
 
     fun getHomeContinuation(context: Context) {
         if (fetchingContinuation || homeContinuation.intValue > 15)
@@ -1230,6 +1235,19 @@ class YtmusicViewModel @Inject constructor(
                             }
                     }
                     _moodList.value = moods
+                }
+            }
+        }
+    }
+
+    //Artist
+    fun fetchArtist(artistId: String){
+        viewModelScope.launch {
+            runCatching {
+                YouTube.artist(artistId)
+            }.onSuccess {
+                it.onSuccess { artistPage ->
+                    _artistResult.value = artistPage
                 }
             }
         }
