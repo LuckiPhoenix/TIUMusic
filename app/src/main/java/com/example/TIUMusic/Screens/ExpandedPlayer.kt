@@ -234,7 +234,7 @@ public fun ExpandedPlayer(
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
-                            textAlign = TextAlign.Center,
+                            textAlign = TextAlign.Start,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -244,7 +244,7 @@ public fun ExpandedPlayer(
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White,
                             fontWeight = FontWeight.Normal,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Start
                         )
                     }
                     Spacer(modifier = Modifier.weight(1f))
