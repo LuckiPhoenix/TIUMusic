@@ -1,5 +1,6 @@
 package com.example.TIUMusic.SongData
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -41,6 +42,9 @@ class PlayerViewModel : ViewModel() {
 
     private val _expanded = mutableStateOf(false)
     val expanded: State<Boolean> = _expanded
+
+    private val _loop = mutableStateOf(false)
+    val loop: State<Boolean> = _loop
 
     private val _offsetY = mutableStateOf(0f)
     val offsetY: State<Float> = _offsetY
@@ -178,6 +182,12 @@ class PlayerViewModel : ViewModel() {
     fun setShouldExpand(should : Int) {
         _shouldExpand.value = should;
         _shouldExpand.value.coerceIn(-1, 1);
+    }
+
+    fun setLoop(value : Boolean) {
+        _loop.value = value;
+        Log.d("Loop", _loop.value.toString());
+        ytViewModel.ytHelper.value.ytPlayer?.setLoop(value);
     }
 
     fun setPlaying(playing: Boolean) {

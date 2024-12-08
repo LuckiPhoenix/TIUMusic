@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.TIUMusic.Libs.YoutubeLib.models.LRCLIBObject
 import com.example.TIUMusic.Libs.YoutubeLib.models.Line
 import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
@@ -85,7 +84,10 @@ fun YoutubeView(
                             return;
                         if (state == PlayerConstants.PlayerState.ENDED) {
                             ytPlayerHelper.seekToTime = 0f;
-                            youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
+                            if (!youtubeViewModel.playerViewModel.loop.value)
+                                youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
+                            else
+                                youtubeViewModel.ytHelper.value.seekTo(0f);
                         }
                         if (!ytPlayerHelper.isSeekBuffering)
                             ytPlayerHelper.seekToTime = ytPlayerHelper.ytVideoTracker.currentSecond;
