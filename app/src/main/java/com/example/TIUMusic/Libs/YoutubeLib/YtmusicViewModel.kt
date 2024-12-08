@@ -1250,7 +1250,6 @@ class YtmusicViewModel @Inject constructor(
                         val title = list.title
                         val moods = mutableListOf<MoodItem>()
                         for(item in list.items){
-                            Log.d("Mood&Genres", "Title: ${item.title} | Color: ${item.stripeColor} | ID: ${item.endpoint.browseId} |")
                             moods.add(
                                 MoodItem(
                                     title = item.title,
@@ -1267,7 +1266,7 @@ class YtmusicViewModel @Inject constructor(
         }
     }
 
-    fun fetchMoodItem(browseId: String, params: String){
+    fun fetchMoodItem(browseId: String = "FEmusic_moods_and_genres_category", params: String){
         viewModelScope.launch {
             runCatching {
                 YouTube.browse(browseId, params)
@@ -1277,6 +1276,7 @@ class YtmusicViewModel @Inject constructor(
                     val suggestList = it.items.firstOrNull()?.items
                     if (suggestList != null) {
                         for (playlist in suggestList){
+                            Log.d("Mood&Genres", "Title: ${playlist.title} | Url: ${playlist.thumbnail} | ID: ${playlist.id}")
                             newlist.add(
                                 MusicItem(
                                     videoId = "",
