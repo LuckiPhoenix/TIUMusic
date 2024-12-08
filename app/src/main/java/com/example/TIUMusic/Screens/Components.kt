@@ -17,7 +17,6 @@ import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -31,9 +30,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,7 +55,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,9 +76,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -98,16 +91,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
@@ -189,13 +178,13 @@ fun ScrollableScreen(
         label = "height"
     ) { state -> if (state) collapsedHeight else expandedHeight }
 
-    var reachedBottom : Boolean = false;
+    var reachedBottom = false;
     if (itemCount != 0 && scrollState.maxValue != 0) {
-        val sizePerItem = scrollState.maxValue / itemCount;
+        val sizePerItem = scrollState.maxValue / itemCount
         reachedBottom = scrollState.value / sizePerItem >= itemCount - fetchBufferItem;
     }
 
-    println("${reachedBottom}  ${scrollState.value} max: ${scrollState.maxValue}");
+    println("${reachedBottom}  ${scrollState.value} max: ${scrollState.maxValue}")
 
     LaunchedEffect(scrollState.value) {
         isScrolled = scrollState.value > expandedHeight.value

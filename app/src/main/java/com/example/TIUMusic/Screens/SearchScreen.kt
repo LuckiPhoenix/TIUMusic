@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -415,11 +416,11 @@ fun MoodScreen(
 
     Column(modifier = Modifier.fillMaxSize()){
         Text(
-            text = "Explore: ",
+            text = "Moods & Genres: ",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             color = Color.White,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(16.dp)
         )
         data.chunked(2).forEach{chunk ->
             Row(
@@ -427,20 +428,29 @@ fun MoodScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
                 chunk.forEach{
-                    Column(modifier = Modifier.weight(1F).padding(all = 15.dp).background(Color.Black).clip(RoundedCornerShape(16.dp))) {
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF292929))
+                            .clickable {  }
+                    ) {
+                        Box(
+                            modifier = Modifier.align(Alignment.CenterStart)
+                                .fillMaxHeight()
+                                .width(8.dp)
+                                .background(Color(it.color))
+                        )
                         Text(
                             text = it.title,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             color = Color.White,
-                            modifier = Modifier.padding(8.dp),
-                        )
-                        Box (
-                            modifier = Modifier
-                                .padding(top = 10.dp, bottom = 4.dp)
-                                .fillMaxWidth()
-                                .height(3.dp)
-                                .background(Color(it.color))
+                            modifier = Modifier.padding(8.dp)
+                                .padding(start = 8.dp)
+                                .align(Alignment.CenterStart),
                         )
                     }
                 }
