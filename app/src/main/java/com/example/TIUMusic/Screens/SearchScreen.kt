@@ -63,19 +63,21 @@ fun SearchScreen(
     onTabSelected: (Int) -> Unit,
     onClick: (MusicItem) -> Unit,
     modifier: Modifier = Modifier,
+    searchViewModel: YtmusicViewModel
 ) {
+    val searchResults by searchViewModel.searchResults.collectAsState()
+    LaunchedEffect(Unit) {
+        searchViewModel.fetchMoodAndGenres()
+    }
+
     ScrollableSearchScreen (
-        searchViewModel = hiltViewModel(),
+        searchViewModel = searchViewModel,
         onClick = onClick,
         onTabSelected = onTabSelected
     ) {paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Spacer(modifier = Modifier.height(20.dp))
-            val searchViewModel : YtmusicViewModel = hiltViewModel()
-            val searchResults by searchViewModel.searchResults.collectAsState()
-            LaunchedEffect(Unit) {
-                searchViewModel.fetchMoodAndGenres()
-            }
+
             if(searchResults.isEmpty()){
                 //SuggestScreen(searchViewModel)
                 Spacer(modifier = Modifier.height(40.dp))
@@ -410,46 +412,48 @@ fun SuggestScreen(
 fun MoodScreen(
     viewModel: YtmusicViewModel
 ) {
-    val data by viewModel.moodList.collectAsState()
+    val dataMood by viewModel.moodList.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()){
-        Text(
-            text = "Moods & Genres: ",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            color = Color.White,
-            modifier = Modifier.padding(16.dp)
-        )
-        data.chunked(2).forEach{chunk ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                chunk.forEach{
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .weight(1f)
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF292929))
-                            .clickable {  }
-                    ) {
+        dataMood.forEach { data ->
+            Text(
+                text = data.first,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = Color.White,
+                modifier = Modifier.padding(16.dp)
+            )
+            data.second.chunked(2).forEach{chunk ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    chunk.forEach{
                         Box(
-                            modifier = Modifier.align(Alignment.CenterStart)
-                                .fillMaxHeight()
-                                .width(8.dp)
-                                .background(Color(it.color))
-                        )
-                        Text(
-                            text = it.title,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp,
-                            color = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                                .padding(start = 8.dp)
-                                .align(Alignment.CenterStart),
-                        )
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .weight(1f)
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF292929))
+                                .clickable {  }
+                        ) {
+                            Box(
+                                modifier = Modifier.align(Alignment.CenterStart)
+                                    .fillMaxHeight()
+                                    .width(8.dp)
+                                    .background(Color(it.color))
+                            )
+                            Text(
+                                text = it.title,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                color = Color.White,
+                                modifier = Modifier.padding(8.dp)
+                                    .padding(start = 8.dp)
+                                    .align(Alignment.CenterStart),
+                            )
+                        }
                     }
                 }
             }
