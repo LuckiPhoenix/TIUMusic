@@ -1,44 +1,25 @@
 package com.example.TIUMusic.Libs.YoutubeLib
 
 import android.util.Log
-import com.example.TIUMusic.Libs.YoutubeLib.models.AccountInfo
 import com.example.TIUMusic.Libs.YoutubeLib.models.AlbumItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
-import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseEndpoint
 import com.example.TIUMusic.Libs.YoutubeLib.models.GridRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicCarouselShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
-import com.example.TIUMusic.Libs.YoutubeLib.models.ReturnYouTubeDislikeResponse
 import com.example.TIUMusic.Libs.YoutubeLib.models.Run
-import com.example.TIUMusic.Libs.YoutubeLib.models.SearchSuggestions
-import com.example.TIUMusic.Libs.YoutubeLib.models.SongInfo
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.VideoItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
 import com.example.TIUMusic.Libs.YoutubeLib.models.YTItemType
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.ANDROID_MUSIC
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB
 import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeLocale
 import com.example.TIUMusic.Libs.YoutubeLib.models.getContinuation
 import com.example.TIUMusic.Libs.YoutubeLib.models.oddElements
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.AccountMenuResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.AddItemYouTubePlaylistResponse
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.CreatePlaylistResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.GetQueueResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.GetSearchSuggestionsResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.LikeStatus
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.NextAndroidMusicResponse
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.NextResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.SearchResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.toLikeStatus
-import com.example.TIUMusic.Libs.YoutubeLib.models.sponsorblock.SkipSegments
 import com.example.TIUMusic.Libs.YoutubeLib.pages.AlbumPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
-import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistSection
 import com.example.TIUMusic.Libs.YoutubeLib.pages.BrowseResult
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.MoodAndGenres
@@ -47,71 +28,17 @@ import com.example.TIUMusic.Libs.YoutubeLib.pages.NextResult
 import com.example.TIUMusic.Libs.YoutubeLib.pages.PlaylistContinuationPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.PlaylistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
-import com.example.TIUMusic.Libs.YoutubeLib.pages.SearchPage
-import com.example.TIUMusic.Libs.YoutubeLib.pages.SearchResult
-import com.example.TIUMusic.Libs.YoutubeLib.pages.SearchSuggestionPage
 import com.example.TIUMusic.Libs.YoutubeLib.parser.fromPlaylistContinuationToTracks
 import com.example.TIUMusic.Libs.YoutubeLib.parser.fromPlaylistToTrack
-import com.example.TIUMusic.Libs.YoutubeLib.parser.fromPlaylistToTrackWithSetVideoId
 import com.example.TIUMusic.Libs.YoutubeLib.parser.getContinuePlaylistContinuation
 import com.example.TIUMusic.Libs.YoutubeLib.parser.getPlaylistContinuation
-import com.example.TIUMusic.Libs.YoutubeLib.parser.getReloadParams
-import com.example.TIUMusic.Libs.YoutubeLib.parser.getSuggestionSongItems
-import com.example.TIUMusic.Libs.YoutubeLib.parser.hasReloadParams
-import com.example.TIUMusic.Libs.YoutubeLib.Ytmusic
 import com.google.gson.Gson
 import io.ktor.client.call.body
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.delay
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.Interceptor
 import org.json.JSONArray
-import java.io.File
-import java.net.Proxy
-import kotlin.random.Random
 
 
 object YouTube {
     val ytMusic = Ytmusic()
-
-    var cachePath: File?
-        get() = ytMusic.cachePath
-        set(value) {
-            ytMusic.cachePath = value
-        }
-
-    var cacheControlInterceptor: Interceptor?
-        get() = ytMusic.cacheControlInterceptor
-        set(value) {
-            ytMusic.cacheControlInterceptor = value
-        }
-
-    var forceCacheInterceptor: Interceptor?
-        get() = ytMusic.forceCacheInterceptor
-        set(value) {
-            ytMusic.forceCacheInterceptor = value
-        }
-
-    /**
-     * Set the locale and language for YouTube Music
-     */
-    var locale: YouTubeLocale
-        get() = ytMusic.locale
-        set(value) {
-            ytMusic.locale = value
-        }
-
-    /**
-     * Set custom visitorData for client (default is @see [DEFAULT_VISITOR_DATA])
-     */
-    var visitorData: String
-        get() = ytMusic.visitorData
-        set(value) {
-            ytMusic.visitorData = value
-        }
 
     /**
      * Set cookie and authentication header for client (for log in option)
@@ -120,101 +47,6 @@ object YouTube {
         get() = ytMusic.cookie
         set(value) {
             ytMusic.cookie = value
-        }
-
-    /**
-     * Set the proxy for client
-     */
-    var proxy: Proxy?
-        get() = ytMusic.proxy
-        set(value) {
-            ytMusic.proxy = value
-        }
-
-    /**
-     * Search for a song, album, artist, playlist, etc.
-     * @param query the search query
-     * @param filter the search filter (see in [SearchFilter])
-     * @return a [Result]<[SearchResult]> object
-     */
-    suspend fun search(
-        query: String,
-        filter: SearchFilter,
-    ): Result<SearchResult> =
-        runCatching {
-            val response = ytMusic.search(WEB_REMIX, query, filter.value).body<SearchResponse>()
-            SearchResult(
-                items =
-                    response.contents
-                        ?.tabbedSearchResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.lastOrNull()
-                        ?.musicShelfRenderer
-                        ?.contents
-                        ?.mapNotNull {
-                            SearchPage.toYTItem(it.musicResponsiveListItemRenderer)
-                        }.orEmpty(),
-                listPodcast =
-                    response.contents
-                        ?.tabbedSearchResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.lastOrNull()
-                        ?.musicShelfRenderer
-                        ?.contents
-                        ?.mapNotNull {
-                            SearchPage.toPodcast(it.musicResponsiveListItemRenderer)
-                        }.orEmpty(),
-                continuation =
-                    response.contents
-                        ?.tabbedSearchResultsRenderer
-                        ?.tabs
-                        ?.firstOrNull()
-                        ?.tabRenderer
-                        ?.content
-                        ?.sectionListRenderer
-                        ?.contents
-                        ?.lastOrNull()
-                        ?.musicShelfRenderer
-                        ?.continuations
-                        ?.getContinuation(),
-            )
-        }
-
-    /**
-     * Every search request response a limited data. Use this function to get the next data
-     * @param continuation continuation token from [SearchResult.continuation]
-     * @return a [Result]<[SearchResult]> object
-     */
-    suspend fun searchContinuation(continuation: String): Result<SearchResult> =
-        runCatching {
-            val response = ytMusic.search(WEB_REMIX, continuation = continuation).body<SearchResponse>()
-            SearchResult(
-                items =
-                    response.continuationContents
-                        ?.musicShelfContinuation
-                        ?.contents
-                        ?.mapNotNull {
-                            SearchPage.toYTItem(it.musicResponsiveListItemRenderer)
-                        }!!,
-                listPodcast =
-                    response.continuationContents.musicShelfContinuation.contents
-                        .mapNotNull {
-                            SearchPage.toPodcast(it.musicResponsiveListItemRenderer)
-                        }.orEmpty(),
-                continuation =
-                    response.continuationContents.musicShelfContinuation.continuations
-                        ?.getContinuation(),
-            )
         }
 
     /**
@@ -386,30 +218,6 @@ object YouTube {
             }
         }
 
-    suspend fun testArtist(browseId: String): Result<ArrayList<ArtistSection>> =
-        runCatching {
-            val response = ytMusic.browse(WEB_REMIX, browseId).body<BrowseResponse>()
-            val artistSections = arrayListOf<ArtistSection>()
-            val content =
-                response.contents
-                    ?.singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-                    ?.contents
-            if (content != null) {
-                for (i in 0 until content.size) {
-                    ArtistPage
-                        .fromSectionListRendererContent(content.get(i))
-                        ?.let { artistSections.add(it) }
-                    println("Section $i checking \n artistSection ${artistSections.lastOrNull()}")
-                }
-            }
-            return@runCatching artistSections
-        }
-
     /**
      * Get the artist page data from YouTube Music
      * @param browseId the artist browseId
@@ -500,55 +308,6 @@ object YouTube {
                         ?.firstOrNull()
                         ?.text,
             )
-        }
-
-    suspend fun getYouTubePlaylistFullTracksWithSetVideoId(playlistId: String): Result<List<Pair<SongItem, String>>> =
-        runCatching {
-            // SongItem / SetVideoId
-            val listPair = mutableListOf<Pair<SongItem, String>>()
-            val response = ytMusic.playlist(playlistId).body<BrowseResponse>()
-            listPair.addAll(
-                response.fromPlaylistToTrackWithSetVideoId()
-            )
-            var continuation = response.getPlaylistContinuation()
-            while (continuation != null) {
-                val continuationResponse = ytMusic.browse(
-                    client = WEB_REMIX,
-                    setLogin = true,
-                    params = null,
-                    continuation = continuation
-                ).body<BrowseResponse>()
-                listPair.addAll(
-                    continuationResponse.fromPlaylistToTrackWithSetVideoId()
-                )
-                continuation = continuationResponse.getContinuePlaylistContinuation()
-            }
-
-            return@runCatching listPair
-        }
-
-    suspend fun getSuggestionsTrackForPlaylist(playlistId: String): Result<Pair<String?, List<SongItem>?>?> =
-        runCatching {
-            val initialResponse = ytMusic.playlist(
-                if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
-            ).body<BrowseResponse>()
-            var continuation = initialResponse.getPlaylistContinuation()
-            println("YouTube: getSuggestionsTrackForPlaylist: $continuation")
-            while (continuation != null) {
-                val continuationResponse = ytMusic.browse(
-                    client = WEB_REMIX,
-                    setLogin = true,
-                    params = "wAEB",
-                    continuation = continuation
-                ).body<BrowseResponse>()
-                println("YouTube: getSuggestionsTrackForPlaylist: ${continuationResponse.getReloadParams()}")
-                if (continuationResponse.hasReloadParams()) {
-                    return@runCatching Pair(continuationResponse.getReloadParams(), continuationResponse.getSuggestionSongItems())
-                } else {
-                    continuation = continuationResponse.getContinuePlaylistContinuation()
-                }
-            }
-            return@runCatching null
         }
 
     suspend fun getPlaylistFullTracks(playlistId: String): Result<List<SongItem>> =
@@ -703,7 +462,7 @@ object YouTube {
 
     /**
      * Execute a custom POST request to YouTube Music
-     * In SimpMusic, I use this function to parsing Home, Playlist, Album data instead using [album], [playlist], [artist] function
+     * parsing Home, Playlist, Album data instead using [album], [playlist], [artist] function
      * @param browseId the browseId (such as "FEmusic_home", "VL$playlistId", etc.)
      * @param params the params
      * @param continuation the continuation token
@@ -727,16 +486,6 @@ object YouTube {
     }
 
     /**
-     * Get the related data of a song from YouTube Music
-     * @param videoId the videoId of song
-     * @return a [Result]<[NextResponse]> object
-     */
-    suspend fun nextCustom(videoId: String) =
-        runCatching {
-            ytMusic.nextCustom(WEB_REMIX, videoId).body<NextResponse>()
-        }
-
-    /**
      * Get the suggest query from Google
      * @param query the search query
      * @return a [Result]<[ArrayList]<[String]>> object
@@ -755,16 +504,6 @@ object YouTube {
                 }
             }
             return@runCatching listSuggest
-        }
-
-    /**
-     * Get Skip Segments from SponsorBlock
-     * @param videoId the videoId of song
-     * @return a [Result]<[List]<[SkipSegments]>> object
-     */
-    suspend fun getSkipSegments(videoId: String) =
-        runCatching {
-            ytMusic.getSkipSegments(videoId).body<List<SkipSegments>>()
         }
 
     suspend fun newRelease(): Result<ExplorePage> =
@@ -907,189 +646,6 @@ object YouTube {
             )
         }
 
-    suspend fun getLikedInfo(videoId: String): Result<LikeStatus> =
-        runCatching {
-            val response =
-                ytMusic
-                    .next(
-                        ANDROID_MUSIC,
-                        videoId,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                    ).body<NextAndroidMusicResponse>()
-            val likeStatus =
-                response.playerOverlays
-                    ?.playerOverlayRenderer
-                    ?.actions
-                    ?.find { it.likeButtonRenderer != null }
-                    ?.likeButtonRenderer
-                    ?.likeStatus
-                    ?.toLikeStatus()
-            Log.w("YouTube", "Like Status ${response.playerOverlays}")
-            return@runCatching likeStatus ?: LikeStatus.INDIFFERENT
-        }
-
-    suspend fun getSongInfo(videoId: String): Result<SongInfo> =
-        runCatching {
-            val ytNext = ytMusic.next(WEB, videoId, null, null, null, null, null).body<NextResponse>()
-            val videoSecondary =
-                ytNext.contents.twoColumnWatchNextResults
-                    ?.results
-                    ?.results
-                    ?.content
-                    ?.find {
-                        it?.videoSecondaryInfoRenderer != null
-                    }?.videoSecondaryInfoRenderer
-            val videoPrimary =
-                ytNext.contents.twoColumnWatchNextResults
-                    ?.results
-                    ?.results
-                    ?.content
-                    ?.find {
-                        it?.videoPrimaryInfoRenderer != null
-                    }?.videoPrimaryInfoRenderer
-            val returnYouTubeDislikeResponse =
-                ytMusic.returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
-            return@runCatching SongInfo(
-                videoId = videoId,
-                author =
-                    videoSecondary?.owner?.videoOwnerRenderer?.title?.runs?.firstOrNull()?.text?.replace(
-                        Regex(" - Topic| - Chủ đề|"),
-                        "",
-                    ),
-                authorId =
-                    videoSecondary
-                        ?.owner
-                        ?.videoOwnerRenderer
-                        ?.navigationEndpoint
-                        ?.browseEndpoint
-                        ?.browseId,
-                authorThumbnail =
-                    videoSecondary
-                        ?.owner
-                        ?.videoOwnerRenderer
-                        ?.thumbnail
-                        ?.thumbnails
-                        ?.find {
-                            it.height == 48
-                        }?.url
-                        ?.replace("s48", "s960"),
-                description = videoSecondary?.attributedDescription?.content,
-                subscribers =
-                    videoSecondary
-                        ?.owner
-                        ?.videoOwnerRenderer
-                        ?.subscriberCountText
-                        ?.simpleText,
-                uploadDate = videoPrimary?.dateText?.simpleText,
-                viewCount = returnYouTubeDislikeResponse.viewCount,
-                like = returnYouTubeDislikeResponse.likes,
-                dislike = returnYouTubeDislikeResponse.dislikes,
-            )
-            // Get author thumbnails, subscribers, description, like count
-        }
-
-    suspend fun updateWatchTime(
-        watchtimeUrl: String,
-        watchtimeList: ArrayList<Float>,
-        cpn: String,
-        playlistId: String?,
-    ): Result<Int> =
-        runCatching {
-            val et = watchtimeList.takeLast(2).joinToString(",")
-            val watchtime = watchtimeList.dropLast(1).takeLast(2).joinToString(",")
-            ytMusic.initPlayback(watchtimeUrl, cpn, mapOf("st" to watchtime, "et" to et), playlistId).status.value.let { status ->
-                if (status == 204) {
-                    println("watchtime done")
-                }
-                return@runCatching status
-            }
-        }
-
-    suspend fun updateWatchTimeFull(
-        watchtimeUrl: String,
-        cpn: String,
-        playlistId: String?,
-    ): Result<Int> =
-        runCatching {
-            val regex = Regex("len=([^&]+)")
-            val length =
-                regex
-                    .find(watchtimeUrl)
-                    ?.groupValues
-                    ?.firstOrNull()
-                    ?.drop(4) ?: "0"
-            println(length)
-            ytMusic.initPlayback(watchtimeUrl, cpn, mapOf("st" to length, "et" to length), playlistId).status.value.let { status ->
-                if (status == 204) {
-                    println("watchtime full done")
-                }
-                return@runCatching status
-            }
-        }
-
-    /**
-     * @return [Pair<Int, Float>]
-     * Int: status code
-     * Float: second watchtime
-     * First watchtime is 5.54
-     */
-    suspend fun initPlayback(
-        playbackUrl: String,
-        atrUrl: String,
-        watchtimeUrl: String,
-        cpn: String,
-        playlistId: String?,
-    ): Result<Pair<Int, Float>> {
-        println("playbackUrl $playbackUrl")
-        println("atrUrl $atrUrl")
-        println("watchtimeUrl $watchtimeUrl")
-        return runCatching {
-            ytMusic.initPlayback(playbackUrl, cpn, null, playlistId).status.value.let { status ->
-                if (status == 204) {
-                    println("playback done")
-                    ytMusic.initPlayback(watchtimeUrl, cpn, mapOf("st" to "0", "et" to "5.54"), playlistId).status.value.let { firstWatchTime ->
-                        if (firstWatchTime == 204) {
-                            println("first watchtime done")
-                            delay(5000)
-                            ytMusic.atr(atrUrl, cpn, null, playlistId).status.value.let { atr ->
-                                if (atr == 204) {
-                                    println("atr done")
-                                    delay(500)
-                                    val secondWatchTime = (Math.round(Random.nextFloat() * 100.0) / 100.0).toFloat() + 12f
-                                    ytMusic
-                                        .initPlayback(
-                                            watchtimeUrl,
-                                            cpn,
-                                            mapOf<String, String>("st" to "0,5.54", "et" to "5.54,$secondWatchTime"),
-                                            playlistId,
-                                        ).status.value
-                                        .let { watchtime ->
-                                            if (watchtime == 204) {
-                                                println("watchtime done")
-                                                return@runCatching Pair(watchtime, secondWatchTime)
-                                            } else {
-                                                return@runCatching Pair(watchtime, secondWatchTime)
-                                            }
-                                        }
-                                } else {
-                                    return@runCatching Pair(atr, 0f)
-                                }
-                            }
-                        } else {
-                            return@runCatching Pair(firstWatchTime, 0f)
-                        }
-                    }
-                } else {
-                    return@runCatching Pair(status, 0f)
-                }
-            }
-        }
-    }
-
     suspend fun next(
         endpoint: WatchEndpoint,
         continuation: String? = null,
@@ -1180,9 +736,6 @@ object YouTube {
                             )
                         }
                 }
-//        else if (playlistPanelRenderer.contents.firstOrNull()?.playlistPanelVideoRenderer?.navigationEndpoint?.watchPlaylistEndpoint != null) {
-//
-//        }
                 return@runCatching NextResult(
                     title = playlistPanelRenderer.title,
                     items =
@@ -1241,65 +794,6 @@ object YouTube {
             }
         }
 
-    suspend fun lyrics(endpoint: BrowseEndpoint): Result<String?> =
-        runCatching {
-            val response = ytMusic.browse(WEB_REMIX, endpoint.browseId, endpoint.params).body<BrowseResponse>()
-            response.contents
-                ?.sectionListRenderer
-                ?.contents
-                ?.firstOrNull()
-                ?.musicDescriptionShelfRenderer
-                ?.description
-                ?.runs
-                ?.firstOrNull()
-                ?.text
-        }
-
-    suspend fun queue(
-        videoIds: List<String>? = null,
-        playlistId: String? = null,
-    ): Result<List<SongItem>> =
-        runCatching {
-            if (videoIds != null) {
-                assert(videoIds.size <= MAX_GET_QUEUE_SIZE) // Max video limit
-            }
-            ytMusic
-                .getQueue(WEB_REMIX, videoIds, playlistId)
-                .body<GetQueueResponse>()
-                .queueDatas
-                .mapNotNull {
-                    it.content.playlistPanelVideoRenderer?.let { renderer ->
-                        NextPage.fromPlaylistPanelVideoRenderer(renderer)
-                    }
-                }
-        }
-
-    suspend fun visitorData(): Result<String> =
-        runCatching {
-            Json
-                .parseToJsonElement(ytMusic.getSwJsData().bodyAsText().substring(5))
-                .jsonArray[0]
-                .jsonArray[2]
-                .jsonArray
-                .first { (it as? JsonPrimitive)?.content?.startsWith(VISITOR_DATA_PREFIX) == true }
-                .jsonPrimitive.content
-        }
-
-    suspend fun accountInfo(): Result<AccountInfo?> =
-        runCatching {
-            ytMusic
-                .accountMenu(WEB_REMIX)
-                .apply {
-                    this.bodyAsText().let {
-                        println(it)
-                    }
-                }.body<AccountMenuResponse>()
-                .actions[0]
-                .openPopupAction.popup.multiPageMenuRenderer.header
-                ?.activeAccountHeaderRenderer
-                ?.toAccountInfo()
-        }
-
     suspend fun getLibraryPlaylists() =
         runCatching {
             ytMusic.browse(WEB_REMIX, "FEmusic_liked_playlists", setLogin = true).body<BrowseResponse>()
@@ -1319,83 +813,6 @@ object YouTube {
             val FILTER_PODCAST = SearchFilter("EgWKAQJQAWoIEBAQERADEBU%3D")
         }
     }
-
-    suspend fun getYTMusicSearchSuggestions(query: String) =
-        runCatching {
-            val response = ytMusic.getSearchSuggestions(WEB_REMIX, query).body<GetSearchSuggestionsResponse>()
-            SearchSuggestions(
-                queries =
-                    response.contents
-                        ?.getOrNull(0)
-                        ?.searchSuggestionsSectionRenderer
-                        ?.contents
-                        ?.mapNotNull { content ->
-                            content.searchSuggestionRenderer
-                                ?.suggestion
-                                ?.runs
-                                ?.joinToString(separator = "") { it.text }
-                        }.orEmpty(),
-                recommendedItems =
-                    response.contents
-                        ?.getOrNull(1)
-                        ?.searchSuggestionsSectionRenderer
-                        ?.contents
-                        ?.mapNotNull {
-                            it.musicResponsiveListItemRenderer?.let { renderer ->
-                                SearchSuggestionPage.fromMusicResponsiveListItemRenderer(renderer)
-                            }
-                        }.orEmpty(),
-            )
-        }
-
-    suspend fun scrapeYouTube(videoId: String) =
-        runCatching {
-            ytMusic.scrapeYouTube(videoId).body<String>()
-        }
-
-    suspend fun removeItemYouTubePlaylist(
-        playlistId: String,
-        videoId: String,
-        setVideoId: String,
-    ) = runCatching {
-        ytMusic.removeItemYouTubePlaylist(playlistId, videoId, setVideoId).status.value
-    }
-
-    suspend fun addPlaylistItem(
-        playlistId: String,
-        videoId: String,
-    ) = runCatching {
-        ytMusic.addItemYouTubePlaylist(playlistId, videoId).body<AddItemYouTubePlaylistResponse>()
-    }
-
-    suspend fun editPlaylist(
-        playlistId: String,
-        title: String,
-    ) = runCatching {
-        ytMusic.editYouTubePlaylist(playlistId, title).status.value
-    }
-
-    suspend fun createPlaylist(
-        title: String,
-        listVideoId: List<String>?,
-    ) = runCatching {
-        ytMusic.createYouTubePlaylist(title, listVideoId).body<CreatePlaylistResponse>()
-    }
-
-    suspend fun getNotification() =
-        runCatching {
-            ytMusic.getNotification().bodyAsText()
-        }
-
-    suspend fun addToLiked(mediaId: String) =
-        runCatching {
-            ytMusic.addToLiked(mediaId).status.value
-        }
-
-    suspend fun removeFromLiked(mediaId: String) =
-        runCatching {
-            ytMusic.removeFromLiked(mediaId).status.value
-        }
 
     const val MAX_GET_QUEUE_SIZE = 1000
 

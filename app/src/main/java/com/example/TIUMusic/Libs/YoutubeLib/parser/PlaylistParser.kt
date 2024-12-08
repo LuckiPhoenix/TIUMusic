@@ -7,7 +7,6 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.MusicShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.SongItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.getContinuation
 import com.example.TIUMusic.Libs.YoutubeLib.models.response.BrowseResponse
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.LikeStatus
 
 fun BrowseResponse.fromPlaylistToTrack(): List<SongItem> =
     (
@@ -34,34 +33,6 @@ fun BrowseResponse.fromPlaylistToTrack(): List<SongItem> =
         content.toSongItem()
     } ?: emptyList()
 
-fun BrowseResponse.fromPlaylistToTrackWithSetVideoId(): List<Pair<SongItem, String>> =
-    (
-        (this.contents
-            ?.singleColumnBrowseResultsRenderer?.tabs
-            ?: this.contents?.twoColumnBrowseResultsRenderer?.tabs
-            )?.firstOrNull()
-            ?.tabRenderer
-            ?.content
-            ?.sectionListRenderer
-            ?.contents
-            ?.firstOrNull()
-            ?.musicPlaylistShelfRenderer
-            ?.contents
-            ?: this.contents
-                ?.twoColumnBrowseResultsRenderer
-                ?.secondaryContents
-                ?.sectionListRenderer
-                ?.contents
-                ?.firstOrNull()
-                ?.musicPlaylistShelfRenderer
-                ?.contents
-        )?.mapNotNull { content ->
-            Pair(
-                content.toSongItem() ?: return@mapNotNull null,
-                content.toPlaylistItemData()?.playlistSetVideoId ?: return@mapNotNull null,
-            )
-        } ?: emptyList()
-
 fun BrowseResponse.fromPlaylistContinuationToTracks(): List<SongItem> =
     (this.continuationContents
         ?.musicPlaylistShelfContinuation
@@ -74,23 +45,6 @@ fun BrowseResponse.fromPlaylistContinuationToTracks(): List<SongItem> =
             ?.contents)
         ?.mapNotNull { contents ->
             contents.toSongItem()
-        } ?: emptyList()
-
-fun BrowseResponse.fromPlaylistContinuationToTrackWithSetVideoId(): List<Pair<SongItem, String>> =
-    (this.continuationContents
-        ?.musicPlaylistShelfContinuation
-        ?.contents
-    ?: this.continuationContents
-        ?.sectionListContinuation
-        ?.contents
-        ?.firstOrNull()
-        ?.musicShelfRenderer
-        ?.contents)
-        ?.mapNotNull { contents ->
-            Pair(
-                contents.toSongItem() ?: return@mapNotNull null,
-                contents.toPlaylistItemData()?.playlistSetVideoId ?: return@mapNotNull null,
-            )
         } ?: emptyList()
 
 fun BrowseResponse.getPlaylistContinuation(): String? =
@@ -187,14 +141,6 @@ fun MusicShelfRenderer.Content.toSongItem(): SongItem? {
                 ?.thumbnail
                 ?.musicThumbnailRenderer
                 ?.thumbnail,
-        likeStatus =
-            menu
-                ?.menuRenderer
-                ?.topLevelButtons
-                ?.firstOrNull()
-                ?.likeButtonRenderer
-                ?.toLikeStatus()
-                ?: LikeStatus.INDIFFERENT,
         badges = this.musicResponsiveListItemRenderer?.badges?.toSongBadges(),
     )
 }
@@ -212,29 +158,3 @@ fun BrowseResponse.hasReloadParams(): Boolean =
         ?.firstOrNull()
         ?.reloadContinuationData
         ?.continuation != null
-
-fun BrowseResponse.getReloadParams(): String? =
-    this.continuationContents
-        ?.sectionListContinuation
-        ?.contents
-        ?.firstOrNull()
-        ?.musicShelfRenderer
-        ?.continuations
-        ?.firstOrNull()
-        ?.reloadContinuationData
-        ?.continuation
-
-fun BrowseResponse.getSuggestionSongItems(): List<SongItem> =
-    if (hasReloadParams()) {
-        this.continuationContents
-            ?.sectionListContinuation
-            ?.contents
-            ?.firstOrNull()
-            ?.musicShelfRenderer
-            ?.contents
-            ?.mapNotNull { content ->
-                content.toSongItem()
-            } ?: emptyList()
-    } else {
-        emptyList()
-    }

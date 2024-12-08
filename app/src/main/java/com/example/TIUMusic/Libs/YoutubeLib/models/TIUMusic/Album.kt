@@ -5,18 +5,12 @@ import com.google.gson.annotations.SerializedName
 data class Album(
     @SerializedName("album_type")
     val albumType: String,
-//    @SerializedName("artists")
-//    val artists: List<ArtistX>,
     @SerializedName("available_markets")
     val availableMarkets: List<String>,
-//    @SerializedName("external_urls")
-//    val externalUrls: ExternalUrlsXXX,
     @SerializedName("href")
     val href: String,
     @SerializedName("id")
     val id: String,
-//    @SerializedName("images")
-//    val images: List<Image>,
     @SerializedName("name")
     val name: String,
     @SerializedName("release_date")

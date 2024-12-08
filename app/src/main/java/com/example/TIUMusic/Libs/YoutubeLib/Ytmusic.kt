@@ -1,35 +1,20 @@
 package com.example.TIUMusic.Libs.YoutubeLib
 
 import com.example.TIUMusic.Libs.YoutubeLib.encoder.brotli
-import com.example.TIUMusic.Libs.YoutubeLib.models.Context
-import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeLocale
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.AccountMenuBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.CreatePlaylistBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.EditPlaylistBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.GetQueueBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.LikeBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.NextBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.body.NotificationBody
-import com.example.TIUMusic.Libs.YoutubeLib.utils.parseCookieString
-import com.example.TIUMusic.Libs.YoutubeLib.utils.sha1
 import com.example.TIUMusic.Libs.YoutubeLib.models.BrowseBody
 import com.example.TIUMusic.Libs.YoutubeLib.models.FormData
-import com.example.TIUMusic.Libs.YoutubeLib.models.GetSearchSuggestionsBody
-import com.example.TIUMusic.Libs.YoutubeLib.models.PlayerBody
 import com.example.TIUMusic.Libs.YoutubeLib.models.SearchBody
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient
+import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeLocale
+import com.example.TIUMusic.Libs.YoutubeLib.models.body.NextBody
+import com.example.TIUMusic.Libs.YoutubeLib.utils.parseCookieString
+import com.example.TIUMusic.Libs.YoutubeLib.utils.sha1
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
-import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
@@ -42,18 +27,14 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.userAgent
-import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.protobuf.protobuf
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.protobuf.ProtoBuf
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 import okhttp3.Interceptor
 import java.io.File
-import java.lang.reflect.Type
 import java.net.Proxy
 import java.util.Locale
 
@@ -157,8 +138,6 @@ class Ytmusic {
             }
         }
 
-    internal fun HttpRequestBuilder.mask(value: String = "*") = header("X-Goog-FieldMask", value)
-
     private fun HttpRequestBuilder.ytClient(
         client: YouTubeClient,
         setLogin: Boolean = false,
@@ -225,40 +204,6 @@ class Ytmusic {
             parameter("ctoken", continuation)
     }
 
-    suspend fun returnYouTubeDislike(videoId: String) =
-        httpClient.get("https://returnyoutubedislikeapi.com/Votes?videoId=$videoId") {
-            contentType(ContentType.Application.Json)
-        }
-
-    suspend fun player(
-        client: YouTubeClient,
-        videoId: String,
-        playlistId: String?,
-        cpn: String?,
-    ) = httpClient.post("player") {
-        ytClient(client, setLogin = true)
-        setBody(
-            PlayerBody(
-                context =
-                    client.toContext(locale, visitorData).let {
-                        if (client == YouTubeClient.TVHTML5) {
-                            it.copy(
-                                thirdParty =
-                                    Context.ThirdParty(
-                                        embedUrl = "https://www.youtube.com/watch?v=$videoId",
-                                    ),
-                            )
-                        } else {
-                            it
-                        }
-                    },
-                videoId = videoId,
-                playlistId = playlistId,
-                cpn = cpn,
-            ),
-        )
-    }
-
     suspend fun getSuggestQuery(query: String) =
         httpClient.get("http://suggestqueries.google.com/complete/search") {
             contentType(ContentType.Application.Json)
@@ -266,11 +211,6 @@ class Ytmusic {
             parameter("ds", "yt")
             parameter("q", query)
         }
-
-    private fun fromString(value: String?): List<String>? {
-        val listType: Type = object : TypeToken<ArrayList<String?>?>() {}.type
-        return Gson().fromJson(value, listType)
-    }
 
     suspend fun searchLrclibLyrics(
         q_track: String,
@@ -286,113 +226,6 @@ class Ytmusic {
         parameter("track_name", q_track)
         parameter("artist_name", q_artist)
     }
-
-    suspend fun getYouTubeCaption(url: String) =
-        httpClient.get(url) {
-            contentType(ContentType.Text.Xml)
-            headers {
-                append(HttpHeaders.Accept, "text/xml; charset=UTF-8")
-            }
-        }
-
-    suspend fun createYouTubePlaylist(
-        title: String,
-        listVideoId: List<String>?,
-    ) = httpClient.post("playlist/create") {
-        ytClient(YouTubeClient.WEB_REMIX, setLogin = true)
-        setBody(
-            CreatePlaylistBody(
-                context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                title = title,
-                videoIds = listVideoId,
-            ),
-        )
-    }
-
-    suspend fun editYouTubePlaylist(
-        playlistId: String,
-        title: String? = null,
-    ) = httpClient.post("browse/edit_playlist") {
-        ytClient(YouTubeClient.WEB_REMIX, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                playlistId = playlistId.removePrefix("VL"),
-                actions =
-                    listOf(
-                        EditPlaylistBody.Action(
-                            action = "ACTION_SET_PLAYLIST_NAME",
-                            playlistName = title ?: "",
-                        ),
-                    ),
-            ),
-        )
-    }
-
-    suspend fun addItemYouTubePlaylist(
-        playlistId: String,
-        videoId: String,
-    ) = httpClient.post("browse/edit_playlist") {
-        ytClient(YouTubeClient.WEB_REMIX, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                playlistId = playlistId.removePrefix("VL"),
-                actions =
-                    listOf(
-                        EditPlaylistBody.Action(
-                            playlistName = null,
-                            action = "ACTION_ADD_VIDEO",
-                            addedVideoId = videoId,
-                        ),
-                    ),
-            ),
-        )
-    }
-
-    suspend fun removeItemYouTubePlaylist(
-        playlistId: String,
-        videoId: String,
-        setVideoId: String,
-    ) = httpClient.post("browse/edit_playlist") {
-        ytClient(YouTubeClient.WEB_REMIX, setLogin = true)
-        setBody(
-            EditPlaylistBody(
-                context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                playlistId = playlistId.removePrefix("VL"),
-                actions =
-                    listOf(
-                        EditPlaylistBody.Action(
-                            playlistName = null,
-                            action = "ACTION_REMOVE_VIDEO",
-                            removedVideoId = videoId,
-                            setVideoId = setVideoId,
-                        ),
-                    ),
-            ),
-        )
-    }
-
-    /***
-     * SponsorBlock testing
-     * @author maxrave-dev
-     */
-
-    suspend fun getSkipSegments(videoId: String) =
-        httpClient.get("https://sponsor.ajay.app/api/skipSegments/") {
-            contentType(ContentType.Application.Json)
-            parameter("videoID", videoId)
-            parameter("category", "sponsor")
-            parameter("category", "selfpromo")
-            parameter("category", "interaction")
-            parameter("category", "intro")
-            parameter("category", "outro")
-            parameter("category", "preview")
-            parameter("category", "music_offtopic")
-            parameter("category", "poi_highlight")
-            parameter("category", "filler")
-            parameter("service", "YouTube")
-        }
 
     // Get playlist from channel
     suspend fun playlist(playlistId: String) =
@@ -449,31 +282,6 @@ class Ytmusic {
         }
     }
 
-    suspend fun nextCustom(
-        client: YouTubeClient,
-        videoId: String,
-    ) = httpClient.post("next") {
-        ytClient(client, setLogin = false)
-        setBody(
-            BrowseBody(
-                context = client.toContext(locale, visitorData),
-                browseId = null,
-                params = "wAEB",
-                enablePersistentPlaylistPanel = true,
-                isAudioOnly = true,
-                tunerSettingValue = "AUTOMIX_SETTING_NORMAL",
-                playlistId = "RDAMVM$videoId",
-                watchEndpointMusicSupportedConfigs =
-                    WatchEndpoint.WatchEndpointMusicSupportedConfigs(
-                        WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig(
-                            musicVideoType = "MUSIC_VIDEO_TYPE_ATV",
-                        ),
-                    ),
-            ),
-        )
-        parameter("alt", "json")
-    }
-
     suspend fun next(
         client: YouTubeClient,
         videoId: String?,
@@ -496,117 +304,4 @@ class Ytmusic {
             ),
         )
     }
-
-    suspend fun getSearchSuggestions(
-        client: YouTubeClient,
-        input: String,
-    ) = httpClient.post("music/get_search_suggestions") {
-        ytClient(client)
-        setBody(
-            GetSearchSuggestionsBody(
-                context = client.toContext(locale, visitorData),
-                input = input,
-            ),
-        )
-    }
-
-    suspend fun getQueue(
-        client: YouTubeClient,
-        videoIds: List<String>?,
-        playlistId: String?,
-    ) = httpClient.post("music/get_queue") {
-        ytClient(client)
-        setBody(
-            GetQueueBody(
-                context = client.toContext(locale, visitorData),
-                videoIds = videoIds,
-                playlistId = playlistId,
-            ),
-        )
-    }
-
-    suspend fun getSwJsData() = httpClient.get("https://music.youtube.com/sw.js_data")
-
-    suspend fun accountMenu(client: YouTubeClient) =
-        httpClient.post("account/account_menu") {
-            ytClient(client, setLogin = true)
-            setBody(AccountMenuBody(client.toContext(locale, visitorData)))
-        }
-
-    suspend fun scrapeYouTube(videoId: String) =
-        httpClient.get("https://www.youtube.com/watch?v=$videoId") {
-            headers {
-                append(HttpHeaders.AcceptLanguage, locale.hl)
-                append(HttpHeaders.ContentLanguage, locale.gl)
-            }
-        }
-
-    suspend fun initPlayback(
-        url: String,
-        cpn: String,
-        customParams: Map<String, String>? = null,
-        playlistId: String?,
-    ) = httpClient.get(url) {
-        ytClient(YouTubeClient.ANDROID_MUSIC, true)
-        parameter("ver", "2")
-        parameter("c", "ANDROID_MUSIC")
-        parameter("cpn", cpn)
-        customParams?.forEach { (key, value) ->
-            parameter(key, value)
-        }
-        if (playlistId != null) {
-            parameter("list", playlistId)
-            parameter("referrer", "https://music.youtube.com/playlist?list=$playlistId")
-        }
-    }
-
-    suspend fun atr(
-        url: String,
-        cpn: String,
-        customParams: Map<String, String>? = null,
-        playlistId: String?,
-    ) = httpClient.post(url) {
-        ytClient(YouTubeClient.ANDROID_MUSIC, true)
-        parameter("c", "ANDROID_MUSIC")
-        parameter("cpn", cpn)
-        customParams?.forEach { (key, value) ->
-            parameter(key, value)
-        }
-        if (playlistId != null) {
-            parameter("list", playlistId)
-            parameter("referrer", "https://music.youtube.com/playlist?list=$playlistId")
-        }
-    }
-
-    suspend fun getNotification() =
-        httpClient.post("https://www.youtube.com/youtubei/v1/notification/get_notification_menu") {
-            ytClient(YouTubeClient.NOTIFICATION_CLIENT, true)
-            setBody(
-                NotificationBody(
-                    context = YouTubeClient.NOTIFICATION_CLIENT.toContext(locale, visitorData),
-                ),
-            )
-        }
-
-    suspend fun addToLiked(videoId: String) =
-        httpClient.post("like/like") {
-            ytClient(YouTubeClient.WEB_REMIX, true)
-            setBody(
-                LikeBody(
-                    context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                    target = LikeBody.Target(videoId),
-                ),
-            )
-        }
-
-    suspend fun removeFromLiked(videoId: String) =
-        httpClient.post("like/removelike") {
-            ytClient(YouTubeClient.WEB_REMIX, true)
-            setBody(
-                LikeBody(
-                    context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData),
-                    target = LikeBody.Target(videoId),
-                ),
-            )
-        }
 }
