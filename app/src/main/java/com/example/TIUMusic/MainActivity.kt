@@ -17,21 +17,18 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
-import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.models.Endpoint
-import com.example.TIUMusic.Libs.YoutubeLib.models.WatchEndpoint
-import com.example.TIUMusic.Libs.YoutubeLib.models.YouTubeClient.Companion.WEB_REMIX
-import com.example.TIUMusic.Libs.YoutubeLib.models.response.NextResponse
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.ktor.client.call.body
-import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+
+object ViewModel {
+    var playerViewModel: PlayerViewModel = PlayerViewModel();
+    var visualizerViewModel = VisualizerViewModel()
+    var ytmusicViewModel = YtmusicViewModel(ytmusic = ytMusic)
+}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -75,20 +72,17 @@ class MainActivity : ComponentActivity() {
             _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "mylock");
         else
             _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "mylock");
-        val playerViewModel = PlayerViewModel() // Could be a bad idea
-        val visualizerViewModel = VisualizerViewModel()
-        val ytmusicViewModel = YtmusicViewModel(ytmusic = ytMusic)
         requestPermissions(
             activity = this,
             onAccepted = { name ->
                 when (name) {
                     Manifest.permission.RECORD_AUDIO -> {
                         VisualizerSettings.VisualizerEnabled = true;
-                        visualizerViewModel.init();
+                        ViewModel.visualizerViewModel.init();
                     }
                     Manifest.permission.POST_NOTIFICATIONS -> {
                         YoutubeSettings.NotificationEnabled = true;
-                        playerViewModel.ytViewModel.init(this);
+                        ViewModel.playerViewModel.ytViewModel.init(this);
                     }
                 }
             },
@@ -106,9 +100,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TIUMusicTheme {
                 NavHost(
-                    playerViewModel = playerViewModel,
-                    visualizerViewModel = visualizerViewModel,
-                    ytmusicViewModel = ytmusicViewModel
+                    playerViewModel = ViewModel.playerViewModel,
+                    visualizerViewModel = ViewModel.visualizerViewModel,
+                    ytmusicViewModel = ViewModel.ytmusicViewModel
                 )
             }
         }

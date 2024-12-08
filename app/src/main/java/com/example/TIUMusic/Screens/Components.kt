@@ -1180,9 +1180,15 @@ fun NowPlayingSheet(
     }
 
     LaunchedEffect(shouldExpand) {
-        if (shouldExpand == true) {
+        if (shouldExpand == 1) {
             dragProgress.value = 1.0f;
-            playerViewModel.setShouldExpand(false);
+            playerViewModel.setShouldExpand(0);
+            playerViewModel.setExpanded(true);
+        }
+        if (shouldExpand == -1) {
+            dragProgress.value = 0.0f;
+            playerViewModel.setShouldExpand(0);
+            playerViewModel.setExpanded(false);
         }
     }
 

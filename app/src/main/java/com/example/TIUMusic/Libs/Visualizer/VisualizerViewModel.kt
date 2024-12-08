@@ -65,7 +65,7 @@ class VisualizerViewModel(
     }
 
     public fun init() {
-        if (VisualizerSettings.VisualizerEnabled)
+        if (VisualizerSettings.VisualizerEnabled && visualizer.value == null)
         {
             visualizer = MutableStateFlow(Visualizer(audioSessionId));
             visualizer.update { it ->

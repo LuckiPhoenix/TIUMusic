@@ -51,7 +51,7 @@ class PlayerViewModel : ViewModel() {
     private val _currentTime = mutableFloatStateOf(0.0f);
     val currentTime : State<Float> = _currentTime;
 
-    private val _shouldExpand = MutableStateFlow<Boolean>(false);
+    private val _shouldExpand = MutableStateFlow<Int>(0);
     val shouldExpand = _shouldExpand.asStateFlow();
 
     var ytViewModel = YoutubeViewModel(this);
@@ -88,9 +88,10 @@ class PlayerViewModel : ViewModel() {
         });
     }
 
-    fun playSong(item : MusicItem, context : android.content.Context) {
+    fun playSong(item : MusicItem, context : android.content.Context, expandPlayer: Boolean = false) {
         _musicItem.value = item;
-        setShouldExpand(true);
+        if (expandPlayer)
+            setShouldExpand(1);
         ytViewModel.loadAndPlayVideo(
             videoId = item.videoId,
             metadata = YoutubeMetadata(
@@ -134,13 +135,13 @@ class PlayerViewModel : ViewModel() {
         shuffledPlaylist = _playlist.value?.shuffled();
     }
 
-    fun playSongInPlaylistAtIndex(index : Int?, context: android.content.Context) {
+    fun playSongInPlaylistAtIndex(index : Int?, context: android.content.Context, expandPlayer: Boolean = false) {
         _currentPlaylistIndex.value = index;
         if (index != null && playlist.value != null) {
             if (!isShuffled && playlist.value != null)
-                playSong(_playlist.value!![currentPlaylistIndex.value!!], context);
+                playSong(_playlist.value!![currentPlaylistIndex.value!!], context, expandPlayer);
             else if (isShuffled && shuffledPlaylist != null)
-                playSong(shuffledPlaylist!![currentPlaylistIndex.value!!], context);
+                playSong(shuffledPlaylist!![currentPlaylistIndex.value!!], context, expandPlayer);
         }
     }
 
@@ -174,8 +175,9 @@ class PlayerViewModel : ViewModel() {
         isShuffled = value;
     }
 
-    fun setShouldExpand(should : Boolean) {
+    fun setShouldExpand(should : Int) {
         _shouldExpand.value = should;
+        _shouldExpand.value.coerceIn(-1, 1);
     }
 
     fun setPlaying(playing: Boolean) {

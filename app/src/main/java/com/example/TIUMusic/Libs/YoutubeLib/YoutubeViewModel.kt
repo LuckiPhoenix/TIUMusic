@@ -143,7 +143,7 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
     }
 
     fun init(context: Context) {
-        if (!VisualizerSettings.VisualizerEnabled)
+        if (!VisualizerSettings.VisualizerEnabled || _mediaSession.value != null)
             return; // Just to be sure
         _mediaSession.value = MediaSession(context, "MusicService");
 

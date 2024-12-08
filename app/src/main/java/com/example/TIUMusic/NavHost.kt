@@ -93,6 +93,7 @@ fun NavHost(
                         navController = navController,
                         ytMusicViewModel = ytmusicViewModel,
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {
                                     ytmusicViewModel.resetHome()
@@ -108,7 +109,7 @@ fun NavHost(
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist()
                                 playerViewModel.setRadio(musicItem)
-                                playerViewModel.playSong(musicItem, context)
+                                playerViewModel.playSong(musicItem, context, true)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -127,6 +128,7 @@ fun NavHost(
                     NewScreen(
                         navController,
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> {
@@ -141,7 +143,7 @@ fun NavHost(
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist()
                                 playerViewModel.setRadio(musicItem)
-                                playerViewModel.playSong(musicItem, context)
+                                playerViewModel.playSong(musicItem, context, true)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -162,6 +164,7 @@ fun NavHost(
                     SearchScreen(
                         navController,
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> navController.navigate("home")
                                 1 -> navController.navigate("new")
@@ -173,7 +176,7 @@ fun NavHost(
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist()
-                                playerViewModel.playSong(musicItem, context)
+                                playerViewModel.playSong(musicItem, context, true)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -204,6 +207,7 @@ fun NavHost(
                     },
                     ytmusicViewModel = ytmusicViewModel,
                     onTabSelected = { tabIndex ->
+                        playerViewModel.setShouldExpand(-1);
                         when (tabIndex) {
                             0 -> navController.navigate("home")
                             1 -> navController.navigate("new")
@@ -235,6 +239,7 @@ fun NavHost(
                             playlistId = playlistId,
                         ),
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -246,17 +251,17 @@ fun NavHost(
                             Log.d("LogNav", "TYPE = 0")
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(index, context)
+                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
                         },
                         onShuffleClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.shufflePlaylist()
-                            playerViewModel.playSongInPlaylistAtIndex(0, context)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
                         },
                         onPlayClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(0, context)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
                         }
                     )
                 }
@@ -272,6 +277,7 @@ fun NavHost(
                         ytMusicViewModel = ytmusicViewModel,
                         albumId = browseId,
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -283,17 +289,17 @@ fun NavHost(
                             Log.d("LogNav", "TYPE = 0")
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(index, context)
+                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
                         },
                         onShuffleClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.shufflePlaylist()
-                            playerViewModel.playSongInPlaylistAtIndex(0, context)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
                         },
                         onPlayClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(0, context)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
                         }
                     )
                 }
@@ -310,7 +316,7 @@ fun NavHost(
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist()
-                                playerViewModel.playSong(musicItem, context)
+                                playerViewModel.playSong(musicItem, context, true)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
@@ -328,6 +334,7 @@ fun NavHost(
                             }
                         },
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -350,6 +357,7 @@ fun NavHost(
                         params = params,
                         navController = navController,
                         onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> navController.navigate("new")
@@ -361,7 +369,7 @@ fun NavHost(
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
                                 playerViewModel.resetPlaylist()
-                                playerViewModel.playSong(musicItem, context)
+                                playerViewModel.playSong(musicItem, context, true)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
