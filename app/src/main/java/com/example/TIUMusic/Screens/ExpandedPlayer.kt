@@ -278,6 +278,7 @@ public fun ExpandedPlayer(
             PlayMenuBottomSheet(
                 navController,
                 musicItem = musicItem,
+                playerViewModel = playerViewModel,
                 onRepeatClick = {
                     playerViewModel.setLoop(!playerViewModel.loop.value);
                 })
@@ -320,7 +321,8 @@ fun startTimer(duration: Duration) {
 fun PlayMenuBottomSheet(
     navController: NavController,
     onRepeatClick: () -> Unit,
-    musicItem: MusicItem
+    musicItem: MusicItem,
+    playerViewModel: PlayerViewModel
 ){
     ModalBottomSheet(
         onDismissRequest = {
@@ -345,6 +347,17 @@ fun PlayMenuBottomSheet(
             Text(
                 text = "Repeat"
             )
+            if(playerViewModel.loop.value) {
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(R.drawable.check_solid),
+                    contentDescription = "Repeat",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(end = 16.dp)
+                )
+            }
         }
         Row(
             modifier = Modifier
@@ -362,7 +375,7 @@ fun PlayMenuBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Share this song"
+                text = "Share this song",
             )
         }
         Row(
