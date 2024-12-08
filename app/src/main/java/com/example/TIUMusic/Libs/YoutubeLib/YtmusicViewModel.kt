@@ -236,6 +236,47 @@ class YtmusicViewModel @Inject constructor(
 
         // Duyệt
         for (renderer in listShelfRender.take(6)){
+            if(renderer.musicCardShelfRenderer != null){
+                val title = renderer.musicCardShelfRenderer.title.runs?.firstOrNull()?.text?:""
+                val subtitle = renderer.musicCardShelfRenderer.subtitle.runs?.firstOrNull()?.text
+                val endpoint = renderer.musicCardShelfRenderer.title.runs?.firstOrNull()?.navigationEndpoint
+                    ?:throw Exception("No endpoint")
+                val url = renderer.musicCardShelfRenderer.thumbnail.musicThumbnailRenderer?.getThumbnailUrl()?:""
+                var item: MusicItem ?= null
+                when(subtitle) {
+                    "Album" -> {
+                        item = MusicItem(
+                            videoId = "",
+                            title = title,
+                            artist = "",
+                            imageUrl = url,
+                            type = 2,
+                            browseId = endpoint.browseEndpoint?.browseId?:"",
+                        )
+                    }
+                    "Artist" -> {
+                        item = MusicItem(
+                            videoId = "",
+                            title = title,
+                            artist = "",
+                            imageUrl = url,
+                            type = 3,
+                            browseId = endpoint.browseEndpoint?.browseId?:"",
+                        )
+                    }
+                }
+                if(item != null){
+                    searchInfos.add(item)
+                }
+
+                Log.d("viewModelTest", "Title: $title | Subtitle: $subtitle | Url: $url")
+                if(endpoint.watchEndpoint != null){
+                    Log.d("viewModelTest", "endpoint: ${endpoint.watchEndpoint.videoId}")
+                }else{
+                    Log.d("viewModelTest", "endpoint: ${endpoint.browseEndpoint?.browseId}")
+                }
+
+            }
             if(renderer.musicCardShelfRenderer == null && renderer.musicShelfRenderer != null){
                 val title = renderer.musicShelfRenderer.title?.runs?.firstOrNull()?.text
                 if (title == "Songs" && (searchFiler.value == title || searchFiler.value == "Top results")/*|| title == "Videos"*/){ //Tam bo vi may videos kha xam :v

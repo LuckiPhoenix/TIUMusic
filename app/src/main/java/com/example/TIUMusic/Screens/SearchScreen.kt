@@ -62,19 +62,21 @@ fun SearchScreen(
     onTabSelected: (Int) -> Unit,
     onClick: (MusicItem) -> Unit,
     modifier: Modifier = Modifier,
+    searchViewModel: YtmusicViewModel
 ) {
+    val searchResults by searchViewModel.searchResults.collectAsState()
+    LaunchedEffect(Unit) {
+        searchViewModel.fetchMoodAndGenres()
+    }
+
     ScrollableSearchScreen (
-        searchViewModel = hiltViewModel(),
+        searchViewModel = searchViewModel,
         onClick = onClick,
         onTabSelected = onTabSelected
     ) {paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Spacer(modifier = Modifier.height(20.dp))
-            val searchViewModel : YtmusicViewModel = hiltViewModel()
-            val searchResults by searchViewModel.searchResults.collectAsState()
-            LaunchedEffect(Unit) {
-                searchViewModel.fetchMoodAndGenres()
-            }
+
             if(searchResults.isEmpty()){
                 //SuggestScreen(searchViewModel)
                 Spacer(modifier = Modifier.height(40.dp))
