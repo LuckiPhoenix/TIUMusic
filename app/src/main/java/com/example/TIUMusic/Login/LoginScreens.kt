@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,6 +44,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -257,9 +260,9 @@ fun reusableInputField(
                 painter = painterResource(R.drawable.tiumusicfulllogo),
                 contentDescription = "TIU Music Logo",
                 modifier = Modifier.padding(start = 16.dp, top = 32.dp)
-                    .size(128.dp)
+                    .size(64.dp)
             )
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = header,
                 fontSize = 64.sp,
@@ -301,6 +304,7 @@ fun reusableInputField(
                     title = input3,
                     value = inputValues.password,
                     onValueChange = { inputValues = inputValues.copy(password = it) },
+                    shouldFinished = true,
                     hidden = true
                 )
             }
@@ -389,6 +393,7 @@ fun MyTextField(
     title: String,
     value: String = "",
     onValueChange: (String) -> Unit,
+    shouldFinished:Boolean = false,
     hidden: Boolean = false,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
@@ -416,6 +421,14 @@ fun MyTextField(
                     textStyle = TextStyle(color = Color.LightGray, fontSize = 16.sp),
                     cursorBrush = SolidColor(Color.LightGray),
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = if(shouldFinished) ImeAction.Done else ImeAction.Next,
+                        keyboardType = when (title) {
+                            "Email" -> KeyboardType.Email
+                            "Password" -> KeyboardType.Password
+                            else -> KeyboardType.Text
+                        }
+                    ),
                     visualTransformation = if (hidden && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                     modifier = Modifier
                         .weight(1f)
