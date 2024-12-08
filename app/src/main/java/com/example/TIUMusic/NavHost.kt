@@ -34,6 +34,7 @@ import com.example.TIUMusic.Screens.AlbumScreen
 import com.example.TIUMusic.Screens.ArtistPage
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
+import com.example.TIUMusic.Screens.MoodListScreen
 import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
 import com.example.TIUMusic.Screens.PlaylistScreen
@@ -344,7 +345,41 @@ fun NavHost(
                         navArgument("params"){type = NavType.StringType}
                     ),
                 ){backStackEntry ->
-
+                    val params = backStackEntry.arguments?.getString("params") ?: ""
+                    MoodListScreen(
+                        params = params,
+                        navController = navController,
+                        onTabSelected = { tabIndex ->
+                            when (tabIndex) {
+                                0 -> {navController.navigate("home")}
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        onPlaylistClick = { musicItem ->
+                            if(musicItem.type == 0){
+                                Log.d("LogNav", "TYPE = 0")
+                                playerViewModel.resetPlaylist()
+                                playerViewModel.playSong(musicItem, context)
+                            } else if(musicItem.type == 1){
+                                navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.navigate("playlist/${musicItem.playlistId}")
+                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
+                            }
+                            else if(musicItem.type == 2){
+                                navController.navigate("album/${musicItem.browseId}")
+                                Log.d("LogNav", "TYPE = 2")
+                            }
+                            else if(musicItem.type == 3){
+                                navController.navigate("artist/${musicItem.browseId}")
+                                Log.d("LogNav", "TYPE = 3")
+                            }
+                        },
+                        ytmusicViewModel = ytmusicViewModel
+                    )
                 }
             }
         }

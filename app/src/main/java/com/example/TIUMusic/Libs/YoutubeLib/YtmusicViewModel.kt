@@ -49,6 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -85,8 +86,8 @@ class YtmusicViewModel @Inject constructor(
     private val _moodList = MutableStateFlow<List<Pair<String, List<MoodItem>>>>(emptyList())
     val moodList : StateFlow<List<Pair<String, List<MoodItem>>>> = _moodList
 
-    private val _moodfetch = MutableStateFlow<List<MusicItem>>(emptyList())
-    val moodfetch : StateFlow<List<MusicItem>> = _moodfetch
+    private val _moodfetch = MutableStateFlow<Pair<String, List<MusicItem>>>(Pair("", emptyList()))
+    val moodfetch : StateFlow<Pair<String, List<MusicItem>>> = _moodfetch
 
     //Artist Data
     private val _artistResult = MutableStateFlow<ArtistPage?>(null)
@@ -1159,6 +1160,7 @@ class YtmusicViewModel @Inject constructor(
     fun SongListSample(playlistId: String){
         viewModelScope.launch {
             runCatching {
+                _listTrackItems.value = UiState.Loading
                 YouTube.getPlaylistFullTracks(playlistId)
             }.onSuccess {result ->
                 result.onSuccess { tracks ->
@@ -1189,6 +1191,7 @@ class YtmusicViewModel @Inject constructor(
     fun fetchAlbumSongs(albumId: String){
         viewModelScope.launch {
             runCatching {
+                _albumPage.value = UiState.Loading
                 YouTube.album(albumId)
             }.onSuccess { result ->
                 result.onSuccess { albumPages ->
@@ -1269,27 +1272,31 @@ class YtmusicViewModel @Inject constructor(
     fun fetchMoodItem(browseId: String = "FEmusic_moods_and_genres_category", params: String){
         viewModelScope.launch {
             runCatching {
+                _moodfetch.value = Pair("", emptyList())
                 YouTube.browse(browseId, params)
             }.onSuccess { result ->
                 result.onSuccess {
                     val newlist = mutableListOf<MusicItem>()
-                    val suggestList = it.items.firstOrNull()?.items
-                    if (suggestList != null) {
-                        for (playlist in suggestList){
-                            Log.d("Mood&Genres", "Title: ${playlist.title} | Url: ${playlist.thumbnail} | ID: ${playlist.id}")
-                            newlist.add(
-                                MusicItem(
-                                    videoId = "",
-                                    title = playlist.title,
-                                    artist = "",
-                                    imageUrl = playlist.thumbnail,
-                                    type = 1,
-                                    playlistId = playlist.id
-                                )
-                            )
-                        }
+                    val title = it.title?:""
+                    var suggestList = it.items.firstOrNull()
+                        ?: throw Exception("")
+                    if(suggestList.items.isEmpty()){
+                        suggestList = it.items[2]
                     }
-                    _moodfetch.value = newlist
+                    for (playlist in suggestList.items){
+                        Log.d("Mood&Genres", "Title: ${playlist.title} | Url: ${playlist.thumbnail} | ID: ${playlist.id}")
+                        newlist.add(
+                            MusicItem(
+                                videoId = "",
+                                title = playlist.title,
+                                artist = "",
+                                imageUrl = playlist.thumbnail,
+                                type = 1,
+                                playlistId = playlist.id
+                            )
+                        )
+                    }
+                    _moodfetch.value = Pair(title, newlist)
                 }
             }
         }

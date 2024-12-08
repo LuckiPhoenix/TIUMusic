@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -117,12 +119,9 @@ fun PlaylistScreen(
                 Log.d("LogNav", "Initial id : ${playlistItem.playlistId}")
             }
             is UiState.Loading -> {
-                CircularProgressIndicator()
-                Log.d("LogNav", "Loading")
+                LoadingScreen()
             }
             is UiState.Success -> {
-                Log.d("LogNav", "Success")
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -276,8 +275,7 @@ fun AlbumScreen(
                 Log.d("LogNav", "Initial id : ${albumId}")
             }
             is UiState.Loading -> {
-                CircularProgressIndicator()
-                Log.d("LogNav", "Loading")
+                LoadingScreen()
             }
             is UiState.Success -> {
                 Log.d("LogNav", "Success")
@@ -408,19 +406,32 @@ fun AlbumScreen(
 
 @Composable
 fun MoodListScreen(
-    moodItem: MoodItem,
+    params: String,
     navController: NavController,
     onTabSelected: (Int) -> Unit,
-    onPlaylistClick: () -> Unit,
+    onPlaylistClick: (MusicItem) -> Unit,
     ytmusicViewModel: YtmusicViewModel
 ) {
-    val listMusicItem = getTopPicks() //by ytmusicViewModel.moodfetch.collectAsState()
+    val listMusicItem by ytmusicViewModel.moodfetch.collectAsState()
 
     LaunchedEffect(Unit) {
-        ytmusicViewModel.fetchMoodItem("", params = moodItem.params)
+        ytmusicViewModel.fetchMoodItem(params = params)
     }
     Scaffold(
-        topBar = { TopPlaylistBar(moodItem.title, navController) },
+        topBar = {
+            TopPlaylistBar(listMusicItem.first, navController)
+            Text(
+                text = listMusicItem.first,
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier
+                    .padding(PaddingValues(top = 90.dp, start = 30.dp, bottom = 10.dp)),
+                textAlign = TextAlign.Center,
+            )
+        },
         bottomBar = {
             CustomBottomNavigation(
                 selectedTab = 2,
@@ -440,12 +451,15 @@ fun MoodListScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(listMusicItem) { item ->
+            item{}
+            item{}
+            items(listMusicItem.second) { item ->
                 AlbumCard(
                     item = item,
                     modifier = Modifier,
                     imageSize = 180.dp,
                     onClick = {
+                        onPlaylistClick(item)
                     }
                 )
             }

@@ -82,9 +82,8 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             if(searchResults.isEmpty()){
-                //SuggestScreen(searchViewModel)
                 Spacer(modifier = Modifier.height(40.dp))
-                MoodScreen(searchViewModel, navController = navController, {})
+                MoodScreen(searchViewModel, navController = navController, onClick = onClick)
             }
             else{
                 Spacer(modifier = Modifier.height(75.dp))
@@ -161,261 +160,12 @@ fun SearchScreen(
         }
     }
 }
-@Composable
-fun SuggestScreen(
-    viewModel: YtmusicViewModel
-){
-    Row {
-        Box(
-            modifier = Modifier
-                .padding(20.dp, WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 30.dp, 6.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/cb/bb/c7/cbbbc705-8632-8b71-5fbd-a913dc495c5a/198846825281.jpg/316x316bb.webp",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "R&B".uppercase(),
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .padding(6.dp, WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 30.dp, 20.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://www.linearity.io/blog/content/images/2023/11/best-album-covers-cover.png",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Live",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-    }
-
-    Row {
-        Box(
-            modifier = Modifier
-                .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://yt3.googleusercontent.com/oN0p3-PD3HUzn2KbMm4fVhvRrKtJhodGlwocI184BBSpybcQIphSeh3Z0i7WBgTq7e12yKxb=s900-c-k-c0x00ffffff-no-rj",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Vietnamese Music",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://preview.redd.it/241018-ros%C3%A9-bruno-mars-apt-for-apple-music-v0-1fnb0oja1gvd1.jpeg?width=640&crop=smart&auto=webp&s=2d2ba2f63eb4c3b1f551762b7f4f14b68bfbfc2d",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "K-Pop",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-    }
-
-    Row {
-        Box(
-            modifier = Modifier
-                .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://danviet.mediacdn.vn/296231569849192448/2024/2/29/swifttaylorap102122-1709208054815543939904.jpg",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Pop",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://upload.wikimedia.org/wikipedia/vi/3/3d/When_We_All_Fall_Asleep%2C_Where_Do_We_Go%3F.jpeg",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Alternative",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-    }
-
-    Row {
-        Box(
-            modifier = Modifier
-                .padding(20.dp, 20.dp, 6.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .padding(bottom = 80.dp)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://upload.wikimedia.org/wikipedia/vi/2/2f/AbbeyRoadcover.jpg",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Rock",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .padding(6.dp, 20.dp, 20.dp, 0.dp)
-                .width(0.dp)
-                .weight(1F)
-                .height(heightItemCategorySearch)
-        ) {
-
-            AsyncImage(
-                model = "https://yt3.googleusercontent.com/-1Bt8eufq601KzmA0Rk1yrIzz372UDDeBkIpWytlztkcAyh1w6g2bNfXVnR6hadnezvUCq0XICA=s900-c-k-c0x00ffffff-no-rj",
-                contentDescription = "Album art for",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF282828))
-            )
-
-            Text(
-                text = "Hip hop/Rap",
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(10.dp),
-                color = Color.White,
-                fontSize = 16.sp,
-            )
-        }
-    }
-}
 
 @Composable
 fun MoodScreen(
     viewModel: YtmusicViewModel,
     navController: NavController,
-    onClick: () -> Unit
+    onClick: (MusicItem) -> Unit
 ) {
     val dataMood by viewModel.moodList.collectAsState()
 
@@ -442,7 +192,7 @@ fun MoodScreen(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFF292929))
                                 .clickable {
-                                    onClick()
+                                    navController.navigate("mood/${it.params}")
                                 }
                         ) {
                             Box(
@@ -468,10 +218,4 @@ fun MoodScreen(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun SearchScreenPreview() {
-    SuggestScreen(viewModel = hiltViewModel())
 }

@@ -57,6 +57,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -1385,6 +1386,17 @@ private fun MiniPlayer(
                 modifier = Modifier.size(16.dp)
             )
         }
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize(), // Chiếm toàn bộ màn hình
+        contentAlignment = Alignment.Center // Căn giữa nội dung trong Box
+    ) {
+        CircularProgressIndicator() // Hiển thị spinner
     }
 }
 
