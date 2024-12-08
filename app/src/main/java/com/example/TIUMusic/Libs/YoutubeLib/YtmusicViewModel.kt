@@ -76,8 +76,8 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
-    private val _moodList = MutableStateFlow<List<MoodItem>>(emptyList())
-    val moodList : StateFlow<List<MoodItem>> = _moodList
+    private val _moodList = MutableStateFlow<List<Pair<String, List<MoodItem>>>>(emptyList())
+    val moodList : StateFlow<List<Pair<String, List<MoodItem>>>> = _moodList
 
     //Artist Data
     private val _artistResult = MutableStateFlow<ArtistPage?>(null)
@@ -1245,37 +1245,42 @@ class YtmusicViewModel @Inject constructor(
                 YouTube.moodAndGenres()
             }.onSuccess { result ->
                 result.onSuccess { genres ->
-                    val moods = mutableListOf<MoodItem>()
-                    for(item in genres[1].items){
-                        Log.d("Mood&Genres", "Title: ${item.title} | Color: ${item.stripeColor} | ID: ${item.endpoint.browseId} |")
-                        YouTube.browse(item.endpoint.browseId, item.endpoint.params)
-                            .onSuccess {
-                                val newlist = mutableListOf<MusicItem>()
-                                val suggestList = it.items.firstOrNull()?.items
-                                if (suggestList != null) {
-                                    for (playlist in suggestList){
-                                        newlist.add(
-                                            MusicItem(
-                                                videoId = "",
-                                                title = playlist.title,
-                                                artist = "",
-                                                imageUrl = playlist.thumbnail,
-                                                type = 1,
-                                                playlistId = playlist.id
+                    val moodsL = mutableListOf<Pair<String, List<MoodItem>>>()
+                    for(list in genres){
+                        val title = list.title
+                        val moods = mutableListOf<MoodItem>()
+                        for(item in list.items){
+                            Log.d("Mood&Genres", "Title: ${item.title} | Color: ${item.stripeColor} | ID: ${item.endpoint.browseId} |")
+                            YouTube.browse(item.endpoint.browseId, item.endpoint.params)
+                                .onSuccess {
+                                    val newlist = mutableListOf<MusicItem>()
+                                    val suggestList = it.items.firstOrNull()?.items
+                                    if (suggestList != null) {
+                                        for (playlist in suggestList){
+                                            newlist.add(
+                                                MusicItem(
+                                                    videoId = "",
+                                                    title = playlist.title,
+                                                    artist = "",
+                                                    imageUrl = playlist.thumbnail,
+                                                    type = 1,
+                                                    playlistId = playlist.id
+                                                )
                                             )
-                                        )
+                                        }
                                     }
-                                }
-                                moods.add(
-                                    MoodItem(
-                                        title = item.title,
-                                        color = item.stripeColor.toInt(),
-                                        list = newlist
+                                    moods.add(
+                                        MoodItem(
+                                            title = item.title,
+                                            color = item.stripeColor.toInt(),
+                                            list = newlist
+                                        )
                                     )
-                                )
-                            }
+                                }
+                        }
+                        moodsL.add(Pair(title, moods))
                     }
-                    _moodList.value = moods
+                    _moodList.value = moodsL
                 }
             }
         }
