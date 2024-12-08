@@ -288,7 +288,9 @@ public fun ExpandedPlayer(
         }
         if(showSleepTimerSheet == true){
             SleepTimerSheet(
-                onDismissRequest = {},
+                onDismissRequest = {
+                    showSleepTimerSheet = false
+                },
                 onTimerStart = {
                     time -> startTimer(time)
                 }
@@ -298,9 +300,9 @@ public fun ExpandedPlayer(
 }
 fun startTimer(duration: Duration) {
     //sleep timer
-    var showSleepTimerSheet = false
+    showSleepTimerSheet = false
     var remainingTime = 0L
-    var isTimerRunning =false
+    var isTimerRunning = false
 
     isTimerRunning = true
     remainingTime = duration.inWholeMilliseconds
@@ -373,6 +375,7 @@ fun PlayMenuBottomSheet(
                 .padding(16.dp)
                 .clickable {
                     showSleepTimerSheet = !showSleepTimerSheet
+                    showBottomSheet = !showBottomSheet
                 },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically

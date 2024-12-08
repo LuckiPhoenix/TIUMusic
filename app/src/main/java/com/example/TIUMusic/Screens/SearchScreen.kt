@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube
@@ -54,6 +56,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.toMusicItemsList
 
 val heightItemCategorySearch = 140.dp
 
@@ -459,6 +462,66 @@ fun MoodScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+fun MoodPlaylistScreen(
+    navController: NavHostController,
+    ytMusicViewModel: YtmusicViewModel,
+    onTabSelected: (Int) -> Unit = {},
+    onItemClick: (MusicItem) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    ScrollableScreen(
+        title = "Home",
+        selectedTab = 0,
+        itemCount = homeItems.size,
+        fetchContinuation = {
+            ytMusicViewModel.getHomeContinuation(context);
+        },
+        onTabSelected = onTabSelected
+    ) { paddingValues ->
+        Column(Modifier.padding(paddingValues)) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(600.dp), // Adjust height as needed
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(userPlaylists) { item ->
+                    AlbumCard(
+                        item = item,
+                        modifier = Modifier,
+                        imageSize = 180.dp,
+                        onClick = {
+                            onItemClick(item)
+                        }
+                    )
+                }
+                item {Spacer(modifier = Modifier.height(88.dp))}
+            }
+            AnimatedTopAppBar(
+                title = ,
+                alpha = alpha,
+                translationX = translationX,
+                titleSize = titleSize.sp,
+                height = height
+            )
+
+
+            // Bottom navigation
+            CustomBottomNavigation(
+                selectedTab = 2,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
         }
     }
 }
