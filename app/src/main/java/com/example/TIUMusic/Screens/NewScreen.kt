@@ -36,7 +36,7 @@ fun NewScreen(
     val newReleases by ytmusicViewModel.newReleases.collectAsState();
 
     LaunchedEffect(Unit) {
-        ytmusicViewModel.getNewScreen(context = context);
+        ytmusicViewModel.getNewScreen(context = context, first = true);
     }
 
     ScrollableScreen(
