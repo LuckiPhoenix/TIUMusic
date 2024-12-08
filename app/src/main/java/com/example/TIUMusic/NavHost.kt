@@ -338,6 +338,14 @@ fun NavHost(
                         navController = navController,
                     )
                 }
+                composable(
+                    route = "mood/{params}",
+                    arguments = listOf(
+                        navArgument("params"){type = NavType.StringType}
+                    ),
+                ){backStackEntry ->
+
+                }
             }
         }
 
