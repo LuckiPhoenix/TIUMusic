@@ -38,7 +38,7 @@ data class NewReleaseCard(
 data class MoodItem(
     val title: String,
     val color: Int,
-    val list: List<MusicItem>
+    val params: String
 )
 
 

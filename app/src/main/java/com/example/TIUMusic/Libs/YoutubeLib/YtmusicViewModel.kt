@@ -76,8 +76,12 @@ class YtmusicViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
+    //Mood Data
     private val _moodList = MutableStateFlow<List<Pair<String, List<MoodItem>>>>(emptyList())
     val moodList : StateFlow<List<Pair<String, List<MoodItem>>>> = _moodList
+
+    private val _moodfetch = MutableStateFlow<List<MusicItem>>(emptyList())
+    val moodfetch : StateFlow<List<MusicItem>> = _moodfetch
 
     //Artist Data
     private val _artistResult = MutableStateFlow<ArtistPage?>(null)
@@ -1251,36 +1255,45 @@ class YtmusicViewModel @Inject constructor(
                         val moods = mutableListOf<MoodItem>()
                         for(item in list.items){
                             Log.d("Mood&Genres", "Title: ${item.title} | Color: ${item.stripeColor} | ID: ${item.endpoint.browseId} |")
-                            YouTube.browse(item.endpoint.browseId, item.endpoint.params)
-                                .onSuccess {
-                                    val newlist = mutableListOf<MusicItem>()
-                                    val suggestList = it.items.firstOrNull()?.items
-                                    if (suggestList != null) {
-                                        for (playlist in suggestList){
-                                            newlist.add(
-                                                MusicItem(
-                                                    videoId = "",
-                                                    title = playlist.title,
-                                                    artist = "",
-                                                    imageUrl = playlist.thumbnail,
-                                                    type = 1,
-                                                    playlistId = playlist.id
-                                                )
-                                            )
-                                        }
-                                    }
-                                    moods.add(
-                                        MoodItem(
-                                            title = item.title,
-                                            color = item.stripeColor.toInt(),
-                                            list = newlist
-                                        )
-                                    )
-                                }
+                            moods.add(
+                                MoodItem(
+                                    title = item.title,
+                                    color = item.stripeColor.toInt(),
+                                    params = item.endpoint.params?:""
+                                )
+                            )
                         }
                         moodsL.add(Pair(title, moods))
                     }
                     _moodList.value = moodsL
+                }
+            }
+        }
+    }
+
+    fun fetchMoodItem(browseId: String, params: String){
+        viewModelScope.launch {
+            runCatching {
+                YouTube.browse(browseId, params)
+            }.onSuccess { result ->
+                result.onSuccess {
+                    val newlist = mutableListOf<MusicItem>()
+                    val suggestList = it.items.firstOrNull()?.items
+                    if (suggestList != null) {
+                        for (playlist in suggestList){
+                            newlist.add(
+                                MusicItem(
+                                    videoId = "",
+                                    title = playlist.title,
+                                    artist = "",
+                                    imageUrl = playlist.thumbnail,
+                                    type = 1,
+                                    playlistId = playlist.id
+                                )
+                            )
+                        }
+                    }
+                    _moodfetch.value = newlist
                 }
             }
         }

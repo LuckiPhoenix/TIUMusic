@@ -421,7 +421,7 @@ fun MoodScreen(
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 color = Color.White,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
             )
             data.second.chunked(2).forEach{chunk ->
                 Row(
@@ -452,6 +452,8 @@ fun MoodScreen(
                                 modifier = Modifier.padding(8.dp)
                                     .padding(start = 8.dp)
                                     .align(Alignment.CenterStart),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
