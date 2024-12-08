@@ -1,36 +1,33 @@
 package com.example.TIUMusic
 
-import android.os.CountDownTimer
 import android.util.Log
 import android.webkit.CookieManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube
+import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.LoginScreen
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
-import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.AlbumScreen
 import com.example.TIUMusic.Screens.ArtistPage
@@ -42,7 +39,6 @@ import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
-import kotlin.time.Duration
 
 @Composable
 fun NavHost(
@@ -50,13 +46,12 @@ fun NavHost(
     visualizerViewModel: VisualizerViewModel,
     ytmusicViewModel: YtmusicViewModel
 ) {
-    val context = LocalContext.current;
+    val context = LocalContext.current
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
     val userViewModel: UserViewModel = viewModel()
     var startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
-
 
 
     if (userViewModel.isLoggedIn() && YouTube.cookie == null) {
@@ -67,6 +62,7 @@ fun NavHost(
 
     Log.d("NavHost", "Current route: $currentRoute")
 
+    val musicItem by playerViewModel.musicItem.collectAsState()
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
@@ -77,6 +73,7 @@ fun NavHost(
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
+
                 composable(
                     route = "recover/{email}",
                     arguments = listOf(navArgument("email") { type = NavType.StringType })
@@ -97,7 +94,7 @@ fun NavHost(
                             when (tabIndex) {
                                 0 -> {
                                     ytmusicViewModel.resetHome()
-                                    ytmusicViewModel.getHomeContinuation(context);
+                                    ytmusicViewModel.getHomeContinuation(context)
                                 } // Currently on home
                                 1 -> navController.navigate("new")
                                 2 -> navController.navigate("library")
@@ -107,8 +104,8 @@ fun NavHost(
                         onItemClick = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.resetPlaylist();
-                                playerViewModel.setRadio(musicItem);
+                                playerViewModel.resetPlaylist()
+                                playerViewModel.setRadio(musicItem)
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -131,8 +128,8 @@ fun NavHost(
                             when (tabIndex) {
                                 0 -> {navController.navigate("home")}
                                 1 -> {
-                                    ytmusicViewModel.resetNewScreen();
-                                    ytmusicViewModel.getNewScreen(context = context);
+                                    ytmusicViewModel.resetNewScreen()
+                                    ytmusicViewModel.getNewScreen(context = context)
                                 }
                                 2 -> navController.navigate("library")
                                 3 -> navController.navigate("search")
@@ -140,8 +137,8 @@ fun NavHost(
                         }, onItemClick = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.resetPlaylist();
-                                playerViewModel.setRadio(musicItem);
+                                playerViewModel.resetPlaylist()
+                                playerViewModel.setRadio(musicItem)
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -173,7 +170,7 @@ fun NavHost(
                         onClick = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.resetPlaylist();
+                                playerViewModel.resetPlaylist()
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -235,19 +232,19 @@ fun NavHost(
                         },
                         onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.setIsShuffled(false);
-                            playerViewModel.playSongInPlaylistAtIndex(index, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(index, context)
                         },
                         onShuffleClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.shufflePlaylist();
-                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.shufflePlaylist()
+                            playerViewModel.playSongInPlaylistAtIndex(0, context)
                         },
                         onPlayClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.setIsShuffled(false);
-                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context)
                         }
                     )
                 }
@@ -272,19 +269,19 @@ fun NavHost(
                         },
                         onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.setIsShuffled(false);
-                            playerViewModel.playSongInPlaylistAtIndex(index, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(index, context)
                         },
                         onShuffleClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.shufflePlaylist();
-                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.shufflePlaylist()
+                            playerViewModel.playSongInPlaylistAtIndex(0, context)
                         },
                         onPlayClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist);
-                            playerViewModel.setIsShuffled(false);
-                            playerViewModel.playSongInPlaylistAtIndex(0, context);
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context)
                         }
                     )
                 }
@@ -300,7 +297,7 @@ fun NavHost(
                         onClickMusicItem = { musicItem ->
                             if(musicItem.type == 0){
                                 Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.resetPlaylist();
+                                playerViewModel.resetPlaylist()
                                 playerViewModel.playSong(musicItem, context)
                             } else if(musicItem.type == 1){
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
@@ -334,7 +331,7 @@ fun NavHost(
         }
 
         // Check if we're in any route within the main navigation
-        if (currentBackStackEntry?.destination?.parent?.route == "main") {
+        if (currentBackStackEntry?.destination?.parent?.route == "main" && musicItem.videoId.isNotEmpty()) {
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
                 visualizerViewModel = visualizerViewModel,
