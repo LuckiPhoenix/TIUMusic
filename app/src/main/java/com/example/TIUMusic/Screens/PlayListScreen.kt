@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -14,12 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
@@ -30,6 +36,8 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
+import com.example.TIUMusic.SongData.MoodItem
+import com.example.TIUMusic.SongData.getTopPicks
 
 @Composable
 fun TopPlaylistBar(
@@ -395,6 +403,54 @@ fun AlbumScreen(
             }
         }
 
+    }
+}
+
+@Composable
+fun MoodListScreen(
+    moodItem: MoodItem,
+    navController: NavController,
+    onTabSelected: (Int) -> Unit,
+    onPlaylistClick: () -> Unit,
+    ytmusicViewModel: YtmusicViewModel
+) {
+    val listMusicItem = getTopPicks() //by ytmusicViewModel.moodfetch.collectAsState()
+
+    LaunchedEffect(Unit) {
+        ytmusicViewModel.fetchMoodItem("", params = moodItem.params)
+    }
+    Scaffold(
+        topBar = { TopPlaylistBar(moodItem.title, navController) },
+        bottomBar = {
+            CustomBottomNavigation(
+                selectedTab = 2,
+                onTabSelected = onTabSelected,
+                modifier = Modifier
+            )
+        },
+        containerColor = BackgroundColor
+    ) { paddingValues ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .height(600.dp), // Adjust height as needed
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(listMusicItem) { item ->
+                AlbumCard(
+                    item = item,
+                    modifier = Modifier,
+                    imageSize = 180.dp,
+                    onClick = {
+                    }
+                )
+            }
+            item {Spacer(modifier = Modifier.height(88.dp))}
+        }
     }
 }
 

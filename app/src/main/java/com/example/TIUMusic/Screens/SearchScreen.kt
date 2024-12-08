@@ -84,7 +84,7 @@ fun SearchScreen(
             if(searchResults.isEmpty()){
                 //SuggestScreen(searchViewModel)
                 Spacer(modifier = Modifier.height(40.dp))
-                MoodScreen(searchViewModel)
+                MoodScreen(searchViewModel, navController = navController, {})
             }
             else{
                 Spacer(modifier = Modifier.height(75.dp))
@@ -413,7 +413,9 @@ fun SuggestScreen(
 
 @Composable
 fun MoodScreen(
-    viewModel: YtmusicViewModel
+    viewModel: YtmusicViewModel,
+    navController: NavController,
+    onClick: () -> Unit
 ) {
     val dataMood by viewModel.moodList.collectAsState()
 
@@ -439,7 +441,9 @@ fun MoodScreen(
                                 .height(48.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFF292929))
-                                .clickable {  }
+                                .clickable {
+                                    onClick()
+                                }
                         ) {
                             Box(
                                 modifier = Modifier.align(Alignment.CenterStart)
@@ -462,66 +466,6 @@ fun MoodScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-
-@Composable
-fun MoodPlaylistScreen(
-    navController: NavHostController,
-    ytMusicViewModel: YtmusicViewModel,
-    onTabSelected: (Int) -> Unit = {},
-    onItemClick: (MusicItem) -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    ScrollableScreen(
-        title = "Home",
-        selectedTab = 0,
-        itemCount = homeItems.size,
-        fetchContinuation = {
-            ytMusicViewModel.getHomeContinuation(context);
-        },
-        onTabSelected = onTabSelected
-    ) { paddingValues ->
-        Column(Modifier.padding(paddingValues)) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .height(600.dp), // Adjust height as needed
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(userPlaylists) { item ->
-                    AlbumCard(
-                        item = item,
-                        modifier = Modifier,
-                        imageSize = 180.dp,
-                        onClick = {
-                            onItemClick(item)
-                        }
-                    )
-                }
-                item {Spacer(modifier = Modifier.height(88.dp))}
-            }
-            AnimatedTopAppBar(
-                title = ,
-                alpha = alpha,
-                translationX = translationX,
-                titleSize = titleSize.sp,
-                height = height
-            )
-
-
-            // Bottom navigation
-            CustomBottomNavigation(
-                selectedTab = 2,
-                onTabSelected = onTabSelected,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-            )
         }
     }
 }
