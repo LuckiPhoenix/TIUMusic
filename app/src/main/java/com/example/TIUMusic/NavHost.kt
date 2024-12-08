@@ -177,6 +177,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                Log.d("Playlists", musicItem.playlistId);
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
@@ -193,6 +194,14 @@ fun NavHost(
                     )
                 }
                 composable("library") { LibraryScreen(navController,
+                    onItemClick = { it ->
+                        navController.currentBackStackEntry?.savedStateHandle?.set("title", it.title)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("artist", it.artist)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("image", it.imageUrl)
+                        navController.navigate("playlist/${it.playlistId}")
+                        Log.d("LogNav", "TYPE = 2")
+                    },
+                    ytmusicViewModel = ytmusicViewModel,
                     onTabSelected = { tabIndex ->
                         when (tabIndex) {
                             0 -> navController.navigate("home")

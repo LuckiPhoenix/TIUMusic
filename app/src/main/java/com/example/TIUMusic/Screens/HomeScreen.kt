@@ -27,7 +27,7 @@ fun HomeScreen(
     val homeItems by ytMusicViewModel.homeItems.collectAsState(emptyList());
 
     LaunchedEffect(Unit) {
-        ytMusicViewModel.getHomeContinuation(context);
+        ytMusicViewModel.getHomeContinuation(context, first = true);
     }
 
     ScrollableScreen(

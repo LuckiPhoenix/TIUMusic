@@ -107,6 +107,9 @@ dependencies {
 
     //SLF4J
     implementation (libs.logback.classic)
+
+    implementation(libs.androidx.core.splashscreen)
+
 }
 
 kapt {

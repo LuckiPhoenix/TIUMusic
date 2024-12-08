@@ -30,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -47,16 +48,23 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.getTopPicks
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 
 @Composable
-fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, userViewModel: UserViewModel = hiltViewModel(),
+fun LibraryScreen(navController: NavController,
+                  onItemClick :  (MusicItem) -> Unit,
+                  onTabSelected: (Int) -> Unit,
+                  ytmusicViewModel : YtmusicViewModel,
+                  userViewModel: UserViewModel = hiltViewModel(),
                   modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
+    val userPlaylists by ytmusicViewModel.userPlaylists.collectAsState()
 
     // Transition variables
     var isScrolled by remember { mutableStateOf(false) }
@@ -68,6 +76,10 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
     val expandedTitleSize = Dimensions.expandedTitleSize()
     val collapsedTitleSize = Dimensions.collapsedTitleSize()
     val bottomNavHeight = 56.dp // Define bottom nav height
+
+    LaunchedEffect(Unit) {
+        ytmusicViewModel.getUserPlaylists(true);
+    }
 
     // Animation values
     val alpha by transitionState.animateFloat(
@@ -153,12 +165,14 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(getTopPicks()) { item ->
+                    items(userPlaylists) { item ->
                         AlbumCard(
                             item = item,
                             modifier = Modifier,
                             imageSize = 180.dp,
-                            onClick = { }
+                            onClick = {
+                                onItemClick(item)
+                            }
                         )
                     }
                 }
@@ -183,10 +197,4 @@ fun LibraryScreen(navController: NavController, onTabSelected: (Int) -> Unit, us
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun LibraryScreenPreview() {
-    LibraryScreen(navController = rememberNavController(), onTabSelected = {})
 }

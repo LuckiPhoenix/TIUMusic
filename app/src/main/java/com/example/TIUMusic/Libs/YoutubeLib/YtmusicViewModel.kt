@@ -7,9 +7,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.models.Album
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.ArtistItem
+import com.example.TIUMusic.Libs.YoutubeLib.models.GridRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.MusicCarouselShelfRenderer
 import com.example.TIUMusic.Libs.YoutubeLib.models.PlaylistItem
 import com.example.TIUMusic.Libs.YoutubeLib.models.SectionListRenderer
@@ -40,12 +42,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -105,6 +110,9 @@ class YtmusicViewModel @Inject constructor(
 
     private var _homeContinuation = mutableIntStateOf(0);
     val homeContinuation = _homeContinuation.asIntState();
+
+    private var _userPlaylists = MutableStateFlow<List<MusicItem>>(listOf());
+    val userPlaylists : StateFlow<List<MusicItem>> = _userPlaylists.asStateFlow();
 
     var fetchingContinuation : Boolean = false;
 
@@ -200,6 +208,7 @@ class YtmusicViewModel @Inject constructor(
             }
         }
     }
+
     fun suggestSearch(query: String){
         viewModelScope.launch {
             try{
@@ -425,7 +434,9 @@ class YtmusicViewModel @Inject constructor(
         _homeItems.value = listOf();
     }
 
-    fun getHomeContinuation(context: Context) {
+    fun getHomeContinuation(context: Context, first : Boolean = false) {
+        if (first && homeItems.value.isNotEmpty())
+            return;
         if (fetchingContinuation || homeContinuation.intValue > 15)
             return;
         fetchingContinuation = true;
@@ -585,23 +596,6 @@ class YtmusicViewModel @Inject constructor(
                                         ytItem
                                             ?.artists
                                             ?.map { Artist(name = it.name,id = it.id,) }?.toMutableList()
-//                                    if (artists?.lastOrNull()?.id == null &&
-//                                        artists?.lastOrNull()?.name?.contains(Regex("\\d")) == true
-//                                    ) {
-//                                        runCatching { artists.removeAt(artists.lastIndex) }
-//                                            .onSuccess {
-//                                                Log.i(
-//                                                    "parse_mixed_content",
-//                                                    "Removed last artist"
-//                                                )
-//                                            }.onFailure {
-//                                                Log.e(
-//                                                    "parse_mixed_content",
-//                                                    "Failed to remove last artist"
-//                                                )
-//                                                it.printStackTrace()
-//                                            }
-//                                    }
                                     Log.w("Song", ytItem.toString())
                                     if (ytItem != null) {
                                         listContent.add(
@@ -913,7 +907,9 @@ class YtmusicViewModel @Inject constructor(
         _newReleases.value = listOf();
     }
 
-    fun getNewScreen(countryCode: String = "US", context : Context) {
+    fun getNewScreen(countryCode: String = "US", context : Context, first : Boolean = false) {
+        if (first && (chart.value != null))
+            return;
         getChart(countryCode);
         getNewReleases(context);
     }
@@ -1297,6 +1293,67 @@ class YtmusicViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun getUserPlaylists(first : Boolean = false) {
+        if (first && userPlaylists.value.isNotEmpty())
+            return;
+        viewModelScope.launch {
+            _userPlaylists.value = parseUserPlaylists() ?: listOf();
+        }
+    }
+
+    private suspend fun parseUserPlaylists() : List<MusicItem>? {
+        YouTube
+            .getLibraryPlaylists()
+            .onSuccess { data ->
+                val input =
+                    data.contents
+                        ?.singleColumnBrowseResultsRenderer
+                        ?.tabs
+                        ?.get(
+                            0,
+                        )?.tabRenderer
+                        ?.content
+                        ?.sectionListRenderer
+                        ?.contents
+                        ?.get(
+                            0,
+                        )?.gridRenderer
+                        ?.items
+                if (input != null) {
+                    val list = parseLibraryPlaylist(input)
+                    return list;
+                }
+            }.onFailure { e ->
+                Log.e("Library", "Error: ${e.message}")
+                e.printStackTrace()
+            }
+        return null;
+    }
+
+    private fun parseLibraryPlaylist(items : List<GridRenderer.Item>) : List<MusicItem> {
+        val list : MutableList<MusicItem> = mutableListOf()
+        if (items.isNotEmpty()) {
+            for (i in items.indices) {
+                items[i].musicTwoRowItemRenderer?.let {
+                    if (it.navigationEndpoint.browseEndpoint?.browseId != "VLSE" && it.navigationEndpoint.browseEndpoint?.browseId != null) {
+                        val playlistId = it.navigationEndpoint.browseEndpoint.browseId.removeRange(0, 2) ?: "";
+                        list.add(MusicItem(
+                            videoId = "",
+                            title = it.title.runs?.get(0)?.text ?: "",
+                            artist = it.subtitle?.runs?.get(0)?.text ?: "",
+                            playlistId = playlistId,
+                            imageUrl = it.thumbnailRenderer.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull()?.url
+                                ?: "",
+                            type = 1
+                        ))
+                        Log.d("Playlist", playlistId);
+                    }
+                }
+            }
+        }
+        return list
     }
 
     //Artist
