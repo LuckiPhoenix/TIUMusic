@@ -340,6 +340,25 @@ fun PlayMenuBottomSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
+                painter = painterResource(R.drawable.repeat_solid),
+                contentDescription = "Repeat",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Repeat"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {  },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
                 painter = painterResource(R.drawable.share_nodes_solid),
                 contentDescription = "Share",
                 tint = Color.White,
