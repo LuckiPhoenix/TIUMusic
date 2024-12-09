@@ -1,17 +1,21 @@
 package com.example.TIUMusic.Login
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.Upsert
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
+import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,19 +27,27 @@ import javax.inject.Singleton
 //DAO is the interface that contains the methods used for accessing the database.
 @Dao
 interface AuthDao {
-
     @Upsert
-    suspend fun insertAuth(User: User)
+    suspend fun insertAuth(user: User)
 
     @Query("SELECT * FROM User WHERE email = :email")
     suspend fun getUserByEmail(email: String): User?
 
     @Query("SELECT * FROM user WHERE email = :email AND password = :password")
     suspend fun authenticate(email: String, password: String): User?
+
+    // Update profile picture
+    @Query("UPDATE User SET profilePicture = :profilePicture WHERE email = :email")
+    suspend fun updateProfilePicture(email: String, profilePicture: Int)
+
+    // Update playlists
+    @Query("UPDATE User SET playlists = :playlists WHERE email = :email")
+    suspend fun updatePlaylists(email: String, playlists: MutableList<Playlist>)
 }
 
 //This is the database itself, in singleton (i.e: there is only one instance of the database)
-@Database(entities = [User::class], version = 1)
+@Database(entities = [User::class], version = 3, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): AuthDao
 
@@ -49,11 +61,13 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).build()
+                )
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
+
     }
 }
 
@@ -71,7 +85,6 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getUserByEmail(email: String): User? = authDao.getUserByEmail(email)
     override suspend fun authenticate(email: String, password: String): User? = authDao.authenticate(email, password)
 }
-
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
@@ -105,3 +118,4 @@ sealed class Result<out T> {
 class AuthenticationException(message: String) : Exception(message)
 class EmailNotFoundException(message: String) : Exception(message)
 class EmailExistsException(message: String) : Exception(message)
+

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.example.TIUMusic.SongData.MusicItem
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +18,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,7 +40,8 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).build()
+        )
+            .build()
     }
 
     @Provides
@@ -46,7 +50,6 @@ object DatabaseModule {
         return database.userDao()
     }
 }
-
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userRepository: UserRepository,
@@ -234,5 +237,111 @@ class UserViewModel @Inject constructor(
                 _resetPasswordStatus.postValue(Result.Error(e))
             }
         }
+    }
+    fun updateUsername(username: String) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                currentUser.fullName = username
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Notify observers
+
+            }
+        }
+    }
+
+    fun updateProfilePicture(newProfilePicture: String?) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                // Delete old profile picture if it exists
+                currentUser.profilePicture?.let { oldProfilePicture ->
+                    deleteFileIfExists(oldProfilePicture)
+                }
+
+                // Update with new profile picture
+                currentUser.profilePicture = newProfilePicture
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    private fun deleteFileIfExists(filePath: String) {
+        val file = File(filePath)
+        if (file.exists()) {
+            file.delete()
+        }
+    }
+
+    // Add a new playlist
+    fun addPlaylist(title: String, picture: Int?) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                val newPlaylist = Playlist(
+                    id = UUID.randomUUID().toString(),
+                    title = title,
+                    picture = picture,
+                    songs = mutableListOf()
+                )
+                currentUser.playlists.add(newPlaylist)
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    // Remove a playlist by ID
+    fun removePlaylist(playlistId: String) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                currentUser.playlists.removeAll { it.id == playlistId }
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    // Edit a playlist's title
+    fun editPlaylistTitle(playlistId: String, newTitle: String) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                currentUser.playlists.find { it.id == playlistId }?.title = newTitle
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    // Add a song to a playlist
+    fun addSongToPlaylist(playlistId: String, song: MusicItem) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                currentUser.playlists.find { it.id == playlistId }?.songs?.add(song)
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    // Remove a song from a playlist
+    fun removeSongFromPlaylist(playlistId: String, songId: String) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                currentUser.playlists.find { it.id == playlistId }?.songs?.removeAll { it.videoId == songId }
+                userRepository.insertAuth(currentUser)
+                _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    // Get a playlist by ID
+    fun getPlaylistById(playlistId: String): Playlist? {
+        return currentUser.value?.playlists?.find { it.id == playlistId }
     }
 }
