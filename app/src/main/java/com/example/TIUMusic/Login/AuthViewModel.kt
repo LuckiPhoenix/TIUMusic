@@ -79,6 +79,9 @@ class UserViewModel @Inject constructor(
     private val _resetPasswordStatus = MutableLiveData<Result<Boolean>>()
     val resetPasswordStatus: LiveData<Result<Boolean>> = _resetPasswordStatus
 
+    private val _playlist = MutableLiveData<Playlist?>()
+    val playlist: LiveData<Playlist?> = _playlist
+
     // Check if user is already logged in on ViewModel initialization
     init {
         checkPersistentSession()
@@ -344,22 +347,16 @@ class UserViewModel @Inject constructor(
     }
 
     // Get a playlist by ID
-    fun getPlaylistById(playlistId: String): Playlist? {
-        try{
-            Log.d("LogNav", "isIni: ${currentUser.isInitialized}")
-            val user = currentUser.value
-                ?:throw Exception("No value in current User")
-            val playlist = user.playlists.find { it.id == playlistId }
-            if (playlist != null) {
-                Log.d("LogNav", "Result:" + playlist.id)
-            }else {
+    fun getPlaylistById(playlistId: String) {
+        viewModelScope.launch {
+            runCatching {
+                getCurrentUser()
+            }.onSuccess { user ->
+                val playlist = user?.playlists?.find { it.id == playlistId }
+                _playlist.value = playlist
+            }.onFailure {
                 Log.d("LogNav", "Error")
             }
-            return playlist
-        }catch (e: Exception){
-            Log.d("LogNav", "Error Occur: ${e.message}")
-            return null
         }
     }
-
 }

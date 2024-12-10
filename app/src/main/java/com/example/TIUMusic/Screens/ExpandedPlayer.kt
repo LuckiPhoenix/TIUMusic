@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -157,6 +158,7 @@ public fun ExpandedPlayer(
                 blue = min(1.0f, avgColor.blue * 1.5f)
             )
         }
+        userViewModel.getCurrentUser()
     }
 
     Box(
@@ -502,9 +504,10 @@ fun SleepTimerSheet(
 @Composable
 fun UserPlaylistBottomSheet(
     onDismissRequest: () -> Unit,
-    playlists: List<Playlist>,
+    playlists: MutableList<Playlist>,
     onAdding: (id: String) -> Unit
     ) {
+    val context = LocalContext.current
     ModalBottomSheet(
         onDismissRequest = onDismissRequest
     ) {
@@ -518,6 +521,7 @@ fun UserPlaylistBottomSheet(
                         onDismissRequest()
                         // + Add to playlist
                         onAdding(item.id)
+                        Toast.makeText(context, "Adding to ${item.title}", Toast.LENGTH_SHORT).show()
                         showBottomSheet = false
                     }
             )

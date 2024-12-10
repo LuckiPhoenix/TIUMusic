@@ -147,6 +147,7 @@ fun LibraryScreen(navController: NavController,
     LaunchedEffect(scrollState.value) {
         isScrolled = scrollState.value > expandedHeight.value
     }
+
     val currentUser by userViewModel.currentUser.observeAsState()
     val username: String = currentUser?.fullName ?: "User"
     var isPressed by remember { mutableStateOf(false) }

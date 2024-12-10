@@ -101,9 +101,11 @@ fun PlaylistScreen(
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
+    val localList by userViewModel.playlist.observeAsState()
 
     LaunchedEffect(Unit) {
         ytmusicViewModel.SongListSample(playlistItem.playlistId)
+        userViewModel.getPlaylistById(playlistItem.playlistId)
     }
     Scaffold(
         topBar = { TopPlaylistBar("Favourite", navController) },
@@ -223,15 +225,13 @@ fun PlaylistScreen(
                     }
 
                     // Song list
-                    val listSong : List<MusicItem>
+                    val listSong: List<MusicItem>
                     if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId)){
-                        listSong = userViewModel.getPlaylistById(playlistItem.playlistId)?.songs?.toList()
+                        listSong = localList?.songs
                             ?: emptyList()
-                        Log.d("LogNav", "Local with ${listSong.size}")
                     }
                     else{
                         listSong = state.data
-                        Log.d("LogNav", "Remote")
                     }
 
                     itemsIndexed(listSong){ index, item ->
