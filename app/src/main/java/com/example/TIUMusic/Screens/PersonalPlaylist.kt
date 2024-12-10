@@ -95,6 +95,17 @@ fun TopPersonalPlaylistBar(
         Row(
         ) {
             Icon(
+                painter = painterResource(R.drawable.magnifying_glass_solid),
+                contentDescription = "Search Button",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable {
+
+                    }
+                ,
+                tint = PrimaryColor
+            )
+            Icon(
                 painter = painterResource(R.drawable.ellipsis_vertical_button),
                 contentDescription = "Menu button",
                 modifier = Modifier
@@ -144,7 +155,7 @@ fun PersonalPlaylistMenuBottomSheet(
                     .background(Color(0xFF282828))
             )
             Text(
-                text = "My Playlist",
+                text = "My Playlist", //Khi nao tao chuc nang thi sua thanh musicItem.title
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 12.dp)
             )
@@ -233,7 +244,8 @@ fun PersonalPlaylistMenuBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Play Next"
+                text = "Play Next",
+                color = Color.White
             )
         }
         if (showDeleteConfirmation) {

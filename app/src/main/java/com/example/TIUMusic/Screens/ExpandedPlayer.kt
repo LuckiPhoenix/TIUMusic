@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -345,11 +346,73 @@ fun PlayMenuBottomSheet(
     musicItem: MusicItem,
     playerViewModel: PlayerViewModel
 ){
+    var isFavorite by remember { mutableStateOf(false) }
     ModalBottomSheet(
+        containerColor = Color.Black,
+        shape = RoundedCornerShape(0.dp),
         onDismissRequest = {
             showBottomSheet = false
         }
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = musicItem.imageUrl,
+                contentDescription = "Album Art",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF282828))
+            )
+            Column {
+                Text(
+                    text = "My Playlist", //Khi nao tao chuc nang thi sua thanh musicItem.title
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+                Text(
+                    text = "Artist",
+                    color = Color(0xFFfc3c44),
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
+        }
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = Color(color = 0xFF878787),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    isFavorite = !isFavorite
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(
+                    if (isFavorite) R.drawable.star_solid else R.drawable.star_regular
+                ),
+                contentDescription = "Favorite",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Favorite",
+                color = Color.White
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -366,7 +429,8 @@ fun PlayMenuBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Repeat"
+                text = "Repeat",
+                color = Color.White
             )
             if(playerViewModel.loop.value) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -392,14 +456,36 @@ fun PlayMenuBottomSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(R.drawable.share_nodes_solid),
+                painter = painterResource(R.drawable.plus_solid),
                 contentDescription = "Add to Playlist",
                 tint = Color.White,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Add to playlist",
+                text = "Add to Playlist",
+                color = Color.White
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.list_plus),
+                contentDescription = "Play Next",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Play Next",
+                color = Color.White
             )
         }
         Row(
@@ -418,7 +504,8 @@ fun PlayMenuBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Artist"
+                text = "Artist",
+                color = Color.White
             )
         }
         Row(
@@ -440,7 +527,8 @@ fun PlayMenuBottomSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Set a sleep timer"
+                text = "Set a sleep timer",
+                color = Color.White
             )
         }
     }
@@ -453,9 +541,11 @@ fun SleepTimerSheet(
     onTimerStart: (Duration) -> Unit
 ) {
     ModalBottomSheet(
+        containerColor = Color.Black,
         onDismissRequest = onDismissRequest
     ) {
         Text(
+            color = Color.White,
             text = "Turn off",
             modifier = Modifier
                 .padding(16.dp)
@@ -465,6 +555,7 @@ fun SleepTimerSheet(
                 }
         )
         Text(
+            color = Color.White,
             text = "After 15 minutes",
             modifier = Modifier
                 .padding(16.dp)
@@ -476,6 +567,7 @@ fun SleepTimerSheet(
                 }
         )
         Text(
+            color = Color.White,
             text = "After 30 minutes",
             modifier = Modifier
                 .padding(16.dp)
@@ -487,6 +579,7 @@ fun SleepTimerSheet(
                 }
         )
         Text(
+            color = Color.White,
             text = "After 1 hour",
             modifier = Modifier
                 .padding(16.dp)
@@ -521,7 +614,9 @@ fun UserPlaylistBottomSheet(
                         onDismissRequest()
                         // + Add to playlist
                         onAdding(item.id)
-                        Toast.makeText(context, "Adding to ${item.title}", Toast.LENGTH_SHORT).show()
+                        Toast
+                            .makeText(context, "Adding to ${item.title}", Toast.LENGTH_SHORT)
+                            .show()
                         showBottomSheet = false
                     }
             )
