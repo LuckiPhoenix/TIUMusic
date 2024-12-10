@@ -93,9 +93,11 @@ fun LibraryScreen(navController: NavController,
                   modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
+
     val userPlaylists by ytmusicViewModel.userPlaylists.collectAsState()
     var showUsernameDialog by remember { mutableStateOf(false) } // use for username update
     var showProfileImageDialog by remember { mutableStateOf(false) } // use for profile image update
+    var showPlaylistDialog by remember { mutableStateOf(false) } // use for creating user's playlist
 
     // Transition variables
     var isScrolled by remember { mutableStateOf(false) }
@@ -268,6 +270,24 @@ fun LibraryScreen(navController: NavController,
                                     ) {
                                         Text("Password", fontSize = 12.sp)
                                     }
+                                    // Divider between buttons
+                                    Divider(
+                                        modifier = Modifier
+                                            .height(24.dp)
+                                            .width(1.dp)
+                                            .background(Color.Gray)
+                                    )
+
+                                    // Sub-button 4: Create a new Playlist
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RectangleShape)
+                                            .clickable { showPlaylistDialog = true }
+                                    ) {
+                                        Text("Create new Playlist", fontSize = 12.sp)
+                                    }
                                 }
                             }
                         }
@@ -312,6 +332,7 @@ fun LibraryScreen(navController: NavController,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    //Remote Playlist from Youtube
                     items(userPlaylists) { item ->
                         AlbumCard(
                             item = item,
@@ -322,11 +343,34 @@ fun LibraryScreen(navController: NavController,
                             }
                         )
                     }
+                    // Local Playlist in Database
+                    currentUser?.let {
+                        items(it.playlists){ item ->
+                            val musicItem = MusicItem(
+                                title = item.title,
+                                videoId = "",
+                                type = 1,
+                                playlistId = item.id,
+                                artist = item.description,
+                                imageUrl = item.picture.toString(),
+                            )
+                            AlbumCard(
+                                item = musicItem,
+                                modifier = Modifier,
+                                imageSize = 180.dp,
+                                onClick = {
+                                    onItemClick(musicItem)
+                                }
+                            )
+                        }
+                    }
                     item {Spacer(modifier = Modifier.height(88.dp))}
                 }
             }
 
             InputDialog(showUsernameDialog, {showUsernameDialog = false}, {userViewModel.updateUsername(it)})
+
+            InputDialog(showPlaylistDialog, {showPlaylistDialog = false}, {userViewModel.addPlaylist(it)})
 
             if (showProfileImageDialog) {
                 ProfilePictureDialog(

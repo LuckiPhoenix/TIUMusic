@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +34,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.pages.ArtistPage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.ExplorePage
 import com.example.TIUMusic.Libs.YoutubeLib.pages.MoodAndGenres
 import com.example.TIUMusic.Libs.YoutubeLib.pages.RelatedPage
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.SongData.AlbumItem
 import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.MusicItem
@@ -66,7 +68,7 @@ object YtmusicModule {
 
 @HiltViewModel
 class YtmusicViewModel @Inject constructor(
-    private val ytmusic: Ytmusic // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
+    private val ytmusic: Ytmusic, // Inject Ytmusic class (nếu dùng Hilt hoặc tạo instance thủ công)
 ) : ViewModel() {
 
     //Searching Data
@@ -181,7 +183,6 @@ class YtmusicViewModel @Inject constructor(
             }
             return null;
         }
-
     }
 
     fun performSearch(query: String){
@@ -1158,33 +1159,39 @@ class YtmusicViewModel @Inject constructor(
     }
 
     fun SongListSample(playlistId: String){
-        viewModelScope.launch {
-            runCatching {
-                _listTrackItems.value = UiState.Loading
-                YouTube.getPlaylistFullTracks(playlistId)
-            }.onSuccess {result ->
-                result.onSuccess { tracks ->
-                    val musicItems = tracks.map { songItem ->
-                        val thumbnail = songItem.thumbnails?.thumbnails?.lastOrNull();
-                        var thumbnailUrl = "";
-                        if (thumbnail != null && songItem.id.isNotEmpty()) {
-                            thumbnailUrl = getYoutubeHDThumbnail(songItem.id);
+        if(!isPlaylistRandomUUID(playlistId)){
+            viewModelScope.launch {
+                runCatching {
+                    _listTrackItems.value = UiState.Loading
+                    YouTube.getPlaylistFullTracks(playlistId)
+                }.onSuccess {result ->
+                    result.onSuccess { tracks ->
+                        val musicItems = tracks.map { songItem ->
+                            val thumbnail = songItem.thumbnails?.thumbnails?.lastOrNull();
+                            var thumbnailUrl = "";
+                            if (thumbnail != null && songItem.id.isNotEmpty()) {
+                                thumbnailUrl = getYoutubeHDThumbnail(songItem.id);
+                            }
+                            MusicItem(
+                                videoId = songItem.id,
+                                title = songItem.title,
+                                artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
+                                imageUrl = thumbnailUrl,
+                                type = 0
+                            )
                         }
-                        MusicItem(
-                            videoId = songItem.id,
-                            title = songItem.title,
-                            artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
-                            imageUrl = thumbnailUrl,
-                            type = 0
-                        )
+                        _listTrackItems.value = UiState.Success(musicItems)
+                    }.onFailure { error ->
+                        _listTrackItems.value = UiState.Error(error.message ?: "Unknown error")
                     }
-                    _listTrackItems.value = UiState.Success(musicItems)
-                }.onFailure { error ->
-                    _listTrackItems.value = UiState.Error(error.message ?: "Unknown error")
+                }.onFailure { exception ->
+                    _listTrackItems.value = UiState.Error(exception.message ?: "Network error")
                 }
-            }.onFailure { exception ->
-                _listTrackItems.value = UiState.Error(exception.message ?: "Network error")
             }
+        }
+        else{
+            _listTrackItems.value = UiState.Loading
+            _listTrackItems.value = UiState.Success(emptyList())
         }
     }
 
@@ -1300,6 +1307,12 @@ class YtmusicViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    //Library Playlists
+    fun isPlaylistRandomUUID(id: String): Boolean {
+        val uuidRegex = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\$")
+        return uuidRegex.matches(id)
     }
 
     fun getUserPlaylists(first : Boolean = false) {

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.getTopPicks
 
@@ -96,6 +98,7 @@ fun PlaylistScreen(
     onShuffleClick : (List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
     ytmusicViewModel: YtmusicViewModel,
+    userViewModel: UserViewModel = hiltViewModel()
 ) {
     val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
 
@@ -218,11 +221,23 @@ fun PlaylistScreen(
                             )
                         }
                     }
+
                     // Song list
-                    itemsIndexed(state.data){ index, item ->
+                    val listSong : List<MusicItem>
+                    if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId)){
+                        listSong = userViewModel.getPlaylistById(playlistItem.playlistId)?.songs?.toList()
+                            ?: emptyList()
+                        Log.d("LogNav", "Local with ${listSong.size}")
+                    }
+                    else{
+                        listSong = state.data
+                        Log.d("LogNav", "Remote")
+                    }
+
+                    itemsIndexed(listSong){ index, item ->
                         SongInPlaylist(
                             item,
-                            onClick = { onSongClick(item, index, state.data) }
+                            onClick = { onSongClick(item, index, listSong) }
                         )
                         HorizontalDivider(
                             thickness = 2.dp,
@@ -230,6 +245,7 @@ fun PlaylistScreen(
                             modifier = Modifier.padding(start = 66.dp, end = 8.dp)
                         )
                     }
+
                     item { Spacer(modifier = Modifier.height(88.dp)) }
                 }
             }

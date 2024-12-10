@@ -52,6 +52,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,12 +91,15 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.toBitmap
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Login.Playlist
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
@@ -110,6 +114,7 @@ import kotlin.time.toDuration
 
 var showBottomSheet : Boolean = false
 var showSleepTimerSheet: Boolean = false
+var showUserPlaylistSheet: Boolean = false
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
@@ -124,7 +129,8 @@ public fun ExpandedPlayer(
     visualizerViewModel: VisualizerViewModel,
     playerViewModel: PlayerViewModel,
     ytmusicViewModel: YtmusicViewModel,
-    navController: NavController
+    navController: NavController,
+    userViewModel: UserViewModel = hiltViewModel()
 ) {
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(
@@ -138,6 +144,7 @@ public fun ExpandedPlayer(
     var albumArt : Bitmap? by remember { mutableStateOf(null) }
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
     val syncedLine by playerViewModel.syncedLine.collectAsState()
+    val currentUser by userViewModel.currentUser.observeAsState()
 
     LaunchedEffect(albumArt) {
         if (albumArt != null) {
@@ -293,6 +300,18 @@ public fun ExpandedPlayer(
                 }
             )
         }
+        if(showUserPlaylistSheet == true){
+            currentUser?.let {
+                UserPlaylistBottomSheet(
+                    onDismissRequest = { showUserPlaylistSheet = false},
+                    it.playlists,
+                    onAdding = {id ->
+                        userViewModel.addSongToPlaylist(id, musicItem)
+                        Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
+                    }
+                )
+            }
+        }
     }
 }
 fun startTimer(duration: Duration) {
@@ -363,19 +382,22 @@ fun PlayMenuBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clickable {  },
+                .clickable {
+                    showUserPlaylistSheet = !showUserPlaylistSheet
+                    showBottomSheet = !showBottomSheet
+                },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(R.drawable.share_nodes_solid),
-                contentDescription = "Share",
+                contentDescription = "Add to Playlist",
                 tint = Color.White,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Share this song",
+                text = "Add to playlist",
             )
         }
         Row(
@@ -469,6 +491,43 @@ fun SleepTimerSheet(
                 .fillMaxWidth()
                 .clickable {
                     onTimerStart(1.toDuration(DurationUnit.HOURS))
+                    onDismissRequest()
+                    showBottomSheet = false
+                }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserPlaylistBottomSheet(
+    onDismissRequest: () -> Unit,
+    playlists: List<Playlist>,
+    onAdding: (id: String) -> Unit
+    ) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest
+    ) {
+        playlists.forEach { item ->
+            Text(
+                text = item.title,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        onDismissRequest()
+                        // + Add to playlist
+                        onAdding(item.id)
+                        showBottomSheet = false
+                    }
+            )
+        }
+        Text(
+            text = "(+) Create new Playlist",
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clickable {
                     onDismissRequest()
                     showBottomSheet = false
                 }

@@ -3,6 +3,7 @@ package com.example.TIUMusic.Login
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.Module
 import dagger.Provides
@@ -17,6 +19,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
@@ -275,7 +278,7 @@ class UserViewModel @Inject constructor(
     }
 
     // Add a new playlist
-    fun addPlaylist(title: String, picture: Int?) {
+    fun addPlaylist(title: String, picture: Int? = R.drawable.profile_pic) {
         viewModelScope.launch {
             val currentUser = getCurrentUser()
             if (currentUser != null) {
@@ -342,6 +345,21 @@ class UserViewModel @Inject constructor(
 
     // Get a playlist by ID
     fun getPlaylistById(playlistId: String): Playlist? {
-        return currentUser.value?.playlists?.find { it.id == playlistId }
+        try{
+            Log.d("LogNav", "isIni: ${currentUser.isInitialized}")
+            val user = currentUser.value
+                ?:throw Exception("No value in current User")
+            val playlist = user.playlists.find { it.id == playlistId }
+            if (playlist != null) {
+                Log.d("LogNav", "Result:" + playlist.id)
+            }else {
+                Log.d("LogNav", "Error")
+            }
+            return playlist
+        }catch (e: Exception){
+            Log.d("LogNav", "Error Occur: ${e.message}")
+            return null
+        }
     }
+
 }
