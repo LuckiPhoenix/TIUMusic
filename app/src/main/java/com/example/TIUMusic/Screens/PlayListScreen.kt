@@ -72,12 +72,6 @@ fun TopPlaylistBar(
         Row(
         ) {
             Icon(
-                painter = painterResource(R.drawable.arrow_down_button),
-                contentDescription = "Return Button",
-                modifier = Modifier.padding(16.dp),
-                tint = PrimaryColor
-            )
-            Icon(
                 painter = painterResource(R.drawable.ellipsis_vertical_button),
                 contentDescription = "Return Button",
                 modifier = Modifier.padding(16.dp),

@@ -37,6 +37,7 @@ import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.MoodListScreen
 import com.example.TIUMusic.Screens.NewScreen
 import com.example.TIUMusic.Screens.NowPlayingSheet
+import com.example.TIUMusic.Screens.PersonalPlaylistScreen
 import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.MusicItem
@@ -87,7 +88,7 @@ fun NavHost(
                 }
             }
 
-            navigation(startDestination = "home", route = "main") {
+            navigation(startDestination = "personalPlaylist/abc", route = "main") {
                 composable("home") {
                     HomeScreen(
                         navController = navController,
@@ -387,6 +388,60 @@ fun NavHost(
                             }
                         },
                         ytmusicViewModel = ytmusicViewModel
+                    )
+                }
+                composable(
+                    route = "personalPlaylist/{personalPlaylistId}",
+                    arguments = listOf(
+                        navArgument("personalPlaylistId") { type = NavType.StringType },
+                    )
+                ) { backStackEntry ->
+                    val playlistId = backStackEntry.arguments?.getString("personalPlaylistId") ?: ""
+
+                    val savedStateHandle = navController.previousBackStackEntry?.savedStateHandle
+                    val title = savedStateHandle?.get<String>("title") ?: ""
+                    val artist = savedStateHandle?.get<String>("artist") ?: ""
+                    val image = savedStateHandle?.get<String>("image") ?: ""
+                    PersonalPlaylistScreen(
+                        navController = navController,
+                        ytmusicViewModel = ytmusicViewModel,
+                        playlistItem = MusicItem(
+                            videoId = "",
+                            title = title,
+                            artist = artist,
+                            imageUrl = image,
+                            type = 1,
+                            playlistId = playlistId,
+                        ),
+                        onTabSelected = { tabIndex ->
+                            playerViewModel.setShouldExpand(-1);
+                            when (tabIndex) {
+                                0 -> {
+                                    navController.navigate("home")
+                                }
+
+                                1 -> navController.navigate("new")
+                                2 -> navController.navigate("library")
+                                3 -> navController.navigate("search")
+                            }
+                        },
+                        onSongClick = { musicItem, index, playlist ->
+                            Log.d("LogNav", "TYPE = 0")
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
+                        },
+                        onShuffleClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.shufflePlaylist()
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                        },
+                        onPlayClick = { playlist ->
+                            playerViewModel.setPlaylist(playlist)
+                            playerViewModel.setIsShuffled(false)
+                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                        },
+                        playerViewModel = playerViewModel
                     )
                 }
             }
