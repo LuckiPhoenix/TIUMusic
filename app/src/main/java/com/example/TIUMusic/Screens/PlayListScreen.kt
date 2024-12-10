@@ -41,12 +41,14 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.SongData.MoodItem
+import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.SongData.getTopPicks
 
 @Composable
 fun TopPlaylistBar(
     title: String,
-    navController: NavController
+    navController: NavController,
+    onMenuClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -74,13 +76,225 @@ fun TopPlaylistBar(
             Icon(
                 painter = painterResource(R.drawable.ellipsis_vertical_button),
                 contentDescription = "Return Button",
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable {
+                        onMenuClick()
+                    }
+                ,
                 tint = PrimaryColor
             )
         }
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlaylistMenuBottomSheet(
+    navController: NavController,
+    musicItem: MusicItem,
+    onDismiss: () -> Unit
+) {
+    val (showDeleteConfirmation, setShowDeleteConfirmation) = remember { mutableStateOf(false) }
+    val (showSortByBottomSheet, setShowSortByBottomSheet) = remember { mutableStateOf(false) }
+
+    ModalBottomSheet(
+        containerColor = Color.Black,
+        shape = RoundedCornerShape(0.dp),
+        onDismissRequest = {
+            if (showDeleteConfirmation || showSortByBottomSheet) null else onDismiss()
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = musicItem.imageUrl,
+                contentDescription = "Album Art",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF282828))
+            )
+            Text(
+                text = "My Playlist",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = Color(color = 0xFF878787),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    setShowSortByBottomSheet(true)
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.arrow_down_up),
+                contentDescription = "Sort button",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Sort By"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable { },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.pen_to_square_solid),
+                contentDescription = "Edit playlist",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Edit Playlist",
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    setShowDeleteConfirmation(true)
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.trash_can_solid),
+                contentDescription = "Delete Button",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Delete from Library"
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.list_plus),
+                contentDescription = "Play Next",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Play Next"
+            )
+        }
+        if (showDeleteConfirmation) {
+            AlertDialog(
+                containerColor = Color.Black,
+                shape = RoundedCornerShape(5.dp),
+                onDismissRequest = { setShowDeleteConfirmation(false) },
+                title = {
+                    Text(text = "Confirm Delete")
+                },
+                text = {
+                    Text(text = "Are you sure you want to delete ${musicItem.title} from your library?")
+                },
+                confirmButton = {
+                    TextButton(onClick = { /* Delete logic */ setShowDeleteConfirmation(false) }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { setShowDeleteConfirmation(false) }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        if (showSortByBottomSheet) {
+            ModalBottomSheet (
+                containerColor = Color.Black,
+                shape = RoundedCornerShape(0.dp),
+                onDismissRequest = { setShowSortByBottomSheet(false) }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // Title of the Bottom Sheet
+                    Text(
+                        text = "Sort By",
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Sort Options
+                    val options = listOf("Playlist Order", "Title", "Artist", "Release Date")
+                    val selectedOption = remember { mutableStateOf("Release Date") } // Default selection
+
+                    options.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedOption.value = option // Update the selected option
+                                    setShowSortByBottomSheet(false) // Close the bottom sheet
+                                }
+                                .padding(vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White
+                            )
+                            if (selectedOption.value == option) {
+                                Icon(
+                                    painter = painterResource(R.drawable.check_solid),
+                                    contentDescription = "Selected",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun PlaylistScreen(
@@ -94,6 +308,7 @@ fun PlaylistScreen(
     ytmusicViewModel: YtmusicViewModel,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
+    var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
     val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
     val localList by userViewModel.playlist.observeAsState()
 
@@ -102,7 +317,13 @@ fun PlaylistScreen(
         userViewModel.getPlaylistById(playlistItem.playlistId)
     }
     Scaffold(
-        topBar = { TopPlaylistBar("Favourite", navController) },
+        topBar = {
+            TopPlaylistBar(
+                "Favourite",
+                navController,
+                onMenuClick = { showPersonalPlaylistMenu = !showPersonalPlaylistMenu }
+            )
+         },
         bottomBar = {
             CustomBottomNavigation(
                 selectedTab = 2,
@@ -253,6 +474,13 @@ fun PlaylistScreen(
 
             }
         }
+        if(showPersonalPlaylistMenu == true){
+            PlaylistMenuBottomSheet(
+                navController,
+                musicItem = playlistItem,
+                onDismiss = { showPersonalPlaylistMenu = false }
+            )
+        }
 
     }
 }
@@ -268,6 +496,7 @@ fun AlbumScreen(
     onShuffleClick: (List<MusicItem>) -> Unit,
     ytMusicViewModel: YtmusicViewModel,
 ) {
+    var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
     val albumState by ytMusicViewModel.albumPage.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -275,7 +504,11 @@ fun AlbumScreen(
     }
 
     Scaffold(
-        topBar = { TopPlaylistBar("Album", navController) },
+        topBar = { TopPlaylistBar(
+            "Album",
+            navController,
+            onMenuClick = { showPersonalPlaylistMenu = !showPersonalPlaylistMenu }
+        ) },
         bottomBar = {
             CustomBottomNavigation(
                 selectedTab = 2,
@@ -416,7 +649,13 @@ fun AlbumScreen(
 
             }
         }
-
+        if(showPersonalPlaylistMenu == true){
+            PlaylistMenuBottomSheet(
+                navController,
+                musicItem = MusicItem("", "", "", "", 0),
+                onDismiss = { showPersonalPlaylistMenu = false }
+            )
+        }
     }
 }
 
@@ -428,6 +667,7 @@ fun MoodListScreen(
     onPlaylistClick: (MusicItem) -> Unit,
     ytmusicViewModel: YtmusicViewModel
 ) {
+    var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
     val listMusicItem by ytmusicViewModel.moodfetch.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -435,7 +675,11 @@ fun MoodListScreen(
     }
     Scaffold(
         topBar = {
-            TopPlaylistBar(listMusicItem.first, navController)
+            TopPlaylistBar(
+                listMusicItem.first,
+                navController,
+                onMenuClick = { showPersonalPlaylistMenu = !showPersonalPlaylistMenu }
+            )
             Text(
                 text = listMusicItem.first,
                 style = TextStyle(
