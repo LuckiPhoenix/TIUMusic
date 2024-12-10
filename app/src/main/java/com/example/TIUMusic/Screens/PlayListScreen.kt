@@ -158,7 +158,10 @@ fun PlaylistScreen(
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
                                         .clickable {
-                                            onPlayClick(state.data)
+                                            if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
+                                                onPlayClick(localList?.songs ?: emptyList());
+                                            else
+                                                onPlayClick(state.data);
                                         },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {
@@ -186,7 +189,10 @@ fun PlaylistScreen(
                                         .size(160.dp, 52.dp)
                                         .padding(4.dp)
                                         .clickable {
-                                            onShuffleClick(state.data)
+                                            if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
+                                                onShuffleClick(localList?.songs ?: emptyList())
+                                            else
+                                                onShuffleClick(state.data);
                                         },
                                     colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                                 ) {

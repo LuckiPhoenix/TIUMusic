@@ -333,17 +333,6 @@ fun LibraryScreen(navController: NavController,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    //Remote Playlist from Youtube
-                    items(userPlaylists) { item ->
-                        AlbumCard(
-                            item = item,
-                            modifier = Modifier,
-                            imageSize = 180.dp,
-                            onClick = {
-                                onItemClick(item)
-                            }
-                        )
-                    }
                     // Local Playlist in Database
                     currentUser?.let {
                         items(it.playlists){ item ->
@@ -364,6 +353,17 @@ fun LibraryScreen(navController: NavController,
                                 }
                             )
                         }
+                    }
+                    //Remote Playlist from Youtube
+                    items(userPlaylists) { item ->
+                        AlbumCard(
+                            item = item,
+                            modifier = Modifier,
+                            imageSize = 180.dp,
+                            onClick = {
+                                onItemClick(item)
+                            }
+                        )
                     }
                     item {Spacer(modifier = Modifier.height(88.dp))}
                 }
