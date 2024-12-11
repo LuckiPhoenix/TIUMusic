@@ -26,12 +26,14 @@ import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeLogin
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.LoginScreen
+import com.example.TIUMusic.Login.Playlist
 import com.example.TIUMusic.Login.RecoverPasswordScreen
 import com.example.TIUMusic.Login.RegisterScreen
 import com.example.TIUMusic.Login.ResetPasswordScreen
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.Screens.AlbumScreen
 import com.example.TIUMusic.Screens.ArtistPage
+import com.example.TIUMusic.Screens.EditPlaylistScreen
 import com.example.TIUMusic.Screens.HomeScreen
 import com.example.TIUMusic.Screens.LibraryScreen
 import com.example.TIUMusic.Screens.MoodListScreen
@@ -42,6 +44,7 @@ import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
+import com.google.gson.Gson
 
 @Composable
 fun NavHost(
@@ -407,6 +410,34 @@ fun NavHost(
                         },
                         ytmusicViewModel = ytmusicViewModel
                     )
+                }
+                composable(
+                    route = "editPlaylist/{originalPlaylist}",
+                    arguments = listOf(
+                        navArgument("originalPlaylist") {
+                            type = NavType.StringType
+                        }
+                    )
+                ) { backStackEntry ->
+                    val playlistJson = backStackEntry.arguments?.getString("originalPlaylist")
+                    val originalPlaylist = playlistJson?.let {
+                        Gson().fromJson(it, Playlist::class.java)
+                    }
+
+                    if (originalPlaylist != null) {
+                        EditPlaylistScreen(
+                            navController = navController,
+                            originalPlaylist = originalPlaylist,
+                            onDismiss = { navController.popBackStack() },
+                            onPlaylistEdit = { updatedPlaylist ->
+                                for(song in updatedPlaylist.songs){
+                                    userViewModel.removeSongFromPlaylist(originalPlaylist.id, song.videoId)
+                                }
+                                userViewModel.editPlaylistTitle(originalPlaylist.id, updatedPlaylist.title)
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                 }
 
             }

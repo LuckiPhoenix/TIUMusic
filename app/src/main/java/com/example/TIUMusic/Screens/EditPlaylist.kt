@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
@@ -43,8 +44,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import com.example.TIUMusic.Login.Playlist
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.ui.theme.PrimaryColor
@@ -53,13 +57,14 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 @Composable
 fun EditPlaylistScreen(
     navController: NavController,
-    playlistItem: MusicItem,
+    originalPlaylist: Playlist,
     onDismiss: () -> Unit,
-    onTitleChange: (String) -> Unit
+    onPlaylistEdit: (Playlist) -> Unit
 ) {
-    var description by remember { mutableStateOf("") }
+    val viewModel: UserViewModel = viewModel()
     var isPublic by remember { mutableStateOf(false) }
-    var currentPlaylist by remember { mutableStateOf(listOf<MusicItem>()) }
+    var copyOfOriginalPlaylist = originalPlaylist
+    val songsToDelete = remember { mutableStateOf(mutableListOf<MusicItem>()) }
 
     Column(
         modifier = Modifier
@@ -81,7 +86,11 @@ fun EditPlaylistScreen(
                     tint = PrimaryColor
                 )
             }
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                copyOfOriginalPlaylist.songs =
+                    copyOfOriginalPlaylist.songs.filter { it !in songsToDelete.value }.toMutableList()
+                onPlaylistEdit(copyOfOriginalPlaylist)
+            }) {
                 Icon(
                     painter = painterResource(R.drawable.check_solid),
                     contentDescription = "Confirm",
@@ -91,7 +100,7 @@ fun EditPlaylistScreen(
         }
 
         AsyncImage(
-            model = playlistItem.imageUrl,
+            model = copyOfOriginalPlaylist.picture,
             contentDescription = "Album Art",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -102,12 +111,12 @@ fun EditPlaylistScreen(
 
         // Playlist Title Input
         OutlinedTextField(
-            value = playlistItem.title,
-            onValueChange = onTitleChange,
+            value = copyOfOriginalPlaylist.title,
+            onValueChange = { copyOfOriginalPlaylist.title = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            placeholder = { Text("My Wedding", color = Color.Gray) },
+            placeholder = { Text("Enter Playlist Title", color = Color.Gray) },
             textStyle = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
             maxLines = 1,
             singleLine = true,
@@ -122,8 +131,8 @@ fun EditPlaylistScreen(
 
         // Add Description Input
         OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
+            value = copyOfOriginalPlaylist.description,
+            onValueChange = { copyOfOriginalPlaylist.description = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
@@ -165,12 +174,13 @@ fun EditPlaylistScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Playlist Songs
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            itemsIndexed(currentPlaylist) { index, song ->
+            items(copyOfOriginalPlaylist.songs) { song ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -178,9 +188,16 @@ fun EditPlaylistScreen(
                         .clickable { },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val isChecked = songsToDelete.value.contains(song)
                     Checkbox(
-                        checked = song.isChecked,
-                        onCheckedChange = { },
+                        checked = isChecked,
+                        onCheckedChange = {
+                            if (it) {
+                                songsToDelete.value.add(song)
+                            } else {
+                                songsToDelete.value.remove(song)
+                            }
+                        },
                         colors = CheckboxDefaults.colors(
                             checkedColor = Color.Red,
                             uncheckedColor = Color.Gray
@@ -197,7 +214,7 @@ fun EditPlaylistScreen(
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = playlistItem.title,
+                        text = song.title,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
@@ -205,5 +222,6 @@ fun EditPlaylistScreen(
                 }
             }
         }
+
     }
 }

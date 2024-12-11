@@ -16,8 +16,6 @@ data class MusicItem(
     val browseId : String = "",
     val fallbackThumbnail : String = "",
 ) {
-    val isChecked: Boolean = false
-
     fun getHDThumbnail() : String = getYoutubeHDThumbnail(videoId);
     fun getSmallThumbnail() : String = getYoutubeSmallThumbnail(videoId);
 }
