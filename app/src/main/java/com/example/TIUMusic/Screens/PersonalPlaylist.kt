@@ -198,7 +198,10 @@ fun PersonalPlaylistMenuBottomSheet(
                 painter = painterResource(R.drawable.pen_to_square_solid),
                 contentDescription = "Edit playlist",
                 tint = Color.White,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable {
+                    }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
