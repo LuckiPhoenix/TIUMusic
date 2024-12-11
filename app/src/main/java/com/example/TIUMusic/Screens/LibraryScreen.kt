@@ -40,6 +40,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -81,6 +83,8 @@ import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.getTopPicks
 import com.example.TIUMusic.ui.theme.BackgroundColor
+import com.example.TIUMusic.ui.theme.ButtonColor
+import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 import java.io.File
 
@@ -323,6 +327,89 @@ fun LibraryScreen(navController: NavController,
                         Text("Log Out", fontSize = 12.sp)
                     }
                 }
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = ButtonColor,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+                        .clickable {
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.list_music),
+                        contentDescription = "Playlists",
+                        modifier = Modifier.size(32.dp),
+                        tint = PrimaryColor
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Playlists",
+                        color = White
+                    )
+                }
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = ButtonColor,
+                    modifier = Modifier.padding(start = 48.dp, top = 12.dp, end = 16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+                        .clickable {
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.mic_vocal),
+                        contentDescription = "Artists",
+                        modifier = Modifier.size(32.dp),
+                        tint = PrimaryColor
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Artists",
+                        color = White
+                    )
+                }
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = ButtonColor,
+                    modifier = Modifier.padding(start = 48.dp, top = 12.dp, end = 16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clickable {
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.disc_3),
+                        contentDescription = "Albums",
+                        modifier = Modifier.size(32.dp),
+                        tint = PrimaryColor
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Albums",
+                        color = White
+                    )
+                }
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = ButtonColor,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp)
+                )
                 // Use Modifier.height or a fixed height if needed
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
