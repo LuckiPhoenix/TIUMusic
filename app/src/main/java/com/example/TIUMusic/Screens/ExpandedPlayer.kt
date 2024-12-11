@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,15 +40,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -113,6 +121,7 @@ import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+import androidx.compose.material3.TextFieldDefaults
 
 var showBottomSheet : Boolean = false
 var showSleepTimerSheet: Boolean = false
@@ -347,6 +356,7 @@ fun PlayMenuBottomSheet(
     playerViewModel: PlayerViewModel
 ){
     var isFavorite by remember { mutableStateOf(false) }
+    val (showEditPlaylistSheet, setShowEditPlaylistSheet) = remember { mutableStateOf(false) }
     ModalBottomSheet(
         containerColor = Color.Black,
         shape = RoundedCornerShape(0.dp),
@@ -449,8 +459,7 @@ fun PlayMenuBottomSheet(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .clickable {
-                    showUserPlaylistSheet = !showUserPlaylistSheet
-                    showBottomSheet = !showBottomSheet
+                    setShowEditPlaylistSheet(true)
                 },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -530,6 +539,96 @@ fun PlayMenuBottomSheet(
                 text = "Set a sleep timer",
                 color = Color.White
             )
+        }
+        if(showEditPlaylistSheet) {
+            var text by remember { mutableStateOf("") }
+            ModalBottomSheet(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 600.dp),
+                containerColor = Color.Black,
+                onDismissRequest = {
+                    setShowEditPlaylistSheet(false)
+                }
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = "",
+                        onValueChange = { newText -> text = newText },
+                        placeholder = { Text("Find Playlist", color = Color.Gray) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        maxLines = 1,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {  },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.plus_solid), // Replace with your add icon
+                            contentDescription = "New Playlist",
+                            tint = Color.Red,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "New Playlist",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // All playlists section
+                    Text(
+                        text = "All Playlists",
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                    //Hien thi cac playlist co trong tai khoan, khi nao co du lieu nho backend them vao
+//                    playlists.forEach { playlist ->
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(16.dp)
+//                                .clickable { onSelectPlaylist(playlist) },
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            AsyncImage(
+//                                model = playlist.imageUrl,
+//                                contentDescription = "Playlist Image",
+//                                contentScale = ContentScale.Crop,
+//                                modifier = Modifier
+//                                    .size(40.dp)
+//                                    .clip(RoundedCornerShape(8.dp))
+//                                    .background(Color.DarkGray)
+//                            )
+//                            Spacer(modifier = Modifier.width(16.dp))
+//                            Column {
+//                                Text(
+//                                    text = playlist.name,
+//                                    color = Color.White,
+//                                    fontWeight = FontWeight.Bold
+//                                )
+//                                Text(
+//                                    text = if (playlist.isAdded) "Already added" else "",
+//                                    color = Color.Gray,
+//                                    fontSize = 12.sp
+//                                )
+//                            }
+//                        }
+//                    }
+                }
+            }
         }
     }
 }
