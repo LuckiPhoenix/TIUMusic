@@ -94,6 +94,8 @@ fun TopPlaylistBar(
 fun PlaylistMenuBottomSheet(
     navController: NavController,
     musicItem: MusicItem,
+    onPlayNextClick : () -> Unit,
+    onSortByClick: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val (showDeleteConfirmation, setShowDeleteConfirmation) = remember { mutableStateOf(false) }
@@ -200,6 +202,7 @@ fun PlaylistMenuBottomSheet(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .clickable {
+                    onPlayNextClick();
                 },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -269,6 +272,7 @@ fun PlaylistMenuBottomSheet(
                                 .fillMaxWidth()
                                 .clickable {
                                     selectedOption.value = option // Update the selected option
+                                    onSortByClick(selectedOption.value)
                                     setShowSortByBottomSheet(false) // Close the bottom sheet
                                 }
                                 .padding(vertical = 12.dp),
@@ -305,17 +309,41 @@ fun PlaylistScreen(
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onShuffleClick : (List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
+    onPlayNextClick: (List<MusicItem>) -> Unit,
     ytmusicViewModel: YtmusicViewModel,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
     val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
     val localList by userViewModel.playlist.observeAsState()
+    var currentPlaylist by remember { mutableStateOf(listOf<MusicItem>()) }
 
     LaunchedEffect(Unit) {
-        ytmusicViewModel.SongListSample(playlistItem.playlistId)
-        userViewModel.getPlaylistById(playlistItem.playlistId)
+        if (!ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
+            ytmusicViewModel.SongListSample(playlistItem.playlistId)
+        else
+           userViewModel.getPlaylistById(playlistItem.playlistId)
     }
+
+    LaunchedEffect(playlistState) {
+        when (val state = playlistState) {
+            is UiState.Initial -> {
+                // Trạng thái ban đầu
+                Log.d("LogNav", "Initial id : ${playlistItem.playlistId}")
+            }
+            is UiState.Success -> {
+                currentPlaylist = state.data.toMutableList();
+            }
+            else -> {}
+        }
+    }
+
+    LaunchedEffect(localList) {
+        if (localList != null) {
+            currentPlaylist = localList!!.songs;
+        }
+    }
+
     Scaffold(
         topBar = {
             TopPlaylistBar(
@@ -333,152 +361,140 @@ fun PlaylistScreen(
         },
         containerColor = BackgroundColor
     ) { paddingValues ->
-        when (val state = playlistState){
-            is UiState.Initial -> {
-                // Trạng thái ban đầu
-                Log.d("LogNav", "Initial id : ${playlistItem.playlistId}")
-            }
-            is UiState.Loading -> {
-                LoadingScreen()
-            }
-            is UiState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(start = 8.dp, end = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    item {
-                        // Header content
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+        if (playlistState is UiState.Loading) {
+            LoadingScreen()
+        }
+        else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(start = 8.dp, end = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    // Header content
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        AsyncImage(
+                            model = playlistItem.imageUrl,
+                            contentDescription = "Album Art",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(160.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF282828))
+                        )
+                        Text(
+                            text = playlistItem.title,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White,
+                            modifier = Modifier.padding(6.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            AsyncImage(
-                                model = playlistItem.imageUrl,
-                                contentDescription = "Album Art",
-                                contentScale = ContentScale.Crop,
+                            Card(
                                 modifier = Modifier
-                                    .size(160.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF282828))
-                            )
-                            Text(
-                                text = playlistItem.title,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                modifier = Modifier.padding(6.dp),
-                                textAlign = TextAlign.Center
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .size(160.dp, 52.dp)
+                                    .padding(4.dp)
+                                    .clickable {
+                                        onPlayClick(currentPlaylist);
+                                    },
+                                colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                             ) {
-                                Card(
-                                    modifier = Modifier
-                                        .size(160.dp, 52.dp)
-                                        .padding(4.dp)
-                                        .clickable {
-                                            if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
-                                                onPlayClick(localList?.songs ?: emptyList());
-                                            else
-                                                onPlayClick(state.data);
-                                        },
-                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.play_solid),
-                                            contentDescription = "Play Button",
-                                            modifier = Modifier.padding(12.dp),
-                                            tint = PrimaryColor
-                                        )
-                                        Text(
-                                            text = "Play",
-                                            fontSize = 18.sp,
-                                            color = PrimaryColor,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                                Card(
-                                    modifier = Modifier
-                                        .size(160.dp, 52.dp)
-                                        .padding(4.dp)
-                                        .clickable {
-                                            if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
-                                                onShuffleClick(localList?.songs ?: emptyList())
-                                            else
-                                                onShuffleClick(state.data);
-                                        },
-                                    colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.shuffle_button),
-                                            contentDescription = "Play Button",
-                                            modifier = Modifier.padding(12.dp),
-                                            tint = PrimaryColor
-                                        )
-                                        Text(
-                                            text = "Shuffle",
-                                            fontSize = 18.sp,
-                                            color = PrimaryColor,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
+                                    Icon(
+                                        painter = painterResource(R.drawable.play_solid),
+                                        contentDescription = "Play Button",
+                                        modifier = Modifier.padding(12.dp),
+                                        tint = PrimaryColor
+                                    )
+                                    Text(
+                                        text = "Play",
+                                        fontSize = 18.sp,
+                                        color = PrimaryColor,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
-                            HorizontalDivider(
-                                thickness = 2.dp,
-                                color = ButtonColor,
-                                modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
-                            )
+                            Card(
+                                modifier = Modifier
+                                    .size(160.dp, 52.dp)
+                                    .padding(4.dp)
+                                    .clickable {
+                                        onShuffleClick(currentPlaylist);
+                                    },
+                                colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.shuffle_button),
+                                        contentDescription = "Play Button",
+                                        modifier = Modifier.padding(12.dp),
+                                        tint = PrimaryColor
+                                    )
+                                    Text(
+                                        text = "Shuffle",
+                                        fontSize = 18.sp,
+                                        color = PrimaryColor,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
-                    }
-
-                    // Song list
-                    val listSong: List<MusicItem>
-                    if(state.data.isEmpty() && ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId)){
-                        listSong = localList?.songs
-                            ?: emptyList()
-                    }
-                    else{
-                        listSong = state.data
-                    }
-
-                    itemsIndexed(listSong){ index, item ->
-                        SongInPlaylist(
-                            item,
-                            onClick = { onSongClick(item, index, listSong) }
-                        )
                         HorizontalDivider(
                             thickness = 2.dp,
                             color = ButtonColor,
-                            modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
                         )
                     }
-
-                    item { Spacer(modifier = Modifier.height(88.dp)) }
                 }
-            }
-            is UiState.Error -> {
 
+                itemsIndexed(currentPlaylist){ index, item ->
+                    SongInPlaylist(
+                        item,
+                        onClick = { onSongClick(item, index, currentPlaylist) }
+                    )
+                    HorizontalDivider(
+                        thickness = 2.dp,
+                        color = ButtonColor,
+                        modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(88.dp)) }
             }
         }
         if(showPersonalPlaylistMenu == true){
             PlaylistMenuBottomSheet(
                 navController,
                 musicItem = playlistItem,
-                onDismiss = { showPersonalPlaylistMenu = false }
+                onDismiss = { showPersonalPlaylistMenu = false },
+                onPlayNextClick = {
+                    onPlayNextClick(currentPlaylist);
+                    showPersonalPlaylistMenu = false;
+                },
+                onSortByClick = { option ->
+                    val tempPlaylist = currentPlaylist.toMutableList();
+                    when (option) {
+                        "Title" -> tempPlaylist.sortBy { it.title };
+                        "Artist" -> tempPlaylist.sortBy { it.artist };
+                        else -> {}
+                    }
+                    currentPlaylist = tempPlaylist;
+                }
             )
         }
 
@@ -493,14 +509,30 @@ fun AlbumScreen(
     modifier: Modifier = Modifier,
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
+    onPlayNextClick: (List<MusicItem>) -> Unit,
     onShuffleClick: (List<MusicItem>) -> Unit,
     ytMusicViewModel: YtmusicViewModel,
 ) {
     var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
     val albumState by ytMusicViewModel.albumPage.collectAsState()
+    var currentAlbum by remember { mutableStateOf(listOf<MusicItem>()) }
 
     LaunchedEffect(Unit) {
         ytMusicViewModel.fetchAlbumSongs(albumId)
+    }
+
+
+    LaunchedEffect(albumState) {
+        when (val state = albumState) {
+            is UiState.Initial -> {
+                // Trạng thái ban đầu
+                Log.d("LogNav", "Initial id : ${albumId}")
+            }
+            is UiState.Success -> {
+                currentAlbum = state.data.songs;
+            }
+            else -> {}
+        }
     }
 
     Scaffold(
@@ -630,11 +662,11 @@ fun AlbumScreen(
                         }
                     }
                     // Song list
-                    itemsIndexed(state.data.songs){ index, item ->
+                    itemsIndexed(currentAlbum){ index, item ->
                         SongInAlbumlist(
                             item,
                             index,
-                            onClick = { onSongClick(item, index, state.data.songs) }
+                            onClick = { onSongClick(item, index, currentAlbum) }
                         )
                         HorizontalDivider(
                             thickness = 2.dp,
@@ -653,7 +685,20 @@ fun AlbumScreen(
             PlaylistMenuBottomSheet(
                 navController,
                 musicItem = MusicItem("", "", "", "", 0),
-                onDismiss = { showPersonalPlaylistMenu = false }
+                onDismiss = { showPersonalPlaylistMenu = false },
+                onPlayNextClick = {
+                    onPlayNextClick(currentAlbum);
+                    showPersonalPlaylistMenu = false;
+                },
+                onSortByClick = {  option ->
+                    val tempPlaylist = currentAlbum.toMutableList();
+                    when (option) {
+                        "Title" -> tempPlaylist.sortBy { it.title };
+                        "Artist" -> tempPlaylist.sortBy { it.artist };
+                        else -> {}
+                    }
+                    currentAlbum = tempPlaylist;
+                }
             )
         }
     }

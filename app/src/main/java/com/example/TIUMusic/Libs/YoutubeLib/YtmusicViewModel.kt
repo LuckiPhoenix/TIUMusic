@@ -240,6 +240,20 @@ class YtmusicViewModel @Inject constructor(
         _searchFilter.value = newFilter
     }
 
+    fun sortPlaylist(option : String, playlistId : String) {
+        when (option) {
+            "Title" -> {
+                if (listTrackItems.value is UiState.Success)
+                    (listTrackItems.value as UiState.Success<List<MusicItem>>).data.sortedBy { it.title };
+            }
+            "Artist" -> {
+                if (listTrackItems.value is UiState.Success)
+                    (listTrackItems.value as UiState.Success<List<MusicItem>>).data.sortedBy { it.artist };
+            }
+        }
+
+    }
+
     // Hàm trích xuất thông tin video ID
     private fun extractVideoInfo(response: SearchResponse): List<MusicItem> {
         // Thông tin trả về

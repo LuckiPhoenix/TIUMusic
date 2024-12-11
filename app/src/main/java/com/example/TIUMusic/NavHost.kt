@@ -263,6 +263,15 @@ fun NavHost(
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
                             playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                        },
+                        onPlayNextClick = { playlist ->
+                            if (!playerViewModel.playlist.value.isNullOrEmpty())
+                                playerViewModel.playlistInsertNext(playlist);
+                            else {
+                                playerViewModel.setPlaylist(playlist)
+                                playerViewModel.setIsShuffled(false)
+                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                            }
                         }
                     )
                 }
@@ -301,7 +310,16 @@ fun NavHost(
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
                             playerViewModel.playSongInPlaylistAtIndex(0, context, true)
-                        }
+                        },
+                        onPlayNextClick = { playlist ->
+                            if (!playerViewModel.playlist.value.isNullOrEmpty())
+                                playerViewModel.playlistInsertNext(playlist);
+                            else {
+                                playerViewModel.setPlaylist(playlist)
+                                playerViewModel.setIsShuffled(false)
+                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                            }
+                        },
                     )
                 }
                 composable(

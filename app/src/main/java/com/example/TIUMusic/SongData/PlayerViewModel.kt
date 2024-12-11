@@ -23,7 +23,7 @@ class PlayerViewModel : ViewModel() {
     private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", 0));
     val musicItem = _musicItem.asStateFlow();
 
-    private var _playlist : MutableStateFlow<List<MusicItem>?> = MutableStateFlow(null);
+    private var _playlist : MutableStateFlow<MutableList<MusicItem>?> = MutableStateFlow(null);
     val playlist = _playlist.asStateFlow();
     
     private var shuffledPlaylist : List<MusicItem>? = listOf();
@@ -110,7 +110,7 @@ class PlayerViewModel : ViewModel() {
     }
 
     fun setPlaylist(items : List<MusicItem>?) {
-        _playlist.value = items;
+        _playlist.value = items as MutableList<MusicItem>?;
     }
 
     fun setRadio(song: MusicItem) {
@@ -146,6 +146,24 @@ class PlayerViewModel : ViewModel() {
                 playSong(_playlist.value!![currentPlaylistIndex.value!!], context, expandPlayer);
             else if (isShuffled && shuffledPlaylist != null)
                 playSong(shuffledPlaylist!![currentPlaylistIndex.value!!], context, expandPlayer);
+        }
+    }
+
+    fun playlistInsertNext(musicItems : List<MusicItem>) {
+        if (currentPlaylistIndex.value != null) {
+            _playlist.value?.addAll(currentPlaylistIndex.value!! + 1, musicItems);
+            if ((_playlist.value?.size ?: 0) > 100) {
+                _playlist.value = _playlist.value?.subList(0, 100);
+            }
+        }
+    }
+
+    fun playlistSortBy(option : String) {
+        when (option) {
+            "Title" -> _playlist.value?.sortBy { it.title };
+            "Artist" -> _playlist.value?.sortBy { it.artist };
+            "Playlist Order" -> { TODO() }
+            else -> {}
         }
     }
 
