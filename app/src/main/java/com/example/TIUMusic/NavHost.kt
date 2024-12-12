@@ -419,10 +419,7 @@ fun NavHost(
                         }
                     )
                 ) { backStackEntry ->
-                    val playlistJson = backStackEntry.arguments?.getString("originalPlaylist")
-                    val originalPlaylist = playlistJson?.let {
-                        Gson().fromJson(it, Playlist::class.java)
-                    }
+                    val originalPlaylist = backStackEntry.arguments?.getString("originalPlaylist")
 
                     if (originalPlaylist != null) {
                         EditPlaylistScreen(
@@ -431,11 +428,12 @@ fun NavHost(
                             onDismiss = { navController.popBackStack() },
                             onPlaylistEdit = { updatedPlaylist ->
                                 for(song in updatedPlaylist.songs){
-                                    userViewModel.removeSongFromPlaylist(originalPlaylist.id, song.videoId)
+                                    userViewModel.removeSongFromPlaylist(originalPlaylist, song.videoId)
                                 }
-                                userViewModel.editPlaylistTitle(originalPlaylist.id, updatedPlaylist.title)
+                                userViewModel.editPlaylistTitle(originalPlaylist, updatedPlaylist.title)
                                 navController.popBackStack()
-                            }
+                            },
+                            viewModel = userViewModel
                         )
                     }
                 }

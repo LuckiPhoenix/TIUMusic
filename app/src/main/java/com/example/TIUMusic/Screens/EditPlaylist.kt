@@ -30,7 +30,9 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,171 +59,177 @@ import com.example.TIUMusic.ui.theme.PrimaryColor
 @Composable
 fun EditPlaylistScreen(
     navController: NavController,
-    originalPlaylist: Playlist,
+    originalPlaylist: String,
     onDismiss: () -> Unit,
-    onPlaylistEdit: (Playlist) -> Unit
+    onPlaylistEdit: (Playlist) -> Unit,
+    viewModel: UserViewModel
 ) {
-    val viewModel: UserViewModel = viewModel()
     var isPublic by remember { mutableStateOf(false) }
-    var copyOfOriginalPlaylist = originalPlaylist
+    val copyOfOriginalPlaylist by viewModel.playlist.observeAsState()
     val songsToDelete = remember { mutableStateOf(mutableListOf<MusicItem>()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getPlaylistById(originalPlaylist)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onDismiss) {
-                Icon(
-                    painter = painterResource(R.drawable.x),
-                    contentDescription = "Close",
-                    tint = PrimaryColor
-                )
-            }
-            IconButton(onClick = {
-                copyOfOriginalPlaylist.songs =
-                    copyOfOriginalPlaylist.songs.filter { it !in songsToDelete.value }.toMutableList()
-                onPlaylistEdit(copyOfOriginalPlaylist)
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.check_solid),
-                    contentDescription = "Confirm",
-                    tint = Color.Red
-                )
-            }
-        }
-
-        AsyncImage(
-            model = copyOfOriginalPlaylist.picture,
-            contentDescription = "Album Art",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(160.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF282828))
-        )
-
-        // Playlist Title Input
-        OutlinedTextField(
-            value = copyOfOriginalPlaylist.title,
-            onValueChange = { copyOfOriginalPlaylist.title = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            placeholder = { Text("Enter Playlist Title", color = Color.Gray) },
-            textStyle = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
-            maxLines = 1,
-            singleLine = true,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                cursorColor = Color.White,
-                focusedBorderColor = Color.Red,
-                unfocusedBorderColor = Color.Gray,
-            )
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Add Description Input
-        OutlinedTextField(
-            value = copyOfOriginalPlaylist.description,
-            onValueChange = { copyOfOriginalPlaylist.description = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            placeholder = { Text("Add Description", color = Color.Gray) },
-            textStyle = TextStyle(color = Color.White),
-            maxLines = 2,
-            singleLine = false,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                cursorColor = Color.White,
-                focusedBorderColor = Color.Gray,
-                unfocusedBorderColor = Color.Gray,
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Show on Profile Toggle
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Show on My Profile and in Search",
-                color = Color.Gray,
-                modifier = Modifier.weight(1f)
-            )
-            Switch(
-                checked = isPublic,
-                onCheckedChange = { isPublic = it },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.Red,
-                    uncheckedThumbColor = Color.Gray
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Playlist Songs
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            items(copyOfOriginalPlaylist.songs) { song ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .clickable { },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val isChecked = songsToDelete.value.contains(song)
-                    Checkbox(
-                        checked = isChecked,
-                        onCheckedChange = {
-                            if (it) {
-                                songsToDelete.value.add(song)
-                            } else {
-                                songsToDelete.value.remove(song)
-                            }
-                        },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = Color.Red,
-                            uncheckedColor = Color.Gray
-                        )
+        if(copyOfOriginalPlaylist != null){
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        painter = painterResource(R.drawable.x),
+                        contentDescription = "Close",
+                        tint = PrimaryColor
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    AsyncImage(
-                        model = song.imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.DarkGray)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = song.title,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                }
+                IconButton(onClick = {
+                    copyOfOriginalPlaylist!!.songs =
+                        copyOfOriginalPlaylist!!.songs.filter { it !in songsToDelete.value }.toMutableList()
+                    onPlaylistEdit(copyOfOriginalPlaylist!!)
+                }) {
+                    Icon(
+                        painter = painterResource(R.drawable.check_solid),
+                        contentDescription = "Confirm",
+                        tint = Color.Red
                     )
                 }
             }
-        }
 
+            AsyncImage(
+                model = copyOfOriginalPlaylist!!.picture,
+                contentDescription = "Album Art",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(160.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF282828))
+            )
+
+            // Playlist Title Input
+            OutlinedTextField(
+                value = copyOfOriginalPlaylist!!.title,
+                onValueChange = { copyOfOriginalPlaylist!!.title = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                placeholder = { Text("Enter Playlist Title", color = Color.Gray) },
+                textStyle = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    cursorColor = Color.White,
+                    focusedBorderColor = Color.Red,
+                    unfocusedBorderColor = Color.Gray,
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Add Description Input
+            OutlinedTextField(
+                value = copyOfOriginalPlaylist!!.description,
+                onValueChange = { copyOfOriginalPlaylist!!.description = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                placeholder = { Text("Add Description", color = Color.Gray) },
+                textStyle = TextStyle(color = Color.White),
+                maxLines = 2,
+                singleLine = false,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    cursorColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.Gray,
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Show on Profile Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Show on My Profile and in Search",
+                    color = Color.Gray,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = isPublic,
+                    onCheckedChange = { isPublic = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.Red,
+                        uncheckedThumbColor = Color.Gray
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Playlist Songs
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(copyOfOriginalPlaylist!!.songs) { song ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .clickable { },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val isChecked = songsToDelete.value.contains(song)
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = {
+                                if (it) {
+                                    songsToDelete.value.add(song)
+                                } else {
+                                    songsToDelete.value.remove(song)
+                                }
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color.Red,
+                                uncheckedColor = Color.Gray
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        AsyncImage(
+                            model = song.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.DarkGray)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = song.title,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+        }
     }
 }

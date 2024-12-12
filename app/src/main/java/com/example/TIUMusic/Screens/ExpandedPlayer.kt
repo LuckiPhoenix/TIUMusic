@@ -1,5 +1,6 @@
 package com.example.TIUMusic.Screens
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.database.ContentObserver
 import android.graphics.Bitmap
@@ -125,8 +126,6 @@ import androidx.compose.material3.TextFieldDefaults
 
 var showBottomSheet : Boolean = false
 var showSleepTimerSheet: Boolean = false
-var showUserPlaylistSheet: Boolean = false
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 public fun ExpandedPlayer(
     musicItem: MusicItem,
@@ -143,14 +142,14 @@ public fun ExpandedPlayer(
     navController: NavController,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 50000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        )
+        ), label = ""
     )
     var albumArt : Bitmap? by remember { mutableStateOf(null) }
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
@@ -293,16 +292,17 @@ public fun ExpandedPlayer(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
-        if(showBottomSheet == true){
+        if(showBottomSheet){
             PlayMenuBottomSheet(
                 navController,
                 musicItem = musicItem,
                 playerViewModel = playerViewModel,
                 onRepeatClick = {
                     playerViewModel.setLoop(!playerViewModel.loop.value);
-                })
+                },
+                userViewModel = userViewModel)
         }
-        if(showSleepTimerSheet == true){
+        if(showSleepTimerSheet){
             SleepTimerSheet(
                 onDismissRequest = {
                     showSleepTimerSheet = false
@@ -311,18 +311,6 @@ public fun ExpandedPlayer(
                     time -> startTimer(time)
                 }
             )
-        }
-        if(showUserPlaylistSheet == true){
-            currentUser?.let {
-                UserPlaylistBottomSheet(
-                    onDismissRequest = { showUserPlaylistSheet = false},
-                    it.playlists,
-                    onAdding = {id ->
-                        userViewModel.addSongToPlaylist(id, musicItem)
-                        Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
-                    }
-                )
-            }
         }
     }
 }
@@ -353,8 +341,10 @@ fun PlayMenuBottomSheet(
     navController: NavController,
     onRepeatClick: () -> Unit,
     musicItem: MusicItem,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    userViewModel: UserViewModel,
 ){
+    val currentUser by userViewModel.currentUser.observeAsState()
     var isFavorite by remember { mutableStateOf(false) }
     val (showEditPlaylistSheet, setShowEditPlaylistSheet) = remember { mutableStateOf(false) }
     ModalBottomSheet(
@@ -542,6 +532,7 @@ fun PlayMenuBottomSheet(
         }
         if(showEditPlaylistSheet) {
             var text by remember { mutableStateOf("") }
+            val context = LocalContext.current
             ModalBottomSheet(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 600.dp),
@@ -595,38 +586,45 @@ fun PlayMenuBottomSheet(
                         modifier = Modifier.padding(start = 16.dp)
                     )
                     //Hien thi cac playlist co trong tai khoan, khi nao co du lieu nho backend them vao
-//                    playlists.forEach { playlist ->
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(16.dp)
-//                                .clickable { onSelectPlaylist(playlist) },
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            AsyncImage(
-//                                model = playlist.imageUrl,
-//                                contentDescription = "Playlist Image",
-//                                contentScale = ContentScale.Crop,
-//                                modifier = Modifier
-//                                    .size(40.dp)
-//                                    .clip(RoundedCornerShape(8.dp))
-//                                    .background(Color.DarkGray)
-//                            )
-//                            Spacer(modifier = Modifier.width(16.dp))
-//                            Column {
-//                                Text(
-//                                    text = playlist.name,
-//                                    color = Color.White,
-//                                    fontWeight = FontWeight.Bold
-//                                )
-//                                Text(
-//                                    text = if (playlist.isAdded) "Already added" else "",
-//                                    color = Color.Gray,
-//                                    fontSize = 12.sp
-//                                )
-//                            }
-//                        }
-//                    }
+                    val playlists = currentUser?.playlists
+                    if (playlists != null) {
+                        playlists.forEach { playlist ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clickable {
+                                        userViewModel.addSongToPlaylist(playlist.id, musicItem)
+                                        Toast
+                                            .makeText(context, "Adding to ${playlist.title}", Toast.LENGTH_SHORT)
+                                            .show()},
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AsyncImage(
+                                    model = playlist.picture,
+                                    contentDescription = "Playlist Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.DarkGray)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column {
+                                    Text(
+                                        text = playlist.title,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
+//                                    Text(
+//                                        text = if (playlist.isAdded) "Already added" else "",
+//                                        color = Color.Gray,
+//                                        fontSize = 12.sp
+//                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -691,48 +689,6 @@ fun SleepTimerSheet(
         )
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun UserPlaylistBottomSheet(
-    onDismissRequest: () -> Unit,
-    playlists: MutableList<Playlist>,
-    onAdding: (id: String) -> Unit
-    ) {
-    val context = LocalContext.current
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest
-    ) {
-        playlists.forEach { item ->
-            Text(
-                text = item.title,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        onDismissRequest()
-                        // + Add to playlist
-                        onAdding(item.id)
-                        Toast
-                            .makeText(context, "Adding to ${item.title}", Toast.LENGTH_SHORT)
-                            .show()
-                        showBottomSheet = false
-                    }
-            )
-        }
-        Text(
-            text = "(+) Create new Playlist",
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .clickable {
-                    onDismissRequest()
-                    showBottomSheet = false
-                }
-        )
-    }
-}
-
 
 @Composable
 fun PlaybackControls(
@@ -925,6 +881,7 @@ fun VolumeControls(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun formatTime(timeInSeconds: Float): String {
     val minutes = (timeInSeconds / 60).toInt()

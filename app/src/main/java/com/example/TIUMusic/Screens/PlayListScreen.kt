@@ -96,7 +96,8 @@ fun PlaylistMenuBottomSheet(
     musicItem: MusicItem,
     onPlayNextClick : () -> Unit,
     onSortByClick: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    userViewModel: UserViewModel
 ) {
     val (showDeleteConfirmation, setShowDeleteConfirmation) = remember { mutableStateOf(false) }
     val (showSortByBottomSheet, setShowSortByBottomSheet) = remember { mutableStateOf(false) }
@@ -125,7 +126,7 @@ fun PlaylistMenuBottomSheet(
                     .background(Color(0xFF282828))
             )
             Text(
-                text = "My Playlist",
+                text = musicItem.title,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 12.dp)
             )
@@ -160,7 +161,9 @@ fun PlaylistMenuBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clickable { },
+                .clickable {
+                    navController.navigate("editPlaylist/${musicItem.playlistId}")
+                },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -230,7 +233,12 @@ fun PlaylistMenuBottomSheet(
                     Text(text = "Are you sure you want to delete ${musicItem.title} from your library?")
                 },
                 confirmButton = {
-                    TextButton(onClick = { /* Delete logic */ setShowDeleteConfirmation(false) }) {
+                    TextButton(onClick = { /* Delete logic */
+                        userViewModel.removePlaylist(musicItem.playlistId)
+                        setShowDeleteConfirmation(false)
+                        navController.navigate("library")
+                    }
+                    ) {
                         Text("Delete")
                     }
                 },
@@ -477,7 +485,7 @@ fun PlaylistScreen(
                 item { Spacer(modifier = Modifier.height(88.dp)) }
             }
         }
-        if(showPersonalPlaylistMenu == true){
+        if(showPersonalPlaylistMenu){
             PlaylistMenuBottomSheet(
                 navController,
                 musicItem = playlistItem,
@@ -494,7 +502,8 @@ fun PlaylistScreen(
                         else -> {}
                     }
                     currentPlaylist = tempPlaylist;
-                }
+                },
+                userViewModel = userViewModel
             )
         }
 
@@ -680,26 +689,6 @@ fun AlbumScreen(
             is UiState.Error -> {
 
             }
-        }
-        if(showPersonalPlaylistMenu == true){
-            PlaylistMenuBottomSheet(
-                navController,
-                musicItem = MusicItem("", "", "", "", 0),
-                onDismiss = { showPersonalPlaylistMenu = false },
-                onPlayNextClick = {
-                    onPlayNextClick(currentAlbum);
-                    showPersonalPlaylistMenu = false;
-                },
-                onSortByClick = {  option ->
-                    val tempPlaylist = currentAlbum.toMutableList();
-                    when (option) {
-                        "Title" -> tempPlaylist.sortBy { it.title };
-                        "Artist" -> tempPlaylist.sortBy { it.artist };
-                        else -> {}
-                    }
-                    currentAlbum = tempPlaylist;
-                }
-            )
         }
     }
 }
