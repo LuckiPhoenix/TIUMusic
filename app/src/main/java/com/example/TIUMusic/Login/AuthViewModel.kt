@@ -347,14 +347,16 @@ class UserViewModel @Inject constructor(
     }
 
     // Get a playlist by ID
-    suspend fun getPlaylistById(playlistId: String): Playlist? {
-        return runCatching {
-            getCurrentUser()
-        }.mapCatching { user ->
-            user?.playlists?.find { it.id == playlistId }
-        }.getOrElse {
-            Log.d("LogNav", "Error")
-            null
+    fun getPlaylistById(playlistId: String) {
+        viewModelScope.launch {
+            runCatching {
+                getCurrentUser()
+            }.onSuccess { user ->
+                val playlist = user?.playlists?.find { it.id == playlistId }
+                _playlist.value = playlist
+            }.onFailure {
+                Log.d("LogNav", "Error")
+            }
         }
     }
 }
