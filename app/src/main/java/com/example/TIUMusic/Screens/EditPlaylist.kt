@@ -233,3 +233,93 @@ fun EditPlaylistScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewPlaylistScreen(
+    navController: NavController,
+    originalPlaylist: Playlist,
+    onDismiss: () -> Unit,
+    onPlaylistEdit: (Playlist) -> Unit
+) {
+    val viewModel: UserViewModel = viewModel()
+    var isPublic by remember { mutableStateOf(false) }
+    var copyOfOriginalPlaylist = originalPlaylist
+    val songsToDelete = remember { mutableStateOf(mutableListOf<MusicItem>()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    painter = painterResource(R.drawable.x),
+                    contentDescription = "Close",
+                    tint = PrimaryColor
+                )
+            }
+            IconButton(onClick = {
+                copyOfOriginalPlaylist.songs =
+                    copyOfOriginalPlaylist.songs.filter { it !in songsToDelete.value }.toMutableList()
+                onPlaylistEdit(copyOfOriginalPlaylist)
+            }) {
+                Icon(
+                    painter = painterResource(R.drawable.check_solid),
+                    contentDescription = "Confirm",
+                    tint = Color.Red
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .size(160.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF282828)),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(RoundedCornerShape(35.dp))
+                    .background(PrimaryColor)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.camera),
+                    contentDescription = "Camera Icon",
+                    tint = Color.Red,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
+
+        // Playlist Title Input
+        OutlinedTextField(
+            value = copyOfOriginalPlaylist.title,
+            onValueChange = { copyOfOriginalPlaylist.title = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            placeholder = { Text("Playlist Title", color = Color.Gray) },
+            textStyle = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
+            maxLines = 1,
+            singleLine = true,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                cursorColor = Color.White,
+                focusedBorderColor = Color.Red,
+                unfocusedBorderColor = Color.Gray,
+            )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
