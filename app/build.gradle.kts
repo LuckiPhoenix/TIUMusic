@@ -64,6 +64,11 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.accompanist.systemuicontroller.v0270)
 
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.session)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     // YoutubeLib
     implementation(libs.coil.network.okhttp)

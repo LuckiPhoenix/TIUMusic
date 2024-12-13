@@ -20,4 +20,8 @@
     <string name="YOUTUBE_MUSIC_URL">https://music.youtube.com/</string>
     <string name="YOUTUBE_MOBILE_URL">https://m.youtube.com</string>
     <string name="YOUTUBE_URL">https://www.youtube.com</string>
+    <string name="media_notification_channel">MediaNotification</string>
+    <string name="media_notification_channel_description">MediaNotification</string>
+    <string name="generic_error">error</string>
+    <string name="error_media_not_found">media not found</string>
 </resources>

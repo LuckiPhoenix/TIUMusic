@@ -413,7 +413,8 @@ fun NavHost(
         }
 
         // Check if we're in any route within the main navigation
-        if (currentBackStackEntry?.destination?.parent?.route == "main" && musicItem.videoId.isNotEmpty()) {
+//        if (currentBackStackEntry?.destination?.parent?.route == "main" && musicItem.videoId.isNotEmpty()) {
+        if (currentBackStackEntry?.destination?.parent?.route == "main") {
             NowPlayingSheet(
                 playerViewModel = playerViewModel,
                 visualizerViewModel = visualizerViewModel,

@@ -452,7 +452,7 @@ fun MyTextField(
         }
     }
 }
-
+/*
 @Preview (showBackground = true)
 @Composable
 fun preview(){
@@ -467,4 +467,4 @@ fun preview(){
         onTextClick = {  },
         modifier = Modifier.background(BackgroundColor)
     )
-}
+}*/

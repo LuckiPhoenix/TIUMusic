@@ -56,6 +56,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -94,9 +95,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.toBitmap
+import com.example.TIUMusic.Libs.MediaPlayer.AudioPlayerView
+import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
+import com.example.TIUMusic.Libs.MediaPlayer.PlayerUIState
 import com.example.TIUMusic.Libs.Visualizer.VisualizerCircleRGB
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
@@ -107,10 +112,12 @@ import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
+import kotlinx.coroutines.delay
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -161,6 +168,34 @@ public fun ExpandedPlayer(
         }
         userViewModel.getCurrentUser()
     }
+
+    val viewModel: MediaViewModel = hiltViewModel()
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentTrackState by viewModel.currentPlayingIndex.collectAsStateWithLifecycle()
+    val isPlayingState by viewModel.isPlaying.collectAsStateWithLifecycle()
+    val totalDurationState by viewModel.totalDurationInMS.collectAsStateWithLifecycle()
+    var currentPositionState by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(isPlayingState) {
+        while (isPlayingState) {
+            currentPositionState = viewModel.player.currentPosition
+            delay(1.seconds)
+        }
+    }
+
+    AudioPlayerView(viewModel)
+//    when (uiState) {
+//        PlayerUIState.Loading, PlayerUIState.Initial -> {
+//
+//        }
+//
+//        is PlayerUIState.Tracks -> {
+//            Column(modifier = Modifier.fillMaxSize()) {
+//                AudioPlayerView(viewModel)
+//            }
+//        }
+//    }
 
     Box(
         contentAlignment = Alignment.TopCenter,
