@@ -84,8 +84,6 @@ class MediaViewModel @Inject constructor(
         val videoItems: ArrayList<MediaSource> = arrayListOf()
         var count = 1;
         playlist.forEach {
-
-
             val mediaMetaData = MediaMetadata.Builder()
                 .setArtworkUri(Uri.parse(it.imageRId.toString()))
                 .setTitle(it.title)
@@ -98,10 +96,8 @@ class MediaViewModel @Inject constructor(
                 .build()
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)
-                .setMediaId(count.toString())
                 .setMediaMetadata(mediaMetaData)
                 .build()
-            count++;
             val dataSourceFactory = DefaultDataSource.Factory(context)
 
             val mediaSource =
@@ -117,6 +113,28 @@ class MediaViewModel @Inject constructor(
         player.playWhenReady = true
         player.setMediaSources(videoItems)
         player.prepare()
+    }
+
+    fun setMusicItem(musicItem: MusicItem, context: Context) {
+        val mediaMetaData = MediaMetadata.Builder()
+            .setArtworkUri(Uri.parse(musicItem.imageRId.toString()))
+            .setTitle(musicItem.title)
+            .setAlbumArtist(musicItem.artist)
+            .build()
+
+        val uri = Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .path("raw/${musicItem.videoId}")
+            .build()
+        val mediaItem = MediaItem.Builder()
+            .setUri(uri)
+            .setMediaMetadata(mediaMetaData)
+            .build()
+        val dataSourceFactory = DefaultDataSource.Factory(context)
+
+        val mediaSource =
+            ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+        player.setMediaSource(mediaSource);
     }
 
     fun updatePlaylist(action: ControlButtons) {

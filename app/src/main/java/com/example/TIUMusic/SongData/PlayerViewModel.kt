@@ -5,8 +5,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.SeekListener
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
@@ -58,6 +61,9 @@ class PlayerViewModel : ViewModel() {
     private val _shouldExpand = MutableStateFlow<Int>(0);
     val shouldExpand = _shouldExpand.asStateFlow();
 
+    private var _mediaViewModel = MutableStateFlow<MediaViewModel?>(null);
+    val mediaViewModel = _mediaViewModel.asStateFlow();
+
     var ytViewModel = YoutubeViewModel(this);
     val syncedLyricsBuffer : Float = 0.0f;
 
@@ -96,17 +102,22 @@ class PlayerViewModel : ViewModel() {
         _musicItem.value = item;
         if (expandPlayer)
             setShouldExpand(1);
-        ytViewModel.loadAndPlayVideo(
-            videoId = item.videoId,
-            metadata = YoutubeMetadata(
-                title = item.title,
-                artist = item.artist,
-                artBitmapURL = item.imageUrl,
-                displayTitle = item.title,
-            ),
-            durationMs = 0,
-            context = context
-        )
+        _mediaViewModel.value?.setMusicItem(item, context);
+//        ytViewModel.loadAndPlayVideo(
+//            videoId = item.videoId,
+//            metadata = YoutubeMetadata(
+//                title = item.title,
+//                artist = item.artist,
+//                artBitmapURL = item.imageUrl,
+//                displayTitle = item.title,
+//            ),
+//            durationMs = 0,
+//            context = context
+//        )
+    }
+
+    fun setMediaViewModel(viewModel : MediaViewModel) {
+        _mediaViewModel.value = viewModel;
     }
 
     fun setPlaylist(items : List<MusicItem>?) {

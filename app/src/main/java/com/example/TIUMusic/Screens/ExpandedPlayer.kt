@@ -3,6 +3,7 @@ package com.example.TIUMusic.Screens
 import android.content.Context
 import android.database.ContentObserver
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.os.CountDownTimer
 import android.os.Handler
@@ -20,6 +21,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -150,22 +152,20 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-    var albumArt : Bitmap? by remember { mutableStateOf(null) }
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
     val syncedLine by playerViewModel.syncedLine.collectAsState()
     val currentUser by userViewModel.currentUser.observeAsState()
+    val context = LocalContext.current;
 
-    LaunchedEffect(albumArt) {
-        if (albumArt != null) {
-            avgColor = Color(albumArt!!.getPixel(0, 0));
-            Log.d("Player", avgColor.toString());
-            avgColor = avgColor.copy(
-                alpha = 1.0f,
-                red = min(1.0f, avgColor.red * 1.5f),
-                green = min(1.0f, avgColor.green * 1.5f),
-                blue = min(1.0f, avgColor.blue * 1.5f)
-            )
-        }
+    LaunchedEffect(Unit) {
+        val bitmap = BitmapFactory.decodeResource(context.resources, musicItem.imageRId ?: R.drawable.tiumarksvg);
+        avgColor = Color(bitmap.getPixel(0, 0));
+        avgColor = avgColor.copy(
+            alpha = 1.0f,
+            red = min(1.0f, avgColor.red * 1.5f),
+            green = min(1.0f, avgColor.green * 1.5f),
+            blue = min(1.0f, avgColor.blue * 1.5f)
+        )
         userViewModel.getCurrentUser()
     }
 
@@ -201,14 +201,10 @@ public fun ExpandedPlayer(
                     radius = 330.dp.value,
                     lineHeight = 550.dp.value,
                 )
-                AsyncImage(
-                    model = musicItem.imageUrl,
+                Image(
+                    painter = painterResource(musicItem.imageRId ?: R.drawable.tiumarksvg),
                     contentDescription = "Song Image",
                     contentScale = ContentScale.FillHeight,
-                    onSuccess = { result ->
-                        albumArt =
-                            result.result.image.toBitmap().copy(Bitmap.Config.ARGB_8888, true);
-                    },
                     modifier = Modifier
                         .size(240.dp)
                         .clip(RoundedCornerShape(140.dp))

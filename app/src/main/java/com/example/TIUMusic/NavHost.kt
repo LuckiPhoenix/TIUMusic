@@ -255,9 +255,10 @@ fun NavHost(
                         },
                         onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.setPlaylist(playlist)
-                            playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
+                            playerViewModel.playSong(musicItem, context);
+//                            playerViewModel.setPlaylist(playlist)
+//                            playerViewModel.setIsShuffled(false)
+//                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
                         },
                         onShuffleClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)

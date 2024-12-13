@@ -61,7 +61,7 @@ fun HomeScreen(
                             MusicItem(
                                 title = it.title,
                                 artist = it.artist,
-                                videoId = it.id.toString(),
+                                videoId = it.fileUri,
                                 type = 0,
                                 imageUrl = it.imageUri,
                                 imageRId = nameToRID(it.imageUri, "raw", context),

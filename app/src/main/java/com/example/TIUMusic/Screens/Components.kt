@@ -80,7 +80,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -103,7 +102,6 @@ import coil3.compose.rememberAsyncImagePainter
 import com.example.TIUMusic.Libs.MediaPlayer.AudioPlayerView
 import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.MainActivity
@@ -114,10 +112,8 @@ import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
 
 /*
 các components reusable phải được declare ở đây
@@ -1220,64 +1216,33 @@ fun NowPlayingSheet(
     }
 
 
-    val viewModel: MediaViewModel = hiltViewModel()
+    val mediaViewModel: MediaViewModel = hiltViewModel()
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentTrackState by viewModel.currentPlayingIndex.collectAsStateWithLifecycle()
-    val isPlayingState by viewModel.isPlaying.collectAsStateWithLifecycle()
-    val totalDurationState by viewModel.totalDurationInMS.collectAsStateWithLifecycle()
+    LaunchedEffect(mediaViewModel) {
+        playerViewModel.setMediaViewModel(mediaViewModel);
+    }
+
+    val uiState by mediaViewModel.uiState.collectAsStateWithLifecycle()
+    val currentTrackState by mediaViewModel.currentPlayingIndex.collectAsStateWithLifecycle()
+    val isPlayingState by mediaViewModel.isPlaying.collectAsStateWithLifecycle()
+    val totalDurationState by mediaViewModel.totalDurationInMS.collectAsStateWithLifecycle()
     var currentPositionState by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(isPlayingState) {
         while (isPlayingState) {
-            currentPositionState = viewModel.player.currentPosition
-            delay(1.seconds)
+            currentPositionState = mediaViewModel.player.currentPosition
+            playerViewModel.setCurrentTime(currentPositionState / 1000f);
+            delay(200)
         }
     }
 
-    AudioPlayerView(viewModel)
-//    when (uiState) {
-//        PlayerUIState.Loading, PlayerUIState.Initial -> {
-//
-//        }
-//
-//        is PlayerUIState.Tracks -> {
-//            Column(modifier = Modifier.fillMaxSize()) {
-//                AudioPlayerView(viewModel)
-//            }
-//        }
-//    }
+    LaunchedEffect(totalDurationState, currentTrackState, isPlayingState) {
+        playerViewModel.setDuration(totalDurationState / 1000f);
+        playerViewModel.setPlaying(isPlayingState);
+    }
 
-    YoutubeView(
-        youtubeVideoId = musicItem.videoId,
-        youtubeViewModel = playerViewModel.ytViewModel,
-        onSecond = { ytPlayer, second ->
-            if (!isSeeking)
-                playerViewModel.setCurrentTime(second);
-        },
-        onDurationLoaded = { ytPlayer, dur ->
-            playerViewModel.setDuration(dur);
-        },
-        onState =  { ytPlayer, state ->
-            when(state) {
-                PlayerConstants.PlayerState.PLAYING -> {
-                    if (!playerViewModel.isPlaying.value)
-                        isSeeking = false;
-                    playerViewModel.setPlaying(true);
-                }
-                PlayerConstants.PlayerState.PAUSED, PlayerConstants.PlayerState.ENDED -> {
-                    playerViewModel.setPlaying(false)
-                };
-                PlayerConstants.PlayerState.BUFFERING -> {
-                    playerViewModel.setPlaying(false);
-                } // Set Loading
-                else -> {
-                    playerViewModel.setPlaying(false);
-                    // Set Loading
-                }
-            }
-        }
-    )
+    AudioPlayerView(mediaViewModel)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -1331,9 +1296,9 @@ fun NowPlayingSheet(
                             currentTime = playerViewModel.currentTime.value,
                             onPlayPauseClick = {
                                 if (playerViewModel.isPlaying.value)
-                                    ytPlayerHelper.pause();
+                                    mediaViewModel.player.pause();
                                 else
-                                    ytPlayerHelper.play();
+                                    mediaViewModel.player.play();
                            },
                             onSeek = { newPosition ->
                                 isSeeking = true;
@@ -1341,11 +1306,11 @@ fun NowPlayingSheet(
                             onSeekFinished = { newPosition ->
                                 playerViewModel.setPlaying(false);
                                 playerViewModel.setCurrentTime(newPosition);
-                                ytPlayerHelper.seekTo(newPosition);
+                                mediaViewModel.updatePlayerPosition(newPosition.toLong() * 1000L);
                             },
                             onChangeSong = { isNextSong ->
                                 if (!isNextSong && ytPlayerHelper.currentSecond >= 5) {
-                                    ytPlayerHelper.seekTo(0f);
+                                    mediaViewModel.updatePlayerPosition(0);
                                 }
                                 else {
                                     playerViewModel.changeSong(isNextSong, MainActivity.applicationContext)
@@ -1391,8 +1356,8 @@ private fun MiniPlayer(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = getYoutubeSmallThumbnail(musicItem.videoId),
+            Image(
+                painter = painterResource(musicItem.imageRId ?: R.drawable.tiumarksvg),
                 contentDescription = "song image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
