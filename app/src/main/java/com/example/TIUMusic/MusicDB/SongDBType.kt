@@ -1,10 +1,22 @@
 package com.example.TIUMusic.MusicDB
 
+import android.content.Context
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.Utils.nameToRID
 
-@Entity
+@Entity(foreignKeys = [
+    ForeignKey(
+        entity = Album::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("albumId"),
+        onDelete = ForeignKey.SET_NULL
+    )
+])
 data class Song(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
@@ -12,12 +24,27 @@ data class Song(
     val title: String,
     val artist: String,
     val imageUri: String,
+    val albumId : Int?,
+    val albumTrack : Int,
+    val duration : Float,
 ) {
-    fun toMusicItem() : MusicItem = MusicItem(
-        videoId = fileUri,
-        title = title,
-        artist = artist,
-        imageUrl = imageUri,
-        type = 0,
-    )
+    fun toMusicItem(context : Context) : MusicItem {
+        return MusicItem(
+            videoId = fileUri,
+            title = title,
+            artist = artist,
+            imageUrl = imageUri,
+            imageRId = nameToRID(imageUri, "raw", context),
+            type = 0,
+        )
+    }
 }
+
+@Entity
+data class Album(
+    @PrimaryKey(autoGenerate = true)
+    val id : Int,
+    val title: String,
+    val artist: String,
+    val imageUri: String,
+)

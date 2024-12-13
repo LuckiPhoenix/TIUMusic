@@ -169,34 +169,6 @@ public fun ExpandedPlayer(
         userViewModel.getCurrentUser()
     }
 
-    val viewModel: MediaViewModel = hiltViewModel()
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentTrackState by viewModel.currentPlayingIndex.collectAsStateWithLifecycle()
-    val isPlayingState by viewModel.isPlaying.collectAsStateWithLifecycle()
-    val totalDurationState by viewModel.totalDurationInMS.collectAsStateWithLifecycle()
-    var currentPositionState by remember { mutableLongStateOf(0L) }
-
-    LaunchedEffect(isPlayingState) {
-        while (isPlayingState) {
-            currentPositionState = viewModel.player.currentPosition
-            delay(1.seconds)
-        }
-    }
-
-    AudioPlayerView(viewModel)
-//    when (uiState) {
-//        PlayerUIState.Loading, PlayerUIState.Initial -> {
-//
-//        }
-//
-//        is PlayerUIState.Tracks -> {
-//            Column(modifier = Modifier.fillMaxSize()) {
-//                AudioPlayerView(viewModel)
-//            }
-//        }
-//    }
-
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier =

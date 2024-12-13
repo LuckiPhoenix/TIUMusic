@@ -1,18 +1,22 @@
 package com.example.TIUMusic.MusicDB
 
-import android.app.Application
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.example.TIUMusic.SongData.MusicItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 class MusicViewModel(@ApplicationContext context: Context) : ViewModel() {
-    private val readAllData : LiveData<List<Song>>;
-    private val repository : MusicRepository;
+    val readAllData : List<Song>;
+    private val _repository : MusicRepository;
 
     init {
         val musicDao = MusicDatabase.getDatabase(context).musicDao();
-        repository = MusicRepository(musicDao);
-        readAllData = repository.readAllData;
+        _repository = MusicRepository(musicDao);
+        readAllData = _repository.readAllData;
     }
+
+    fun getAlbums(context : Context) : List<Album> {
+        return _repository.albums;
+    }
+
 }

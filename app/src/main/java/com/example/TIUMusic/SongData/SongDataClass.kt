@@ -12,6 +12,7 @@ data class MusicItem(
     val artist: String,
     val imageUrl: String,
     val type: Int, // 0: Song, 1: Playlist, 2: Album, 3: Artist
+    val imageRId : Int? = null,
     val playlistId : String = "",
     val browseId : String = "",
     val fallbackThumbnail : String = "",

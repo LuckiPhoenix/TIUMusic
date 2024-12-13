@@ -20,7 +20,7 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerNotificationManager
-import com.example.TIUMusic.R
+import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +38,7 @@ import javax.inject.Inject
 class MediaViewModel @Inject constructor(
     val player: ExoPlayer
 ) : ViewModel() {
-    private val playlist = emptyList<MusicItem>()
+    private var playlist = emptyList<MusicItem>()
 
     private val _currentPlayingIndex = MutableStateFlow(0)
     val currentPlayingIndex = _currentPlayingIndex.asStateFlow()
@@ -73,28 +73,28 @@ class MediaViewModel @Inject constructor(
 
         player.setAudioAttributes(audioAttributes, true)
         player.repeatMode = Player.REPEAT_MODE_ALL
-
+        
         player.addListener(playerListener)
 
-        setupPlaylist(context)
+        val musicViewModel = MusicViewModel(context);
+        setupPlaylist(musicViewModel.readAllData.map { it.toMusicItem(context) }, context);
     }
 
-    private fun setupPlaylist(context: Context) {
-
+    private fun setupPlaylist(playlist : List<MusicItem>, context: Context) {
         val videoItems: ArrayList<MediaSource> = arrayListOf()
         var count = 1;
         playlist.forEach {
 
+
             val mediaMetaData = MediaMetadata.Builder()
-                .setArtworkUri(Uri.parse(it.imageUrl))
+                .setArtworkUri(Uri.parse(it.imageRId.toString()))
                 .setTitle(it.title)
                 .setAlbumArtist(it.artist)
                 .build()
 
-            val trackUri = Uri.parse(it.title)
             val uri = Uri.Builder()
                 .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                .path(R.raw.elevator_music_medasin.toString())
+                .path("raw/${it.videoId}")
                 .build()
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)

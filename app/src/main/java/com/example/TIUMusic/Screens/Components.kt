@@ -13,6 +13,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -70,6 +71,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -78,6 +80,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -92,9 +95,13 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
+import com.example.TIUMusic.Libs.MediaPlayer.AudioPlayerView
+import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeView
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
@@ -108,7 +115,9 @@ import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 /*
 các components reusable phải được declare ở đây
@@ -965,9 +974,8 @@ fun AlbumCard(
                 onClick = onClick
             )
     ) {
-        AsyncImage(
-            model = item.imageUrl,
-            fallback = painter,
+        Image(
+            painter = painterResource(item.imageRId ?: R.drawable.tiumarksvg),
             contentDescription = "Album art for ${item.title}",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -975,6 +983,16 @@ fun AlbumCard(
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF282828))
         )
+//        AsyncImage(
+//            model = item.imageUrl,
+//            fallback = painter,
+//            contentDescription = "Album art for ${item.title}",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .size(imageSize)
+//                .clip(RoundedCornerShape(12.dp))
+//                .background(Color(0xFF282828))
+//        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -1200,6 +1218,36 @@ fun NowPlayingSheet(
         val newProgress = (dragProgress.value - delta / maxHeight.value).coerceIn(0f, 1f)
         dragProgress.value = newProgress
     }
+
+
+    val viewModel: MediaViewModel = hiltViewModel()
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentTrackState by viewModel.currentPlayingIndex.collectAsStateWithLifecycle()
+    val isPlayingState by viewModel.isPlaying.collectAsStateWithLifecycle()
+    val totalDurationState by viewModel.totalDurationInMS.collectAsStateWithLifecycle()
+    var currentPositionState by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(isPlayingState) {
+        while (isPlayingState) {
+            currentPositionState = viewModel.player.currentPosition
+            delay(1.seconds)
+        }
+    }
+
+    AudioPlayerView(viewModel)
+//    when (uiState) {
+//        PlayerUIState.Loading, PlayerUIState.Initial -> {
+//
+//        }
+//
+//        is PlayerUIState.Tracks -> {
+//            Column(modifier = Modifier.fillMaxSize()) {
+//                AudioPlayerView(viewModel)
+//            }
+//        }
+//    }
+
     YoutubeView(
         youtubeVideoId = musicItem.videoId,
         youtubeViewModel = playerViewModel.ytViewModel,

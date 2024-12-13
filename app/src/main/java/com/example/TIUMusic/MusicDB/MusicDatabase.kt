@@ -2,12 +2,11 @@ package com.example.TIUMusic.MusicDB
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Song::class], version = 1, exportSchema = true)
+@Database(entities = [Song::class, Album::class], version = 1, exportSchema = true)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun musicDao() : MusicDao
 
@@ -26,6 +25,7 @@ abstract class MusicDatabase : RoomDatabase() {
                     "music_database"
                 )
                     .createFromAsset("database/MusicDB.db")
+                    .allowMainThreadQueries()
                     .build()
                 instance.openHelper.readableDatabase.let {
                     val test = it.query("SELECT * FROM Song");
@@ -39,5 +39,8 @@ abstract class MusicDatabase : RoomDatabase() {
 }
 
 class MusicRepository(private val musicDao : MusicDao) {
-    val readAllData : LiveData<List<Song>> = musicDao.readAllData();
+    val readAllData : List<Song> = musicDao.getAllSongs();
+    val albums : List<Album> = musicDao.getAllAlbums();
+
+    fun getSongsByAlbumId(albumId: Int) : List<Song> = musicDao.getSongsInAlbumById(albumId);
 }

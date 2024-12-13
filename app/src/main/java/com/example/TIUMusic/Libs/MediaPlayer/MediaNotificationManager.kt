@@ -1,10 +1,15 @@
 package com.example.TIUMusic.Libs.MediaPlayer
 
-import android.app.Notification
+import android.R.attr.bitmap
 import android.app.PendingIntent
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -12,6 +17,7 @@ import androidx.media3.ui.PlayerNotificationManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 /**
  * A wrapper class for ExoPlayer's PlayerNotificationManager.
@@ -109,7 +116,7 @@ class MediaNotificationManager(
                 currentIconUri = iconUri
                 serviceScope.launch {
                     currentBitmap = iconUri?.let {
-                        resolveUriAsBitmap(it)
+                        resolveUriAsBitmap(it.toString().toInt())
                     }
                     currentBitmap?.let { callback.onBitmap(it) }
                 }
@@ -119,15 +126,8 @@ class MediaNotificationManager(
             }
         }
 
-        private suspend fun resolveUriAsBitmap(uri: Uri): Bitmap? {
-            return withContext(Dispatchers.IO) {
-                // Block on downloading artwork.
-                Glide.with(context).applyDefaultRequestOptions(glideOptions)
-                    .asBitmap()
-                    .load(uri)
-                    .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
-                    .get()
-            }
+        private fun resolveUriAsBitmap(id: Int): Bitmap? {
+            return BitmapFactory.decodeResource(MainActivity.applicationContext.resources, id);
         }
     }
 }
