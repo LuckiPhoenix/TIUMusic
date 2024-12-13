@@ -111,7 +111,9 @@ fun EditPlaylistScreen(
                 contentDescription = "Album Art",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .padding(8.dp)
                     .size(160.dp)
+                    .align(Alignment.CenterHorizontally)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFF282828))
             )
