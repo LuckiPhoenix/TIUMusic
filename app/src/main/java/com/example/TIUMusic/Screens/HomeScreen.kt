@@ -50,11 +50,24 @@ fun HomeScreen(
                                 type = 1,
                                 imageUrl = it.imageUri,
                                 imageRId = nameToRID(it.imageUri, "raw", context),
-                                browseId = it.id.toString(),
+                                playlistId = it.id.toString(),
                             )
                         }
                     ,
                     title = "Hello"
+                ),
+                HomeTest(
+                    contents = musicViewModel.readAllData.subList(0, 10).map { it ->
+                            MusicItem(
+                                title = it.title,
+                                artist = it.artist,
+                                videoId = it.id.toString(),
+                                type = 0,
+                                imageUrl = it.imageUri,
+                                imageRId = nameToRID(it.imageUri, "raw", context),
+                            )
+                        },
+                    title = "Songs"
                 )
             )
         )

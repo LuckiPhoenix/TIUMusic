@@ -100,7 +100,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-        val test = MusicViewModel(this);
         setContent {
             TIUMusicTheme {
                 NavHost(

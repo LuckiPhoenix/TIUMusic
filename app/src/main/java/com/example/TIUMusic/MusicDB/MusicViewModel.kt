@@ -19,4 +19,11 @@ class MusicViewModel(@ApplicationContext context: Context) : ViewModel() {
         return _repository.albums;
     }
 
+    fun getSongsInAlbum(albumId : Int, context : Context) : List<MusicItem> {
+        val songs = _repository.getSongsByAlbumId(albumId);
+        return songs.map {
+            it.toMusicItem(context)
+        }
+    }
+
 }

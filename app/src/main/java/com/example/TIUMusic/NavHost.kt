@@ -56,12 +56,11 @@ fun NavHost(
     val userViewModel: UserViewModel = viewModel()
     var startDestination = if (userViewModel.isLoggedIn()) "main" else "auth"
 
-
-    if (userViewModel.isLoggedIn() && YouTube.cookie == null) {
-        CookieManager.getInstance().getCookie(context.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
-            YouTube.cookie = it
-        }
-    }
+//    if (userViewModel.isLoggedIn() && YouTube.cookie == null) {
+//        CookieManager.getInstance().getCookie(context.getString(R.string.YOUTUBE_MUSIC_URL))?.let {
+//            YouTube.cookie = it
+//        }
+//    }
 
     Log.d("NavHost", "Current route: $currentRoute")
 
@@ -72,7 +71,7 @@ fun NavHost(
             startDestination = startDestination
         ) {
             navigation(startDestination = "login", route = "auth") {
-                composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
+                composable("youtubeLogin") {  }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }
                 composable("reset") { ResetPasswordScreen(navController) }
@@ -115,6 +114,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
@@ -149,6 +149,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
@@ -182,6 +183,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                                 Log.d("Playlists", musicItem.playlistId);
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
@@ -203,6 +205,7 @@ fun NavHost(
                         navController.currentBackStackEntry?.savedStateHandle?.set("title", it.title)
                         navController.currentBackStackEntry?.savedStateHandle?.set("artist", it.artist)
                         navController.currentBackStackEntry?.savedStateHandle?.set("image", it.imageUrl)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                         navController.navigate("playlist/${it.playlistId}")
                         Log.d("LogNav", "TYPE = 2")
                     },
@@ -228,6 +231,7 @@ fun NavHost(
                     val title = savedStateHandle?.get<String>("title") ?: ""
                     val artist = savedStateHandle?.get<String>("artist") ?: ""
                     val image = savedStateHandle?.get<String>("image") ?: ""
+                    val imageRId = savedStateHandle?.get<Int?>("imageRId")
                     PlaylistScreen(
                         navController = navController,
                         ytmusicViewModel = ytmusicViewModel,
@@ -238,6 +242,7 @@ fun NavHost(
                             imageUrl = image,
                             type = 1,
                             playlistId = playlistId,
+                            imageRId = imageRId
                         ),
                         onTabSelected = { tabIndex ->
                             playerViewModel.setShouldExpand(-1);
@@ -340,6 +345,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }
@@ -393,6 +399,7 @@ fun NavHost(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
                                 navController.navigate("playlist/${musicItem.playlistId}")
                                 Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
                             }

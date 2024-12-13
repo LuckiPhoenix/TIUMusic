@@ -1,6 +1,7 @@
 package com.example.TIUMusic.Screens
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -40,6 +41,7 @@ import com.example.TIUMusic.ui.theme.ButtonColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
 import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.SongData.getTopPicks
@@ -306,6 +308,7 @@ fun PlaylistScreen(
     playlistItem: MusicItem,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    musicViewModel: MusicViewModel = MusicViewModel(LocalContext.current),
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onShuffleClick : (List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
@@ -313,36 +316,9 @@ fun PlaylistScreen(
     ytmusicViewModel: YtmusicViewModel,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current;
     var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
-    val playlistState by ytmusicViewModel.listTrackItems.collectAsState()
-    val localList by userViewModel.playlist.observeAsState()
-    var currentPlaylist by remember { mutableStateOf(listOf<MusicItem>()) }
-
-    LaunchedEffect(Unit) {
-        if (!ytmusicViewModel.isPlaylistRandomUUID(playlistItem.playlistId))
-            ytmusicViewModel.SongListSample(playlistItem.playlistId)
-        else
-           userViewModel.getPlaylistById(playlistItem.playlistId)
-    }
-
-    LaunchedEffect(playlistState) {
-        when (val state = playlistState) {
-            is UiState.Initial -> {
-                // Trạng thái ban đầu
-                Log.d("LogNav", "Initial id : ${playlistItem.playlistId}")
-            }
-            is UiState.Success -> {
-                currentPlaylist = state.data.toMutableList();
-            }
-            else -> {}
-        }
-    }
-
-    LaunchedEffect(localList) {
-        if (localList != null) {
-            currentPlaylist = localList!!.songs;
-        }
-    }
+    var currentPlaylist by remember { mutableStateOf(musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context)) }
 
     Scaffold(
         topBar = {
@@ -361,121 +337,116 @@ fun PlaylistScreen(
         },
         containerColor = BackgroundColor
     ) { paddingValues ->
-        if (playlistState is UiState.Loading) {
-            LoadingScreen()
-        }
-        else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(start = 8.dp, end = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    // Header content
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(start = 8.dp, end = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                // Header content
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Image(
+                        painter = painterResource(playlistItem.imageRId ?: R.drawable.tiumarksvg),
+                        contentDescription = "Album Art",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(160.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF282828))
+                    )
+                    Text(
+                        text = playlistItem.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(6.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        AsyncImage(
-                            model = playlistItem.imageUrl,
-                            contentDescription = "Album Art",
-                            contentScale = ContentScale.Crop,
+                        Card(
                             modifier = Modifier
-                                .size(160.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF282828))
-                        )
-                        Text(
-                            text = playlistItem.title,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = Color.White,
-                            modifier = Modifier.padding(6.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .size(160.dp, 52.dp)
+                                .padding(4.dp)
+                                .clickable {
+                                    onPlayClick(currentPlaylist);
+                                },
+                            colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
                         ) {
-                            Card(
-                                modifier = Modifier
-                                    .size(160.dp, 52.dp)
-                                    .padding(4.dp)
-                                    .clickable {
-                                        onPlayClick(currentPlaylist);
-                                    },
-                                colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.play_solid),
-                                        contentDescription = "Play Button",
-                                        modifier = Modifier.padding(12.dp),
-                                        tint = PrimaryColor
-                                    )
-                                    Text(
-                                        text = "Play",
-                                        fontSize = 18.sp,
-                                        color = PrimaryColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                            Card(
-                                modifier = Modifier
-                                    .size(160.dp, 52.dp)
-                                    .padding(4.dp)
-                                    .clickable {
-                                        onShuffleClick(currentPlaylist);
-                                    },
-                                colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.shuffle_button),
-                                        contentDescription = "Play Button",
-                                        modifier = Modifier.padding(12.dp),
-                                        tint = PrimaryColor
-                                    )
-                                    Text(
-                                        text = "Shuffle",
-                                        fontSize = 18.sp,
-                                        color = PrimaryColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                Icon(
+                                    painter = painterResource(R.drawable.play_solid),
+                                    contentDescription = "Play Button",
+                                    modifier = Modifier.padding(12.dp),
+                                    tint = PrimaryColor
+                                )
+                                Text(
+                                    text = "Play",
+                                    fontSize = 18.sp,
+                                    color = PrimaryColor,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
-                        HorizontalDivider(
-                            thickness = 2.dp,
-                            color = ButtonColor,
-                            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
-                        )
+                        Card(
+                            modifier = Modifier
+                                .size(160.dp, 52.dp)
+                                .padding(4.dp)
+                                .clickable {
+                                    onShuffleClick(currentPlaylist);
+                                },
+                            colors = CardColors(ButtonColor, PrimaryColor, Color.Gray, Color.Black)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.shuffle_button),
+                                    contentDescription = "Play Button",
+                                    modifier = Modifier.padding(12.dp),
+                                    tint = PrimaryColor
+                                )
+                                Text(
+                                    text = "Shuffle",
+                                    fontSize = 18.sp,
+                                    color = PrimaryColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
-                }
-
-                itemsIndexed(currentPlaylist){ index, item ->
-                    SongInPlaylist(
-                        item,
-                        onClick = { onSongClick(item, index, currentPlaylist) }
-                    )
                     HorizontalDivider(
                         thickness = 2.dp,
                         color = ButtonColor,
-                        modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp)
                     )
                 }
-
-                item { Spacer(modifier = Modifier.height(88.dp)) }
             }
+
+            itemsIndexed(currentPlaylist){ index, item ->
+                SongInPlaylist(
+                    item,
+                    onClick = { onSongClick(item, index, currentPlaylist) }
+                )
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = ButtonColor,
+                    modifier = Modifier.padding(start = 66.dp, end = 8.dp)
+                )
+            }
+
+            item { Spacer(modifier = Modifier.height(88.dp)) }
         }
         if(showPersonalPlaylistMenu == true){
             PlaylistMenuBottomSheet(
@@ -777,7 +748,7 @@ fun MoodListScreen(
 @Composable
 fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
     val title = item.title
-    val albumCover = item.getSmallThumbnail()
+    val albumCover = item.imageRId
     val artist = item.artist
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -790,8 +761,8 @@ fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
             }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = albumCover,
+            Image(
+                painter = painterResource(albumCover ?: R.drawable.tiumarksvg),
                 contentDescription = "Song Cover",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -799,8 +770,6 @@ fun SongInPlaylist(item: MusicItem, onClick: () -> Unit = {}) {
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFF282828))
             )
-
-
 
             Column(
                 modifier = Modifier
