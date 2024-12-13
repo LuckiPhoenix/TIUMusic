@@ -20,9 +20,12 @@ import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
+import com.example.TIUMusic.Login.AppDatabase
+import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
 
 object ViewModel {
     var playerViewModel: PlayerViewModel = PlayerViewModel();
@@ -97,6 +100,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
+        val test = MusicViewModel(this);
         setContent {
             TIUMusicTheme {
                 NavHost(

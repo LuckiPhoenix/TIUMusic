@@ -20,10 +20,8 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerNotificationManager
-import ch.qos.logback.core.util.Loader.getResources
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
-import com.google.common.reflect.Reflection.getPackageName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +31,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import java.io.File
 import javax.inject.Inject
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -41,15 +38,7 @@ import javax.inject.Inject
 class MediaViewModel @Inject constructor(
     val player: ExoPlayer
 ) : ViewModel() {
-    private val playlist = arrayListOf(
-        MusicItem(
-            videoId = "https://www.matb3aa.com/music/Wegz/Dorak.Gai-Wegz-MaTb3aa.Com.mp3",
-            imageUrl = "https://angartwork.anghcdn.co/?id=105597079&size=640",
-            title = "Track 1",
-            artist = "Wegz",
-            type = 0,
-        ),
-    )
+    private val playlist = emptyList<MusicItem>()
 
     private val _currentPlayingIndex = MutableStateFlow(0)
     val currentPlayingIndex = _currentPlayingIndex.asStateFlow()
@@ -105,7 +94,7 @@ class MediaViewModel @Inject constructor(
             val trackUri = Uri.parse(it.title)
             val uri = Uri.Builder()
                 .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                .path(R.raw.test.toString())
+                .path(R.raw.elevator_music_medasin.toString())
                 .build()
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)

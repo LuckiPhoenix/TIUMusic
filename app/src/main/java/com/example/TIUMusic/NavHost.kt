@@ -71,7 +71,7 @@ fun NavHost(
             navController = navController,
             startDestination = startDestination
         ) {
-            navigation(startDestination = "youtubeLogin", route = "auth") {
+            navigation(startDestination = "login", route = "auth") {
                 composable("youtubeLogin") { YoutubeLogin(navController, userViewModel) }
                 composable("login") { LoginScreen(navController) }
                 composable("register") { RegisterScreen(navController) }

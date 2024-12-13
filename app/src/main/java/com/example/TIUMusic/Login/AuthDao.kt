@@ -1,7 +1,7 @@
 package com.example.TIUMusic.Login
 
-import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Query
@@ -9,12 +9,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.Upsert
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.TIUMusic.MusicDB.MusicDao
+import com.example.TIUMusic.MusicDB.Song
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,10 +46,10 @@ interface AuthDao {
 }
 
 //This is the database itself, in singleton (i.e: there is only one instance of the database)
-@Database(entities = [User::class], version = 3, exportSchema = false)
+@Database(entities = [User::class], version = 3, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): AuthDao
+    abstract fun userDao(): AuthDao;
 
     companion object {
         @Volatile
@@ -57,6 +57,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+                println("test");
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
@@ -68,6 +69,9 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private fun prepopulateDatabase(database: AppDatabase) {
+            println("lets go");
+        }
     }
 }
 
