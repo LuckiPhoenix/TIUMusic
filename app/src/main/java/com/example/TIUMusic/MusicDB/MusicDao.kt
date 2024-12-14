@@ -16,5 +16,11 @@ interface MusicDao {
 
     @Query("SELECT * FROM Song ORDER BY id ASC")
     fun getAllSongs() : List<Song>;
+
+    @Query("SELECT * FROM GlobalPlaylist ORDER BY id ASC")
+    fun getAllPlaylist() : List<GlobalPlaylist>;
+
+    @Query("SELECT * FROM Song WHERE id IN (:ids) ORDER BY id ASC")
+    fun getSongsByIds(ids : List<Int>) : List<Song>;
 }
 

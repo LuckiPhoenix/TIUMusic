@@ -38,6 +38,7 @@ import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.SongData.AlbumItem
 import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -136,7 +137,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = it.title,
                                 artist = it.artists.firstOrNull()?.name ?: "",
                                 imageUrl = it.thumbnails?.thumbnails?.lastOrNull()?.url ?: "",
-                                type = 0,
+                                type = MusicItemType.Song,
                             )
                         })
                         var continuation = next.continuation
@@ -154,7 +155,7 @@ class YtmusicViewModel @Inject constructor(
                                             title = it.title,
                                             artist = it.artists.firstOrNull()?.name ?: "",
                                             imageUrl = it.thumbnails?.thumbnails?.firstOrNull()?.url ?: "",
-                                            type = 0,
+                                            type = MusicItemType.Song,
                                         )
                                     })
                                     continuation = nextContinue.continuation
@@ -279,7 +280,7 @@ class YtmusicViewModel @Inject constructor(
                             title = title,
                             artist = "",
                             imageUrl = url,
-                            type = 2,
+                            type = MusicItemType.Album,
                             browseId = endpoint.browseEndpoint?.browseId?:"",
                         )
                     }
@@ -289,7 +290,7 @@ class YtmusicViewModel @Inject constructor(
                             title = title,
                             artist = "",
                             imageUrl = url,
-                            type = 3,
+                            type = MusicItemType.Artist,
                             browseId = endpoint.browseEndpoint?.browseId?:"",
                         )
                     }
@@ -339,7 +340,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = songRender.text,
                                 artist = artistRender[i].text,
                                 imageUrl = thumbnailURL,
-                                type = 0,
+                                type = MusicItemType.Song,
                             )
                         )
                     }
@@ -371,7 +372,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = albumRender.text,
                                 artist = artistRender[i].text,
                                 imageUrl = thumbnailURL,
-                                type = 2,
+                                type = MusicItemType.Album,
                                 browseId = albumId,
                             )
                         )
@@ -404,7 +405,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = albumRender.text,
                                 artist = artistRender[i].text,
                                 imageUrl = thumbnailURL,
-                                type = 1,
+                                type = MusicItemType.GlobalPlaylist,
                                 playlistId = albumId.removePrefix("VL"),
                             )
                         )
@@ -433,7 +434,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = artistRender.text,
                                 artist = followersRender[2].text,
                                 imageUrl = thumbnailURL,
-                                type = 3,
+                                type = MusicItemType.Artist,
                                 browseId = artistId,
                             )
                         )
@@ -1191,7 +1192,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = songItem.title,
                                 artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
                                 imageUrl = thumbnailUrl,
-                                type = 0
+                                type = MusicItemType.Song
                             )
                         }
                         _listTrackItems.value = UiState.Success(musicItems)
@@ -1241,7 +1242,7 @@ class YtmusicViewModel @Inject constructor(
                             title = songItem.title,
                             artist = songItem.artists.lastOrNull()?.name ?: "Unknown Artist",
                             imageUrl = thumbnailUrl,
-                            type = 0
+                            type = MusicItemType.Song
                         )
                     }
                     _albumPage.value = UiState.Success(
@@ -1312,7 +1313,7 @@ class YtmusicViewModel @Inject constructor(
                                 title = playlist.title,
                                 artist = "",
                                 imageUrl = playlist.thumbnail,
-                                type = 1,
+                                type = MusicItemType.GlobalPlaylist,
                                 playlistId = playlist.id
                             )
                         )
@@ -1380,7 +1381,7 @@ class YtmusicViewModel @Inject constructor(
                             playlistId = playlistId,
                             imageUrl = it.thumbnailRenderer.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull()?.url
                                 ?: "",
-                            type = 1
+                            type = MusicItemType.GlobalPlaylist
                         ))
                         Log.d("Playlist", playlistId);
                     }

@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlayerViewModel : ViewModel() {
-    private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", 0));
+    private var _musicItem = MutableStateFlow(MusicItem("", "", "", "", MusicItemType.Song));
     val musicItem = _musicItem.asStateFlow();
 
     private var _playlist : MutableStateFlow<MutableList<MusicItem>?> = MutableStateFlow(null);

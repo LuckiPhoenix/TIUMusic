@@ -19,6 +19,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeItem
 import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.toMusicItemsList
 import com.example.TIUMusic.Utils.nameToRID
 
@@ -47,7 +48,7 @@ fun HomeScreen(
                                 title = it.title,
                                 artist = it.artist,
                                 videoId = "",
-                                type = 1,
+                                type = MusicItemType.Album,
                                 imageUrl = it.imageUri,
                                 imageRId = nameToRID(it.imageUri, "raw", context),
                                 playlistId = it.id.toString(),
@@ -62,12 +63,27 @@ fun HomeScreen(
                                 title = it.title,
                                 artist = it.artist,
                                 videoId = it.fileUri,
-                                type = 0,
+                                type = MusicItemType.Song,
                                 imageUrl = it.imageUri,
                                 imageRId = nameToRID(it.imageUri, "raw", context),
                             )
                         },
                     title = "Songs"
+                ),
+                HomeTest(
+                    contents = musicViewModel.playlist.map { it ->
+                        MusicItem(
+                            videoId = "",
+                            title = it.title,
+                            artist = it.artist,
+                            playlistId = it.id.toString(),
+                            type = MusicItemType.GlobalPlaylist,
+                            imageUrl = it.imageUri,
+                            playlistSongsIds = it.songsIds,
+                            imageRId = nameToRID(it.imageUri, "raw", context),
+                        )
+                    },
+                    title = "Playlists"
                 )
             )
         )

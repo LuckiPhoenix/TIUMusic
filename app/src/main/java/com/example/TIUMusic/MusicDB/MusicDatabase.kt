@@ -1,12 +1,13 @@
 package com.example.TIUMusic.MusicDB
 
 import android.content.Context
+import android.provider.Settings.Global
 import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Song::class, Album::class], version = 1, exportSchema = true)
+@Database(entities = [Song::class, Album::class, GlobalPlaylist::class], version = 1, exportSchema = true)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun musicDao() : MusicDao
 
@@ -41,6 +42,8 @@ abstract class MusicDatabase : RoomDatabase() {
 class MusicRepository(private val musicDao : MusicDao) {
     val readAllData : List<Song> = musicDao.getAllSongs();
     val albums : List<Album> = musicDao.getAllAlbums();
+    val playlist : List<GlobalPlaylist> = musicDao.getAllPlaylist();
 
+    fun getSongsByIds(ids : List<Int>) : List<Song> = musicDao.getSongsByIds(ids);
     fun getSongsByAlbumId(albumId: Int) : List<Song> = musicDao.getSongsInAlbumById(albumId);
 }

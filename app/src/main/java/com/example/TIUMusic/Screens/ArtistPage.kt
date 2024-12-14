@@ -40,6 +40,7 @@ import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import kotlinx.coroutines.launch
 
@@ -137,7 +138,7 @@ fun ArtistPage(
                             videoId = trendingSong.id,
                             artist = artistPage?.artist?.title?:"",
                             imageUrl = trendingSong.thumbnail,
-                            type = 0
+                            type = MusicItemType.Song
                         )
                     )
                 }
@@ -168,7 +169,7 @@ fun ArtistPage(
                         videoId = "",
                         artist = artistPage?.artist?.title?:"",
                         imageUrl = topAlbum.thumbnail,
-                        type = 2,
+                        type = MusicItemType.Album,
                         browseId = topAlbum.id
                     )
                 )

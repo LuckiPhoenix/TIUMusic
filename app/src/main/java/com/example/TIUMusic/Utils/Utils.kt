@@ -27,3 +27,9 @@ fun getResource(name : String) : Uri {
 fun nameToRID(name : String, type : String, context: Context) : Int {
     return context.resources.getIdentifier(name, type, context.packageName);
 }
+
+//Library Playlists
+fun isPlaylistRandomUUID(id: String): Boolean {
+    val uuidRegex = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\$")
+    return uuidRegex.matches(id)
+}

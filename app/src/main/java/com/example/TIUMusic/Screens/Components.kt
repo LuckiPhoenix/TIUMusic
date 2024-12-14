@@ -107,6 +107,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.NewReleaseCard
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.ArtistNameColor
@@ -441,7 +442,7 @@ fun ScrollableSearchScreen(
                             }
                         }
                         searchResults.forEach {
-                            if(it.type == 0){
+                            if(it.type == MusicItemType.Song){
                                 Row(modifier = Modifier
                                     .padding(all = 10.dp)
                                     .clickable(onClick = {
@@ -471,9 +472,10 @@ fun ScrollableSearchScreen(
                                     ) {
                                         var type = ""
                                         when (it.type){
-                                            0 -> type += "Song • "
-                                            1 -> type += "Playlist • "
-                                            2 -> type += "Album • "
+                                            MusicItemType.Song -> type += "Song • "
+                                            MusicItemType.GlobalPlaylist -> type += "Playlist • "
+                                            MusicItemType.Album -> type += "Album • "
+                                            else -> {}
                                         }
                                         it.title.let { it1 ->
                                             Text(

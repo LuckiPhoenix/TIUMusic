@@ -148,7 +148,7 @@ class MediaViewModel @Inject constructor(
     }
 
     fun setLoop(loop: Boolean) {
-        player.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF;
+        player.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_ALL;
     }
 
     fun setShuffled(shuffled: Boolean) {

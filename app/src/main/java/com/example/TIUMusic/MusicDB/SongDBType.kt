@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.Utils.nameToRID
 
 @Entity(foreignKeys = [
@@ -35,7 +36,7 @@ data class Song(
             artist = artist,
             imageUrl = imageUri,
             imageRId = nameToRID(imageUri, "raw", context),
-            type = 0,
+            type = MusicItemType.Song,
         )
     }
 }
@@ -47,4 +48,14 @@ data class Album(
     val title: String,
     val artist: String,
     val imageUri: String,
+)
+
+@Entity
+data class GlobalPlaylist(
+    @PrimaryKey(autoGenerate = true)
+    val id : Int,
+    val title : String,
+    val artist: String,
+    val imageUri: String,
+    val songsIds : String,
 )

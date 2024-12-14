@@ -56,6 +56,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.toMusicItemsList
 
 val heightItemCategorySearch = 140.dp
@@ -116,10 +117,11 @@ fun SearchScreen(
                             ) {
                                 var type = ""
                                 when (it.type){
-                                    0 -> type += "Song • "
-                                    1 -> type += "Playlist • "
-                                    2 -> type += "Album • "
-                                    3 -> type += "Artist • "
+                                    MusicItemType.Song -> type += "Song • "
+                                    MusicItemType.GlobalPlaylist -> type += "Playlist • "
+                                    MusicItemType.Album -> type += "Album • "
+                                    MusicItemType.Artist -> type += "Artist • "
+                                    else -> {}
                                 }
                                 Text(
                                     text = it.title,

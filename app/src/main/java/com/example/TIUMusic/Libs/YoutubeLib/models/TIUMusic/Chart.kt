@@ -2,6 +2,7 @@ package com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic
 
 import android.util.Log
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import kotlin.math.min
 
 data class Chart(
@@ -21,7 +22,7 @@ data class Chart(
                         title = it.title,
                         artist = it.artists.firstOrNull()?.name ?: "",
                         imageUrl = it.thumbnail,
-                        type =0
+                        type = MusicItemType.Song
                     )
                 )
             }
@@ -42,7 +43,7 @@ data class Chart(
                         title = songs[j].title,
                         artist = songs[j].artists?.firstOrNull()?.name ?: "",
                         imageUrl = songs[j].thumbnail,
-                        type = 0
+                        type = MusicItemType.Song
                     )
                 );
             }
@@ -56,7 +57,7 @@ data class Chart(
                         title = songs[i].title,
                         artist = songs[i].artists?.firstOrNull()?.name ?: "",
                         imageUrl = songs[i].thumbnail,
-                        type = 0
+                        type = MusicItemType.Song
                     )
                 );
             }

@@ -79,7 +79,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.SongData.getTopPicks
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.SecondaryColor
 import java.io.File
@@ -339,7 +339,7 @@ fun LibraryScreen(navController: NavController,
                             val musicItem = MusicItem(
                                 title = item.title,
                                 videoId = "",
-                                type = 1,
+                                type = MusicItemType.GlobalPlaylist,
                                 playlistId = item.id,
                                 artist = item.description,
                                 imageUrl = item.picture.toString(),

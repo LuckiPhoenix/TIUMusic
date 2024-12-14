@@ -43,8 +43,9 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel.UiState
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MoodItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.PlayerViewModel
-import com.example.TIUMusic.SongData.getTopPicks
+import com.example.TIUMusic.Utils.isPlaylistRandomUUID
 
 @Composable
 fun TopPlaylistBar(
@@ -318,7 +319,20 @@ fun PlaylistScreen(
 ) {
     val context = LocalContext.current;
     var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
-    var currentPlaylist by remember { mutableStateOf(musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context)) }
+    var currentPlaylist by remember { mutableStateOf(listOf<MusicItem>()) }
+
+    LaunchedEffect(Unit) {
+        if (isPlaylistRandomUUID(playlistItem.playlistId)) {
+            ytmusicViewModel.SongListSample(playlistItem.playlistId);
+            TODO();
+        }
+        else if (playlistItem.type == MusicItemType.Album) {
+            currentPlaylist = musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context);
+        }
+        else if (playlistItem.type == MusicItemType.GlobalPlaylist) {
+            currentPlaylist = musicViewModel.getSongsWithIds(playlistItem.playlistSongsIds, context);
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -655,7 +669,7 @@ fun AlbumScreen(
         if(showPersonalPlaylistMenu == true){
             PlaylistMenuBottomSheet(
                 navController,
-                musicItem = MusicItem("", "", "", "", 0),
+                musicItem = MusicItem("", "", "", "", MusicItemType.Song),
                 onDismiss = { showPersonalPlaylistMenu = false },
                 onPlayNextClick = {
                     onPlayNextClick(currentAlbum);
