@@ -1,26 +1,30 @@
 package com.example.TIUMusic.Screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeMetadata
-import com.example.TIUMusic.Libs.YoutubeLib.YoutubeViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.NewReleaseCard
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.SongData.fromHomeContent
-import kotlinx.coroutines.launch
+import com.example.TIUMusic.SongData.musicItemSplitToRow
+import kotlin.math.min
 
 
 @Composable
@@ -28,15 +32,35 @@ fun NewScreen(
     navController: NavController,
     onTabSelected: (Int) -> Unit,
     onItemClick: (MusicItem) -> Unit,
+    musicViewModel: MusicViewModel = MusicViewModel(LocalContext.current),
     ytmusicViewModel: YtmusicViewModel,
     playerViewModel: PlayerViewModel
 ) {
     val context = LocalContext.current;
-    val trendingItem by ytmusicViewModel.chart.collectAsState();
-    val newReleases by ytmusicViewModel.newReleases.collectAsState();
+    var newReleaseItems by remember { mutableStateOf(listOf<NewReleaseCard>()) }
+    val newSongReleases by musicViewModel.getNewSongReleases(21, context).collectAsState(listOf());
+    val newAlbumReleases by musicViewModel.getNewAlbumsReleases(5, context).collectAsState(listOf());
+//    val trendingItem by ytmusicViewModel.chart.collectAsState();
+//    val newReleases by ytmusicViewModel.newReleases.collectAsState();
 
-    LaunchedEffect(Unit) {
-        ytmusicViewModel.getNewScreen(context = context, first = true);
+    LaunchedEffect(newSongReleases, newAlbumReleases) {
+        val items = mutableListOf<NewReleaseCard>();
+        if (newAlbumReleases.isNotEmpty()) {
+            items.addAll(
+                newAlbumReleases
+                    .subList(0, min(newAlbumReleases.size, 2))
+                    .map { NewReleaseCard(type = "Album", it) }
+            )
+        }
+        if (newSongReleases.isNotEmpty()) {
+            items.addAll(
+                newSongReleases
+                    .subList(0, min(newSongReleases.size, 3))
+                    .map { NewReleaseCard(type = "Song", it) }
+            )
+        }
+
+        newReleaseItems = items;
     }
 
     ScrollableScreen(
@@ -45,26 +69,9 @@ fun NewScreen(
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            val newReleaseMusicItems = mutableListOf<NewReleaseCard>();
-            for (newRelease in newReleases) {
-                var i = 0;
-                newRelease.contents.forEach {
-                    if (i >= 3)
-                        return@forEach;
-                    if (it != null) {
-                        newReleaseMusicItems.add(
-                            NewReleaseCard(
-                                newRelease.title,
-                                fromHomeContent(it, false),
-                            )
-                        )
-                    }
-                    i++;
-                }
-            }
-            if (newReleaseMusicItems.isNotEmpty()){
+            if (newSongReleases.isNotEmpty()){
                 HorizontalScrollableNewScreenSection(
-                    items = newReleaseMusicItems,
+                    items = newReleaseItems,
                     itemWidth = 300.dp,
                     sectionHeight = 300.dp,
                     onItemClick = { musicItem ->
@@ -73,12 +80,11 @@ fun NewScreen(
                 )
             }
 
-            val trendingSongList = trendingItem?.songsToMusicItem(3);
-            if (trendingSongList != null && trendingSongList.isNotEmpty()){
+            if (newSongReleases.isNotEmpty()){
                 HorizontalScrollableNewScreenSection2(
-                    title = "Trending Song",
+                    title = "New Song Releases",
                     iconHeader = R.drawable.baseline_chevron_right_24,
-                    items = trendingSongList,
+                    items = musicItemSplitToRow(newSongReleases, 3),
                     itemWidth = 300.dp,
                     sectionHeight = 260.dp,
                     onItemClick = { musicItem ->
@@ -87,27 +93,7 @@ fun NewScreen(
                 )
             }
 
-            val topMusicVideos = trendingItem?.videoPlaylist?.videosToMusicItems();
-            if (topMusicVideos != null && topMusicVideos.isNotEmpty()) {
-                HorizontalScrollableNewScreenSection3(
-                    title = "Top music videos",
-                    iconHeader = R.drawable.baseline_chevron_right_24,
-                    items = topMusicVideos,
-                    itemWidth = 150.dp,
-                    sectionHeight = 220.dp,
-                    onItemClick = { musicItem ->
-                        onItemClick(musicItem);
-                    }
-                )
-            }
-
-            val newAlbumReleases = newReleases.getOrNull(1)?.contents?.mapNotNull {
-                if (it != null) {
-                    return@mapNotNull fromHomeContent(it, false);
-                }
-                return@mapNotNull null;
-            };
-            if (!newAlbumReleases.isNullOrEmpty()) {
+            if (newAlbumReleases.isNotEmpty()) {
                 HorizontalScrollableNewScreenSection3(
                     title = "New Album Releases",
                     iconHeader = R.drawable.baseline_chevron_right_24,
@@ -120,60 +106,6 @@ fun NewScreen(
                 )
             }
 
-            val newMusicVideos = newReleases.getOrNull(2)?.contents?.mapNotNull {
-                if (it != null) {
-                    return@mapNotNull fromHomeContent(it, false);
-                }
-                return@mapNotNull null;
-            }
-            if (!newMusicVideos.isNullOrEmpty()) {
-                HorizontalScrollableNewScreenSection3(
-                    title = "New music videos",
-                    iconHeader = R.drawable.baseline_chevron_right_24,
-                    items =  newMusicVideos,
-                    itemWidth = 150.dp,
-                    sectionHeight = 220.dp,
-                    onItemClick = { musicItem ->
-                        onItemClick(musicItem);
-                    }
-                )
-            }
-//
-//            HorizontalScrollableNewScreenSection2(
-//                title = "Latest Songs",
-//                iconHeader = R.drawable.baseline_chevron_right_24,
-//                items = SongListSampleNewScreen(),
-//                itemWidth = 300.dp,
-//                sectionHeight = 260.dp,
-//                onItemClick = { }
-//            )
-//
-//            HorizontalScrollableNewScreenSection3(
-//                title = "Everyone's Talking About",
-//                iconHeader = R.drawable.baseline_chevron_right_24,
-//                items = SongListSample(),
-//                itemWidth = 150.dp,
-//                sectionHeight = 220.dp,
-//                onItemClick = { }
-//            )
-//
-//            HorizontalScrollableNewScreenSection3(
-//                title = "Daily Top 100",
-//                iconHeader = R.drawable.baseline_chevron_right_24,
-//                items = SongListSample(),
-//                itemWidth = 150.dp,
-//                sectionHeight = 220.dp,
-//                onItemClick = { }
-//            )
-//
-//            HorizontalScrollableNewScreenSection3(
-//                title = "City Charts",
-//                iconHeader = R.drawable.baseline_chevron_right_24,
-//                items = SongListSample(),
-//                itemWidth = 150.dp,
-//                sectionHeight = 220.dp,
-//                onItemClick = { }
-//            )
         }
     }
 }

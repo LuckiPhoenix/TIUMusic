@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.TIUMusic.SongData.MusicItem
+import com.example.TIUMusic.SongData.MusicItemType
+import com.example.TIUMusic.Utils.nameToRID
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +37,26 @@ class MusicViewModel(@ApplicationContext context: Context) : ViewModel() {
         viewModelScope.launch {
             _albums.value = _repository.getAllAlbums();
         }
+    }
+
+    fun getRandomAlbums(limit : Int = 5, context : Context) : Flow<List<MusicItem>> = flow {
+        val albums = _repository.getRandomAlbums(limit);
+        emit(albums.map { it.toMusicItem(context) })
+    }
+
+    fun getRandomPlaylist(limit : Int = 5, context : Context) : Flow<List<MusicItem>> = flow {
+        val playlists = _repository.getRandomPlaylists(limit);
+        emit(playlists.map { it.toMusicItem(context) })
+    }
+
+    fun getNewSongReleases(limit : Int = 5, context: Context) : Flow<List<MusicItem>> = flow {
+        val songs = _repository.getNewSongReleases(limit);
+        emit(songs.map { it.toMusicItem(context) })
+    }
+
+    fun getNewAlbumsReleases(limit : Int = 5, context: Context) : Flow<List<MusicItem>> = flow {
+        val albums = _repository.getNewAlbumsReleases(limit);
+        emit(albums.map { it.toMusicItem(context) })
     }
 
     fun getSongsInAlbum(albumId : Int, context : Context) : Flow<List<MusicItem>> = flow {

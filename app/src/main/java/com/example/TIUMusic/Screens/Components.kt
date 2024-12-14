@@ -413,7 +413,14 @@ fun ScrollableSearchScreen(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(PaddingValues(top = 15.dp, bottom = 7.dp, start = 16.dp, end = 16.dp)),
+                            .padding(
+                                PaddingValues(
+                                    top = 15.dp,
+                                    bottom = 7.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                )
+                            ),
                         shape = RoundedCornerShape(8.dp)
                     ) { searchSuggests.forEach{
                             Row(
@@ -1064,8 +1071,8 @@ fun AlbumCardNewScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Box {
-            AsyncImage(
-                model = item.imageUrl,
+            Image(
+                painter = painterResource(item.imageRId ?: R.drawable.tiumarksvg),
                 contentDescription = "Album art for ${item.title}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -1089,8 +1096,8 @@ fun AlbumCardNewScreen(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                AsyncImage(
-                    model = item.imageUrl,
+                Image(
+                    painter = painterResource(item.imageRId ?: R.drawable.tiumarksvg),
                     contentDescription = "Album art for ${item.title}",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -1120,8 +1127,8 @@ fun AlbumCardNewScreenSelectionType3(
                 onClick = onClick
             )
     ) {
-        AsyncImage(
-            model = item.imageUrl,
+        Image(
+            painter = painterResource(item.imageRId ?: R.drawable.tiumarksvg),
             contentDescription = "Album art for ${item.title}",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -1309,7 +1316,6 @@ fun NowPlayingSheet(
                                 isSeeking = true;
                             },
                             onSeekFinished = { newPosition ->
-                                playerViewModel.setPlaying(false);
                                 playerViewModel.setCurrentTime(newPosition);
                                 mediaViewModel.updatePlayerPosition(newPosition.toLong() * 1000L);
                             },
@@ -1318,10 +1324,14 @@ fun NowPlayingSheet(
                                     mediaViewModel.player.seekTo(0);
                                 }
                                 else {
-                                    if (isNextSong)
+                                    if (isNextSong) {
                                         mediaViewModel.player.seekToNextMediaItem()
-                                    else
+                                        mediaViewModel.player.play();
+                                    }
+                                    else {
                                         mediaViewModel.player.seekToPreviousMediaItem()
+                                        mediaViewModel.player.play();
+                                    }
                                 }
                             },
                             visualizerViewModel = visualizerViewModel,

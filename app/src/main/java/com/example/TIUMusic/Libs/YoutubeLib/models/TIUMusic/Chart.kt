@@ -31,7 +31,6 @@ data class Chart(
     }
 
     fun songsToMusicItem(rowSize: Int) : List<List<MusicItem>> {
-        Log.d("HERE", songs.size.toString());
         val musicItems = mutableListOf<List<MusicItem>>();
         val columnSize = songs.size / rowSize;
         for (i in 0 until columnSize) {

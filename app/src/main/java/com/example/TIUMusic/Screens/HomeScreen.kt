@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -19,10 +20,10 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MusicItem
-import com.example.TIUMusic.SongData.MusicItemType
-import com.example.TIUMusic.Utils.nameToRID
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 data class HomeTest(
     val title : String,
@@ -40,62 +41,85 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current;
-    val homeItems by remember {
-        mutableStateOf(
-            listOf<HomeTest>(
-//                HomeTest(
-//                    contents =
-//                        musicViewModel.getAlbums(context).map {
-//                            MusicItem(
-//                                title = it.title,
-//                                artist = it.artist,
-//                                videoId = "",
-//                                type = MusicItemType.Album,
-//                                imageUrl = it.imageUri,
-//                                imageRId = nameToRID(it.imageUri, "raw", context),
-//                                playlistId = it.id.toString(),
-//                            )
-//                        }
-//                    ,
-//                    title = "Hello"
-//                ),
-//                HomeTest(
-//                    contents = musicViewModel.allSongs.subList(0, 10).map { it ->
-//                            it.toMusicItem(context)
-//                        },
-//                    title = "Songs"
-//                ),
-//                HomeTest(
-//                    contents = musicViewModel.playlist.map { it ->
-//                        MusicItem(
-//                            videoId = "",
-//                            title = it.title,
-//                            artist = it.artist,
-//                            playlistId = it.id.toString(),
-//                            type = MusicItemType.GlobalPlaylist,
-//                            imageUrl = it.imageUri,
-//                            playlistSongsIds = it.songsIds,
-//                            imageRId = nameToRID(it.imageUri, "raw", context),
-//                        )
-//                    },
-//                    title = "Playlists"
-//                )
-            )
-        )
-    }
+    var homeItems by remember { mutableStateOf(listOf<HomeTest>()) }
     val mostListenedSongsIds by userViewModel.mostListenedSong.collectAsState()
-    var mostListenedSong by remember { mutableStateOf(listOf<MusicItem>()) }
     val recentListenedSongIds by userViewModel.recentListenedSong.collectAsState()
-    var recentListenedSong by remember { mutableStateOf(listOf<MusicItem>()) }
+    var continuation by remember { mutableStateOf(false) }
+    val fetchContinuationFunc = suspend {
+        val choose = Random.nextInt(1, 4);
+        println("fetching $choose");
+        when (choose) {
+            1 -> {
+                musicViewModel.getRandomAlbums(5, context).collectLatest {
+                    continuation = false;
+                    if (it.isEmpty())
+                        return@collectLatest;
+                    val items = homeItems.toMutableList();
+                    items.add(
+                        HomeTest(
+                            contents = it,
+                            title = "Albums",
+                        )
+                    )
+                    homeItems = items;
+                };
+            }
+
+            2 -> {
+                musicViewModel.getRandomPlaylist(5, context).collectLatest {
+                    continuation = false;
+                    if (it.isEmpty())
+                        return@collectLatest;
+                    val items = homeItems.toMutableList();
+                    items.add(
+                        HomeTest(
+                            contents = it,
+                            title = "Playlists",
+                        )
+                    )
+                    homeItems = items;
+                };
+            }
+
+            3 -> {
+                musicViewModel.getRandomSongs(10, context).collectLatest {
+                    continuation = false;
+                    if (it.isEmpty())
+                        return@collectLatest;
+                    val items = homeItems.toMutableList();
+                    items.add(
+                        HomeTest(
+                            contents = it,
+                            title = "Songs",
+                        )
+                    )
+                    homeItems = items;
+                };
+            }
+        }
+    }
+
+    LaunchedEffect(continuation) {
+        if (continuation) {
+            delay(2000);
+            repeat(3) {
+                fetchContinuationFunc();
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         userViewModel.getMostListenedSong();
         userViewModel.getRecentListenedSong();
+        delay(1000);
+        repeat(3) {
+            fetchContinuationFunc();
+        }
     }
 
     LaunchedEffect(mostListenedSongsIds) {
         musicViewModel.getSongsWithIds(mostListenedSongsIds, context).collectLatest { songs ->
-            mostListenedSong = mostListenedSongsIds.mapIndexed { index, id ->
+            val mostListenedSong = mostListenedSongsIds.mapIndexed { index, id ->
                 val found = songs.binarySearch { b ->
                     val bId = b.songId ?: 0;
                     if (id < bId) 1;
@@ -104,13 +128,23 @@ fun HomeScreen(
                 }
                 songs[found];
             };
+            if (mostListenedSong.isNotEmpty()) {
+                val items = homeItems.toMutableList();
+                items.add(
+                    HomeTest(
+                        title = "Most Listened",
+                        contents = mostListenedSong
+                    )
+                )
+                homeItems = items;
+            }
         };
         // Should it be combined or seperated?
     }
 
     LaunchedEffect(recentListenedSongIds) {
         musicViewModel.getSongsWithIds(recentListenedSongIds, context).collectLatest { songs ->
-            recentListenedSong = recentListenedSongIds.mapIndexed { index, id ->
+            val recentListenedSong = recentListenedSongIds.mapIndexed { index, id ->
                 val found = songs.binarySearch { b ->
                     val bId = b.songId ?: 0;
                     if (id < bId) 1;
@@ -119,6 +153,16 @@ fun HomeScreen(
                 }
                 songs[found];
             };
+            if (recentListenedSong.isNotEmpty()) {
+                val items = homeItems.toMutableList();
+                items.add(
+                    HomeTest(
+                        title = "Recently",
+                        contents = recentListenedSong
+                    )
+                )
+                homeItems = items;
+            }
         }
     }
 
@@ -127,41 +171,19 @@ fun HomeScreen(
         selectedTab = 0,
         itemCount = homeItems.size,
         fetchContinuation = {
-
+            continuation = true;
         },
         onTabSelected = onTabSelected
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            if (mostListenedSong.isNotEmpty()) {
-                run {
-                    val homeTest = HomeTest(
-                        contents = mostListenedSong,
-                        title = "Most listened"
-                    )
-                    HorizontalScrollableSection(
-                        title = homeTest.title,
-                        items = homeTest.contents,
-                        itemWidth = 200.dp,
-                        sectionHeight = 280.dp,
-                        onItemClick = onItemClick
-                    );
-                }
-            }
-
-            if (recentListenedSong.isNotEmpty()) {
-                run {
-                    val homeTest = HomeTest(
-                        contents = recentListenedSong,
-                        title = "Recently"
-                    )
-                    HorizontalScrollableSection(
-                        title = homeTest.title,
-                        items = homeTest.contents,
-                        itemWidth = 200.dp,
-                        sectionHeight = 280.dp,
-                        onItemClick = onItemClick
-                    );
-                }
+            homeItems.forEach {
+                HorizontalScrollableSection(
+                    title = it.title,
+                    items = it.contents,
+                    itemWidth = 200.dp,
+                    sectionHeight = 280.dp,
+                    onItemClick = onItemClick
+                );
             }
         }
     }

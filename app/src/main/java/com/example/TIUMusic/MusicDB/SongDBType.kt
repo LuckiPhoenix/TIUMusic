@@ -50,7 +50,20 @@ data class Album(
     val title: String,
     val artist: String,
     val imageUri: String,
-)
+    val releaseDate: String,
+) {
+    fun toMusicItem(context : Context) : MusicItem {
+        return MusicItem(
+            videoId = "",
+            title = title,
+            artist = artist,
+            imageUrl = imageUri,
+            imageRId = nameToRID(imageUri, "raw", context),
+            playlistId = id.toString(),
+            type = MusicItemType.Album,
+        )
+    }
+}
 
 @Entity
 data class GlobalPlaylist(
@@ -60,4 +73,16 @@ data class GlobalPlaylist(
     val artist: String,
     val imageUri: String,
     val songsIds : String,
-)
+) {
+    fun toMusicItem(context : Context) : MusicItem {
+        return MusicItem(
+            videoId = "",
+            title = title,
+            artist = artist,
+            imageUrl = imageUri,
+            imageRId = nameToRID(imageUri, "raw", context),
+            playlistId = songsIds,
+            type = MusicItemType.GlobalPlaylist,
+        )
+    }
+}

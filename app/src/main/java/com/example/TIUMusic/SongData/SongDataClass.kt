@@ -5,6 +5,7 @@ import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeHDThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
 import com.example.TIUMusic.Libs.YoutubeLib.models.Artist
 import com.example.TIUMusic.Libs.YoutubeLib.models.TIUMusic.HomeContent
+import kotlin.math.min
 
 enum class MusicItemType {
     Song,
@@ -61,6 +62,20 @@ fun toMusicItemsList(list : List<HomeContent?>) : List<MusicItem> {
     for (item in list) {
         if (item != null)
             musicItems.add(fromHomeContent(item, item.browseId == null && item.playlistId == null));
+    }
+    return musicItems;
+}
+
+fun musicItemSplitToRow(items: List<MusicItem>, rowSize: Int) : List<List<MusicItem>> {
+    val musicItems = mutableListOf<List<MusicItem>>();
+    val columnSize = items.size / rowSize + 1;
+    for (i in 0 until columnSize) {
+        val rowItems = mutableListOf<MusicItem>();
+        for (j in i * rowSize until min((i + 1) * rowSize, items.size)) {
+            rowItems.add(items[j]);
+        }
+        if (rowItems.isNotEmpty())
+            musicItems.add(rowItems);
     }
     return musicItems;
 }
