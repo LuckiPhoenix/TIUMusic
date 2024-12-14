@@ -14,13 +14,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Player.RepeatMode
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerNotificationManager
-import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +38,6 @@ import javax.inject.Inject
 class MediaViewModel @Inject constructor(
     val player: ExoPlayer
 ) : ViewModel() {
-    private var playlist = emptyList<MusicItem>()
 
     private val _currentPlayingIndex = MutableStateFlow(0)
     val currentPlayingIndex = _currentPlayingIndex.asStateFlow()
@@ -50,7 +49,7 @@ class MediaViewModel @Inject constructor(
     val isPlaying = _isPlaying.asStateFlow()
 
     val uiState: StateFlow<PlayerUIState> =
-        MutableStateFlow(PlayerUIState.Tracks(playlist)).stateIn(
+        MutableStateFlow(PlayerUIState.Tracks(listOf())).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
             initialValue = PlayerUIState.Initial
@@ -61,7 +60,7 @@ class MediaViewModel @Inject constructor(
     protected lateinit var mediaSession: MediaSession
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
-
+    var mediaTransitionListener : (Int) -> Unit = {};
 
     private var isStarted = false
 
@@ -76,42 +75,15 @@ class MediaViewModel @Inject constructor(
         
         player.addListener(playerListener)
 
-        val musicViewModel = MusicViewModel(context);
-        setupPlaylist(musicViewModel.readAllData.map { it.toMusicItem(context) }, context);
+        // val musicViewModel = MusicViewModel(context);
+        setupPlayer(context);
     }
 
-    private fun setupPlaylist(playlist : List<MusicItem>, context: Context) {
-        val videoItems: ArrayList<MediaSource> = arrayListOf()
-        var count = 1;
-        playlist.forEach {
-            val mediaMetaData = MediaMetadata.Builder()
-                .setArtworkUri(Uri.parse(it.imageRId.toString()))
-                .setTitle(it.title)
-                .setAlbumArtist(it.artist)
-                .build()
-
-            val uri = Uri.Builder()
-                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                .path("raw/${it.videoId}")
-                .build()
-            val mediaItem = MediaItem.Builder()
-                .setUri(uri)
-                .setMediaMetadata(mediaMetaData)
-                .build()
-            val dataSourceFactory = DefaultDataSource.Factory(context)
-
-            val mediaSource =
-                ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
-
-            videoItems.add(
-                mediaSource
-            )
-        }
-
+    private fun setupPlayer(context: Context) {
         onStart(context)
 
+
         player.playWhenReady = true
-        player.setMediaSources(videoItems)
         player.prepare()
     }
 
@@ -137,12 +109,50 @@ class MediaViewModel @Inject constructor(
         player.setMediaSource(mediaSource);
     }
 
+    fun setPlaylist(context: Context, musicItem: List<MusicItem>, startIndex: Int = 0,
+    ) {
+        val videoItems: ArrayList<MediaSource> = arrayListOf()
+        musicItem.forEach {
+            val mediaMetaData = MediaMetadata.Builder()
+                .setArtworkUri(Uri.parse(it.imageRId.toString()))
+                .setTitle(it.title)
+                .setAlbumArtist(it.artist)
+                .build()
+
+            val uri = Uri.Builder()
+                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                .path("raw/${it.videoId}")
+                .build()
+            val mediaItem = MediaItem.Builder()
+                .setUri(uri)
+                .setMediaMetadata(mediaMetaData)
+                .build()
+            val dataSourceFactory = DefaultDataSource.Factory(context)
+
+            val mediaSource =
+                ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+
+            videoItems.add(
+                mediaSource
+            )
+        }
+        player.setMediaSources(videoItems, startIndex, 0);
+    }
+
     fun updatePlaylist(action: ControlButtons) {
         when (action) {
             ControlButtons.Play -> if (player.isPlaying) player.pause() else player.play()
             ControlButtons.Next -> player.seekToNextMediaItem()
             ControlButtons.Rewind -> player.seekToPreviousMediaItem()
         }
+    }
+
+    fun setLoop(loop: Boolean) {
+        player.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF;
+    }
+
+    fun setShuffled(shuffled: Boolean) {
+        player.shuffleModeEnabled = shuffled;
     }
 
     fun updatePlayerPosition(position: Long) {
@@ -255,7 +265,10 @@ class MediaViewModel @Inject constructor(
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "onMediaItemTransition: ${mediaItem?.mediaMetadata?.title}")
+
             super.onMediaItemTransition(mediaItem, reason)
+            if (mediaItem != null)
+                mediaTransitionListener(player.currentMediaItemIndex);
             syncPlayerFlows()
         }
 

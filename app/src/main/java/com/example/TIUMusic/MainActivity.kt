@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                     }
                     Manifest.permission.POST_NOTIFICATIONS -> {
                         YoutubeSettings.NotificationEnabled = true;
-                        ViewModel.playerViewModel.ytViewModel.init(this);
+//                        ViewModel.playerViewModel.ytViewModel.init(this);
                     }
                 }
             },

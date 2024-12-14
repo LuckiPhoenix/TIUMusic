@@ -83,11 +83,11 @@ fun YoutubeView(
                         if (state == PlayerConstants.PlayerState.UNSTARTED)
                             return;
                         if (state == PlayerConstants.PlayerState.ENDED) {
-                            ytPlayerHelper.seekToTime = 0f;
-                            if (!youtubeViewModel.playerViewModel.loop.value)
-                                youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
-                            else
-                                youtubeViewModel.ytHelper.value.seekTo(0f);
+//                            ytPlayerHelper.seekToTime = 0f;
+//                            if (!youtubeViewModel.playerViewModel.loop.value)
+//                                youtubeViewModel.playerViewModel.changeSong(true, MainActivity.applicationContext);
+//                            else
+//                                youtubeViewModel.ytHelper.value.seekTo(0f);
                         }
                         if (!ytPlayerHelper.isSeekBuffering)
                             ytPlayerHelper.seekToTime = ytPlayerHelper.ytVideoTracker.currentSecond;

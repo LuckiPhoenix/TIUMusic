@@ -1168,7 +1168,7 @@ fun NowPlayingSheet(
     val context = LocalContext.current
     val dragProgress = remember { mutableStateOf(0f) }
     val scope = rememberCoroutineScope()
-    val ytPlayerHelper by playerViewModel.ytViewModel.ytHelper.collectAsState()
+//    val ytPlayerHelper by playerViewModel.ytViewModel.ytHelper.collectAsState()
     val shouldExpand by playerViewModel.shouldExpand.collectAsState()
     val musicItem by playerViewModel.musicItem.collectAsState()
     // Su dung de check user dang seek hay khong
@@ -1283,9 +1283,9 @@ fun NowPlayingSheet(
                             isPlaying = playerViewModel.isPlaying.value,
                             onPlayPauseClick = {
                                 if (playerViewModel.isPlaying.value)
-                                    ytPlayerHelper.pause();
+                                    mediaViewModel.player.pause();
                                 else
-                                    ytPlayerHelper.play();
+                                    mediaViewModel.player.play();
                             },
                         )
                     } else {
@@ -1309,11 +1309,11 @@ fun NowPlayingSheet(
                                 mediaViewModel.updatePlayerPosition(newPosition.toLong() * 1000L);
                             },
                             onChangeSong = { isNextSong ->
-                                if (!isNextSong && ytPlayerHelper.currentSecond >= 5) {
+                                if (!isNextSong && currentPositionState >= 5) {
                                     mediaViewModel.updatePlayerPosition(0);
                                 }
                                 else {
-                                    playerViewModel.changeSong(isNextSong, MainActivity.applicationContext)
+                                    mediaViewModel.player.seekToNextMediaItem()
                                 }
                             },
                             visualizerViewModel = visualizerViewModel,

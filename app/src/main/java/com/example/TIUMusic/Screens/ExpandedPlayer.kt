@@ -153,19 +153,21 @@ public fun ExpandedPlayer(
         )
     )
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
-    val syncedLine by playerViewModel.syncedLine.collectAsState()
+//    val syncedLine by playerViewModel.syncedLine.collectAsState()
     val currentUser by userViewModel.currentUser.observeAsState()
     val context = LocalContext.current;
 
     LaunchedEffect(Unit) {
         val bitmap = BitmapFactory.decodeResource(context.resources, musicItem.imageRId ?: R.drawable.tiumarksvg);
-        avgColor = Color(bitmap.getPixel(0, 0));
-        avgColor = avgColor.copy(
-            alpha = 1.0f,
-            red = min(1.0f, avgColor.red * 1.5f),
-            green = min(1.0f, avgColor.green * 1.5f),
-            blue = min(1.0f, avgColor.blue * 1.5f)
-        )
+        if (bitmap != null) {
+            avgColor = Color(bitmap.getPixel(0, 0));
+            avgColor = avgColor.copy(
+                alpha = 1.0f,
+                red = min(1.0f, avgColor.red * 1.5f),
+                green = min(1.0f, avgColor.green * 1.5f),
+                blue = min(1.0f, avgColor.blue * 1.5f)
+            )
+        }
         userViewModel.getCurrentUser()
     }
 
@@ -214,7 +216,7 @@ public fun ExpandedPlayer(
             }
 
             Text(
-                text = syncedLine.words, //lyric here
+                text = "", //lyric here
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
                 color = Color.White,

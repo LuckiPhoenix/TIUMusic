@@ -42,6 +42,7 @@ import com.example.TIUMusic.Screens.PlaylistScreen
 import com.example.TIUMusic.Screens.SearchScreen
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.PlayerViewModel
+import kotlin.random.Random
 
 @Composable
 fun NavHost(
@@ -255,62 +256,14 @@ fun NavHost(
                         },
                         onSongClick = { musicItem, index, playlist ->
                             Log.d("LogNav", "TYPE = 0")
-                            playerViewModel.playSong(musicItem, context);
-//                            playerViewModel.setPlaylist(playlist)
-//                            playerViewModel.setIsShuffled(false)
-//                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
-                        },
-                        onShuffleClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist)
-                            playerViewModel.shufflePlaylist()
-                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
-                        },
-                        onPlayClick = { playlist ->
-                            playerViewModel.setPlaylist(playlist)
-                            playerViewModel.setIsShuffled(false)
-                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
-                        },
-                        onPlayNextClick = { playlist ->
-                            if (!playerViewModel.playlist.value.isNullOrEmpty())
-                                playerViewModel.playlistInsertNext(playlist);
-                            else {
-                                playerViewModel.setPlaylist(playlist)
-                                playerViewModel.setIsShuffled(false)
-                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
-                            }
-                        }
-                    )
-                }
-                composable(
-                    route = "album/{albumId}",
-                    arguments = listOf(
-                        navArgument("albumId") { type = NavType.StringType },
-                    )
-                ){backStackEntry ->
-                    val browseId = backStackEntry.arguments?.getString("albumId") ?: ""
-                    AlbumScreen(
-                        navController = navController,
-                        ytMusicViewModel = ytmusicViewModel,
-                        albumId = browseId,
-                        onTabSelected = { tabIndex ->
-                            playerViewModel.setShouldExpand(-1);
-                            when (tabIndex) {
-                                0 -> {navController.navigate("home")}
-                                1 -> navController.navigate("new")
-                                2 -> navController.navigate("library")
-                                3 -> navController.navigate("search")
-                            }
-                        },
-                        onSongClick = { musicItem, index, playlist ->
-                            Log.d("LogNav", "TYPE = 0")
                             playerViewModel.setPlaylist(playlist)
                             playerViewModel.setIsShuffled(false)
                             playerViewModel.playSongInPlaylistAtIndex(index, context, true)
                         },
                         onShuffleClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
-                            playerViewModel.shufflePlaylist()
-                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+                            playerViewModel.setIsShuffled(true)
+                            playerViewModel.playSongInPlaylistAtIndex(Random.nextInt(playlist.size), context, true)
                         },
                         onPlayClick = { playlist ->
                             playerViewModel.setPlaylist(playlist)
@@ -318,16 +271,63 @@ fun NavHost(
                             playerViewModel.playSongInPlaylistAtIndex(0, context, true)
                         },
                         onPlayNextClick = { playlist ->
-                            if (!playerViewModel.playlist.value.isNullOrEmpty())
-                                playerViewModel.playlistInsertNext(playlist);
-                            else {
-                                playerViewModel.setPlaylist(playlist)
-                                playerViewModel.setIsShuffled(false)
-                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
-                            }
-                        },
+//                            if (!playerViewModel.playlist.value.isNullOrEmpty())
+//                                playerViewModel.playlistInsertNext(playlist);
+//                            else {
+//                                playerViewModel.setPlaylist(playlist)
+//                                playerViewModel.setIsShuffled(false)
+//                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+//                            }
+                        }
                     )
                 }
+//                composable(
+//                    route = "album/{albumId}",
+//                    arguments = listOf(
+//                        navArgument("albumId") { type = NavType.StringType },
+//                    )
+//                ){backStackEntry ->
+//                    val browseId = backStackEntry.arguments?.getString("albumId") ?: ""
+//                    AlbumScreen(
+//                        navController = navController,
+//                        ytMusicViewModel = ytmusicViewModel,
+//                        albumId = browseId,
+//                        onTabSelected = { tabIndex ->
+//                            playerViewModel.setShouldExpand(-1);
+//                            when (tabIndex) {
+//                                0 -> {navController.navigate("home")}
+//                                1 -> navController.navigate("new")
+//                                2 -> navController.navigate("library")
+//                                3 -> navController.navigate("search")
+//                            }
+//                        },
+//                        onSongClick = { musicItem, index, playlist ->
+//                            Log.d("LogNav", "TYPE = 0")
+//                            playerViewModel.setPlaylist(playlist)
+//                            playerViewModel.setIsShuffled(false)
+//                            playerViewModel.playSongInPlaylistAtIndex(index, context, true)
+//                        },
+//                        onShuffleClick = { playlist ->
+//                            playerViewModel.setPlaylist(playlist)
+//                            playerViewModel.setIsShuffled(true)
+//                            playerViewModel.playSongInPlaylistAtIndex(Random.nextInt(playlist.size), context, true)
+//                        },
+//                        onPlayClick = { playlist ->
+//                            playerViewModel.setPlaylist(playlist)
+//                            playerViewModel.setIsShuffled(false)
+//                            playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+//                        },
+//                        onPlayNextClick = { playlist ->
+//                            if (!playerViewModel.playlist.value.isNullOrEmpty())
+//                                playerViewModel.playlistInsertNext(playlist);
+//                            else {
+//                                playerViewModel.setPlaylist(playlist)
+//                                playerViewModel.setIsShuffled(false)
+//                                playerViewModel.playSongInPlaylistAtIndex(0, context, true)
+//                            }
+//                        },
+//                    )
+//                }
                 composable(
                     route = "artist/{artistId}",
                     arguments = listOf(
@@ -372,51 +372,50 @@ fun NavHost(
                         navController = navController,
                     )
                 }
-                composable(
-                    route = "mood/{params}",
-                    arguments = listOf(
-                        navArgument("params"){type = NavType.StringType}
-                    ),
-                ){backStackEntry ->
-                    val params = backStackEntry.arguments?.getString("params") ?: ""
-                    MoodListScreen(
-                        params = params,
-                        navController = navController,
-                        onTabSelected = { tabIndex ->
-                            playerViewModel.setShouldExpand(-1);
-                            when (tabIndex) {
-                                0 -> {navController.navigate("home")}
-                                1 -> navController.navigate("new")
-                                2 -> navController.navigate("library")
-                                3 -> navController.navigate("search")
-                            }
-                        },
-                        onPlaylistClick = { musicItem ->
-                            if(musicItem.type == 0){
-                                Log.d("LogNav", "TYPE = 0")
-                                playerViewModel.resetPlaylist()
-                                playerViewModel.playSong(musicItem, context, true)
-                            } else if(musicItem.type == 1){
-                                navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
-                                navController.navigate("playlist/${musicItem.playlistId}")
-                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
-                            }
-                            else if(musicItem.type == 2){
-                                navController.navigate("album/${musicItem.browseId}")
-                                Log.d("LogNav", "TYPE = 2")
-                            }
-                            else if(musicItem.type == 3){
-                                navController.navigate("artist/${musicItem.browseId}")
-                                Log.d("LogNav", "TYPE = 3")
-                            }
-                        },
-                        ytmusicViewModel = ytmusicViewModel
-                    )
-                }
-
+//                composable(
+//                    route = "mood/{params}",
+//                    arguments = listOf(
+//                        navArgument("params"){type = NavType.StringType}
+//                    ),
+//                ){backStackEntry ->
+//                    val params = backStackEntry.arguments?.getString("params") ?: ""
+//                    MoodListScreen(
+//                        params = params,
+//                        navController = navController,
+//                        onTabSelected = { tabIndex ->
+//                            playerViewModel.setShouldExpand(-1);
+//                            when (tabIndex) {
+//                                0 -> {navController.navigate("home")}
+//                                1 -> navController.navigate("new")
+//                                2 -> navController.navigate("library")
+//                                3 -> navController.navigate("search")
+//                            }
+//                        },
+//                        onPlaylistClick = { musicItem ->
+//                            if(musicItem.type == 0){
+//                                Log.d("LogNav", "TYPE = 0")
+//                                playerViewModel.resetPlaylist()
+//                                playerViewModel.playSong(musicItem, context, true)
+//                            } else if(musicItem.type == 1){
+//                                navController.currentBackStackEntry?.savedStateHandle?.set("title", musicItem.title)
+//                                navController.currentBackStackEntry?.savedStateHandle?.set("artist", musicItem.artist)
+//                                navController.currentBackStackEntry?.savedStateHandle?.set("image", musicItem.imageUrl)
+//                                navController.currentBackStackEntry?.savedStateHandle?.set("imageRId", musicItem.imageRId)
+//                                navController.navigate("playlist/${musicItem.playlistId}")
+//                                Log.d("LogNav", "TYPE = 1 with ${musicItem.playlistId}")
+//                            }
+//                            else if(musicItem.type == 2){
+//                                navController.navigate("album/${musicItem.browseId}")
+//                                Log.d("LogNav", "TYPE = 2")
+//                            }
+//                            else if(musicItem.type == 3){
+//                                navController.navigate("artist/${musicItem.browseId}")
+//                                Log.d("LogNav", "TYPE = 3")
+//                            }
+//                        },
+//                        ytmusicViewModel = ytmusicViewModel
+//                    )
+//                }
             }
         }
 
