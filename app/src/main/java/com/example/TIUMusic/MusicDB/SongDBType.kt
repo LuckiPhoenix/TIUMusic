@@ -28,7 +28,7 @@ data class Song(
     val albumId : Int?,
     val albumTrack : Int,
     val duration : Float,
-    val releaseDate : String
+    val releaseDate : String,
 ) {
     fun toMusicItem(context : Context) : MusicItem {
         return MusicItem(
@@ -37,6 +37,7 @@ data class Song(
             artist = artist,
             imageUrl = imageUri,
             imageRId = nameToRID(imageUri, "raw", context),
+            songId = id,
             type = MusicItemType.Song,
         )
     }

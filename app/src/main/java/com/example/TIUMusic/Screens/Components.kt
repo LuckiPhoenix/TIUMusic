@@ -104,6 +104,7 @@ import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.Login.User
 import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
@@ -1220,9 +1221,10 @@ fun NowPlayingSheet(
 
 
     val mediaViewModel: MediaViewModel = hiltViewModel()
+    val authViewModel : UserViewModel = hiltViewModel()
 
-    LaunchedEffect(mediaViewModel) {
-        playerViewModel.setMediaViewModel(mediaViewModel);
+    LaunchedEffect(mediaViewModel, authViewModel) {
+        playerViewModel.setMediaViewModel(mediaViewModel, authViewModel);
     }
 
     val uiState by mediaViewModel.uiState.collectAsStateWithLifecycle()

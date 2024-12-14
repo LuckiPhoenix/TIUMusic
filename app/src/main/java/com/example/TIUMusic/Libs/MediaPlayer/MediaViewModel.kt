@@ -15,6 +15,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
+import androidx.media3.common.Tracks
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
@@ -256,19 +257,21 @@ class MediaViewModel @Inject constructor(
                 Player.STATE_READY -> {
                     notificationManager.showNotificationForPlayer(player)
                 }
-
                 else -> {
                     notificationManager.hideNotification()
                 }
             }
         }
 
+        override fun onTracksChanged(tracks: Tracks) {
+            super.onTracksChanged(tracks)
+        }
+
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             Log.d(TAG, "onMediaItemTransition: ${mediaItem?.mediaMetadata?.title}")
 
             super.onMediaItemTransition(mediaItem, reason)
-            if (mediaItem != null)
-                mediaTransitionListener(player.currentMediaItemIndex);
+            mediaTransitionListener(player.currentMediaItemIndex);
             syncPlayerFlows()
         }
 

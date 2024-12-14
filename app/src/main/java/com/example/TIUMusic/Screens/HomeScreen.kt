@@ -59,14 +59,7 @@ fun HomeScreen(
                 ),
                 HomeTest(
                     contents = musicViewModel.readAllData.subList(0, 10).map { it ->
-                            MusicItem(
-                                title = it.title,
-                                artist = it.artist,
-                                videoId = it.fileUri,
-                                type = MusicItemType.Song,
-                                imageUrl = it.imageUri,
-                                imageRId = nameToRID(it.imageUri, "raw", context),
-                            )
+                            it.toMusicItem(context)
                         },
                     title = "Songs"
                 ),

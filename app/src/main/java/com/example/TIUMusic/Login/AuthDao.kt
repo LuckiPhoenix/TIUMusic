@@ -2,6 +2,7 @@ package com.example.TIUMusic.Login
 
 import android.content.Context
 import android.util.Log
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Query
@@ -10,6 +11,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.Update
 import androidx.room.Upsert
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.TIUMusic.MusicDB.MusicDao
 import com.example.TIUMusic.MusicDB.Song
@@ -49,7 +51,7 @@ interface AuthDao {
     suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean;
 
     @Query("UPDATE ListenHistory " +
-            "SET listenCount = listenCount + 1, lastListenDate = datetime('now') " +
+            "SET listenCount = listenCount + 1, lastListenDate = datetime('now', 'localtime') " +
             "WHERE userEmail = :userEmail AND songId = :songId")
     suspend fun updateUserListenTo(userEmail : String, songId: Int);
 
@@ -57,8 +59,9 @@ interface AuthDao {
     suspend fun insertListenHistory(listenHistory: ListenHistory);
 }
 
+
 //This is the database itself, in singleton (i.e: there is only one instance of the database)
-@Database(entities = [User::class, ListenHistory::class], version = 4, exportSchema = false)
+@Database(entities = [User::class, ListenHistory::class], version = 4)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): AuthDao;

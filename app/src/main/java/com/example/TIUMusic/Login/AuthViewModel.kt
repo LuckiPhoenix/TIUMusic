@@ -1,14 +1,13 @@
 package com.example.TIUMusic.Login
 
-import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.icu.util.Calendar
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.TIUMusic.R
@@ -19,11 +18,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
-import java.time.Instant
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -281,14 +279,17 @@ class UserViewModel @Inject constructor(
             if (currentUser != null) {
                 if (userRepository.userHasListenTo(currentUser.email, songId))
                     userRepository.updateUserListenTo(currentUser.email, songId);
-                else
+                else {
+                    val calendar = Calendar.getInstance(android.icu.util.TimeZone.getTimeZone("UTC"))
                     userRepository.insertListenHistory(
                         ListenHistory(
                             currentUser.email,
                             songId,
-                            0,
-                            DateTimeFormatter.ISO_INSTANT.format(Instant.now()))
+                            1,
+                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.time)
+                        )
                     )
+                }
             }
         }
     }

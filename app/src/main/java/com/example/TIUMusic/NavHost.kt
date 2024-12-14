@@ -115,6 +115,7 @@ fun NavHost(
                                 MusicItemType.Song -> {
                                     Log.d("LogNav", "TYPE = 0")
                                     playerViewModel.resetPlaylist()
+                                    playerViewModel.setIsShuffled(false)
                                     playerViewModel.playSong(musicItem, context, true)
                                 }
                                 MusicItemType.Album, MusicItemType.UserPlaylist, MusicItemType.GlobalPlaylist -> {

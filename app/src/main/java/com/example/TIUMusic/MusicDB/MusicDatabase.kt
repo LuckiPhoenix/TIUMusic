@@ -7,7 +7,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Song::class, Album::class, GlobalPlaylist::class], version = 1, exportSchema = true)
+@Database(entities = [Song::class, Album::class, GlobalPlaylist::class], version = 1)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun musicDao() : MusicDao
 
@@ -27,6 +27,7 @@ abstract class MusicDatabase : RoomDatabase() {
                 )
                     .createFromAsset("database/MusicDB.db")
                     .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()
                     .build()
                 instance.openHelper.readableDatabase.let {
                     val test = it.query("SELECT * FROM Song");

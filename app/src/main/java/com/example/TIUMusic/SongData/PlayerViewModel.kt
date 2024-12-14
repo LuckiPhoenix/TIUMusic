@@ -63,6 +63,7 @@ class PlayerViewModel : ViewModel() {
     val mediaViewModel = _mediaViewModel.asStateFlow();
 
     val musicViewModel = MusicViewModel(MainActivity.applicationContext);
+    var authViewModel : UserViewModel? = null;
 
     fun playSong(item : MusicItem, context : Context, expandPlayer: Boolean = false) {
         _musicItem.value = item;
@@ -75,12 +76,14 @@ class PlayerViewModel : ViewModel() {
         playSongInPlaylistAtIndex(0, context, expandPlayer);
     }
 
-    fun setMediaViewModel(viewModel : MediaViewModel) {
+    fun setMediaViewModel(viewModel : MediaViewModel, authViewModel: UserViewModel) {
         _mediaViewModel.value = viewModel;
+        this.authViewModel = authViewModel;
         _mediaViewModel.value!!.mediaTransitionListener = { index ->
             if (!playlist.value.isNullOrEmpty()) {
                 _musicItem.value = playlist.value!![index];
-                //authViewModel.listenTo(musicItem.value.videoId.toInt());
+                if (musicItem.value.songId != null)
+                    authViewModel.listenTo(musicItem.value.songId!!);
             }
         }
     }
@@ -89,24 +92,7 @@ class PlayerViewModel : ViewModel() {
         _playlist.value = items as MutableList<MusicItem>?;
     }
 
-    fun setRadio(song: MusicItem) {
-//        viewModelScope.launch {
-//            resetPlaylist();
-//            _currentPlaylistIndex.value = 0;
-//            setPlaylist(YtmusicViewModel.getRadio(song.videoId, song)?.tracks);
-//        }
-    }
-
     fun changeSong(nextSong: Boolean, context: android.content.Context) : Boolean {
-//        if (playlist.value != null &&
-//            currentPlaylistIndex.value != null &&
-//            currentPlaylistIndex.value!! + (if (nextSong) 1 else -1)
-//                in (0 .. playlist.value!!.size - 1)) {
-//            setCurrentTime(0f);
-//            _currentPlaylistIndex.value = _currentPlaylistIndex.value!! + (if (nextSong) 1 else -1);
-//            playSongInPlaylistAtIndex(_currentPlaylistIndex.value, context);
-//            return true;
-//        }
         return false;
     }
 
@@ -116,24 +102,6 @@ class PlayerViewModel : ViewModel() {
                 _mediaViewModel.value?.setPlaylist(context, playlist.value!!, index);
             if (expandPlayer)
                 setShouldExpand(1);
-        }
-    }
-
-    fun playlistInsertNext(musicItems : List<MusicItem>) {
-//        if (currentPlaylistIndex.value != null) {
-//            _playlist.value?.addAll(currentPlaylistIndex.value!! + 1, musicItems);
-//            if ((_playlist.value?.size ?: 0) > 100) {
-//                _playlist.value = _playlist.value?.subList(0, 100);
-//            }
-//        }
-    }
-
-    fun playlistSortBy(option : String) {
-        when (option) {
-            "Title" -> _playlist.value?.sortBy { it.title };
-            "Artist" -> _playlist.value?.sortBy { it.artist };
-            "Playlist Order" -> { TODO() }
-            else -> {}
         }
     }
 
