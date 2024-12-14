@@ -114,7 +114,8 @@ class MediaViewModel @Inject constructor(
         val videoItems: ArrayList<MediaSource> = arrayListOf()
         musicItem.forEach {
             val mediaMetaData = MediaMetadata.Builder()
-                .setArtworkUri(Uri.parse(it.imageRId.toString()))
+                .setArtworkUri(Uri.parse("android.resource://${context.packageName}/" + it.imageRId.toString()))
+                .setDescription(it.imageRId.toString())
                 .setTitle(it.title)
                 .setAlbumArtist(it.artist)
                 .build()
@@ -192,13 +193,13 @@ class MediaViewModel @Inject constructor(
         notificationManager =
             MediaNotificationManager(
                 context,
-                mediaSession.token,
+                mediaSession,
                 player,
                 PlayerNotificationListener()
             )
 
 
-        notificationManager.showNotificationForPlayer(player)
+//        notificationManager.showNotificationForPlayer(player)
     }
 
     /**
@@ -221,7 +222,7 @@ class MediaViewModel @Inject constructor(
         }
 
         // Hide notification
-        notificationManager.hideNotification()
+//        notificationManager.hideNotification()
 
         // Free ExoPlayer resources.
         player.removeListener(playerListener)
@@ -257,10 +258,8 @@ class MediaViewModel @Inject constructor(
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    notificationManager.showNotificationForPlayer(player)
                 }
                 else -> {
-                    notificationManager.hideNotification()
                 }
             }
         }
@@ -273,6 +272,11 @@ class MediaViewModel @Inject constructor(
             Log.d(TAG, "onMediaItemTransition: ${mediaItem?.mediaMetadata?.title}")
 
             super.onMediaItemTransition(mediaItem, reason)
+            if (mediaItem?.mediaMetadata != null)
+                notificationManager.showNotificationForPlayer(
+                    mediaItem.mediaMetadata.title.toString(),
+                    mediaItem.mediaMetadata.albumArtist.toString(),
+                    mediaItem.mediaMetadata.description.toString().toIntOrNull())
             mediaTransitionListener(player.currentMediaItemIndex);
             syncPlayerFlows()
         }

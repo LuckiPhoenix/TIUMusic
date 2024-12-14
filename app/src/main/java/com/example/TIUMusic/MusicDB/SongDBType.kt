@@ -81,7 +81,8 @@ data class GlobalPlaylist(
             artist = artist,
             imageUrl = imageUri,
             imageRId = nameToRID(imageUri, "raw", context),
-            playlistId = songsIds,
+            playlistId = id.toString(),
+            playlistSongsIds = songsIds,
             type = MusicItemType.GlobalPlaylist,
         )
     }

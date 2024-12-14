@@ -35,7 +35,8 @@ fun AudioPlayerView(viewModel: MediaViewModel) {
     }
 
     // Implementing ExoPlayer
-    AndroidView(modifier = Modifier.size(0.dp),
+    AndroidView(
+        modifier = Modifier.size(0.dp),
         factory = { context ->
             PlayerView(context).apply {
                 this.player = mExoPlayer
@@ -43,5 +44,6 @@ fun AudioPlayerView(viewModel: MediaViewModel) {
                 useController = false
                 controllerHideOnTouch = false
             }
-        })
+        }
+    )
 }
