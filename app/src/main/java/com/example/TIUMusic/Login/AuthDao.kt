@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.Update
 import androidx.room.Upsert
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.TIUMusic.MusicDB.MusicDao
@@ -43,10 +44,21 @@ interface AuthDao {
     // Update playlists
     @Query("UPDATE User SET playlists = :playlists WHERE email = :email")
     suspend fun updatePlaylists(email: String, playlists: MutableList<Playlist>)
+
+    @Query("SELECT EXISTS(SELECT * FROM ListenHistory WHERE userEmail = :userEmail AND songId = :songId)")
+    suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean;
+
+    @Query("UPDATE ListenHistory " +
+            "SET listenCount = listenCount + 1, lastListenDate = datetime('now') " +
+            "WHERE userEmail = :userEmail AND songId = :songId")
+    suspend fun updateUserListenTo(userEmail : String, songId: Int);
+
+    @Upsert
+    suspend fun insertListenHistory(listenHistory: ListenHistory);
 }
 
 //This is the database itself, in singleton (i.e: there is only one instance of the database)
-@Database(entities = [User::class], version = 3, exportSchema = true)
+@Database(entities = [User::class, ListenHistory::class], version = 4, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): AuthDao;
@@ -57,7 +69,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                println("test");
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
@@ -68,10 +79,6 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
-
-        private fun prepopulateDatabase(database: AppDatabase) {
-            println("lets go");
-        }
     }
 }
 
@@ -80,6 +87,9 @@ interface UserRepository {
     suspend fun insertAuth(user: User)
     suspend fun getUserByEmail(email: String): User?
     suspend fun authenticate(email: String, password: String): User?
+    suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean;
+    suspend fun updateUserListenTo(userEmail : String, songId: Int);
+    suspend fun insertListenHistory(listenHistory: ListenHistory);
 }
 
 class UserRepositoryImpl @Inject constructor(
@@ -88,6 +98,9 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun insertAuth(user: User) = authDao.insertAuth(user)
     override suspend fun getUserByEmail(email: String): User? = authDao.getUserByEmail(email)
     override suspend fun authenticate(email: String, password: String): User? = authDao.authenticate(email, password)
+    override suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean = authDao.userHasListenTo(userEmail, songId)
+    override suspend fun updateUserListenTo(userEmail : String, songId: Int) = authDao.updateUserListenTo(userEmail, songId);
+    override suspend fun insertListenHistory(listenHistory: ListenHistory) = authDao.insertListenHistory(listenHistory);
 }
 @Module
 @InstallIn(SingletonComponent::class)

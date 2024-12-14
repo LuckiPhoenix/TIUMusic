@@ -46,4 +46,5 @@ class MusicRepository(private val musicDao : MusicDao) {
 
     fun getSongsByIds(ids : List<Int>) : List<Song> = musicDao.getSongsByIds(ids);
     fun getSongsByAlbumId(albumId: Int) : List<Song> = musicDao.getSongsInAlbumById(albumId);
+    fun getRandomSongs(limit : Int) : List<Song> = musicDao.getRandomSongs(limit);
 }

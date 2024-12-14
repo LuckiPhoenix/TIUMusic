@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
@@ -20,6 +21,10 @@ import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getLRCLIBLyrics
 import com.example.TIUMusic.Libs.YoutubeLib.models.Line
 import com.example.TIUMusic.Libs.YoutubeLib.models.Lyrics
+import com.example.TIUMusic.Login.UserViewModel
+import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.MusicDB.MusicViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -57,18 +62,26 @@ class PlayerViewModel : ViewModel() {
     private var _mediaViewModel = MutableStateFlow<MediaViewModel?>(null);
     val mediaViewModel = _mediaViewModel.asStateFlow();
 
+    val musicViewModel = MusicViewModel(MainActivity.applicationContext);
+
     fun playSong(item : MusicItem, context : Context, expandPlayer: Boolean = false) {
         _musicItem.value = item;
         if (expandPlayer)
             setShouldExpand(1);
-        _mediaViewModel.value?.setMusicItem(item, context);
+        _mediaViewModel.value?.setShuffled(false);
+        val radio = musicViewModel.getRandomSongs(10, context);
+        radio.add(0, item);
+        setPlaylist(radio);
+        playSongInPlaylistAtIndex(0, context, expandPlayer);
     }
 
     fun setMediaViewModel(viewModel : MediaViewModel) {
         _mediaViewModel.value = viewModel;
         _mediaViewModel.value!!.mediaTransitionListener = { index ->
-            if (!playlist.value.isNullOrEmpty())
+            if (!playlist.value.isNullOrEmpty()) {
                 _musicItem.value = playlist.value!![index];
+                //authViewModel.listenTo(musicItem.value.videoId.toInt());
+            }
         }
     }
 

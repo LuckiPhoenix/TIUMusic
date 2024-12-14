@@ -22,6 +22,8 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -269,6 +271,24 @@ class UserViewModel @Inject constructor(
                 currentUser.profilePicture = newProfilePicture
                 userRepository.insertAuth(currentUser)
                 _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    fun listenTo(songId: Int) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                if (userRepository.userHasListenTo(currentUser.email, songId))
+                    userRepository.updateUserListenTo(currentUser.email, songId);
+                else
+                    userRepository.insertListenHistory(
+                        ListenHistory(
+                            currentUser.email,
+                            songId,
+                            0,
+                            DateTimeFormatter.ISO_INSTANT.format(Instant.now()))
+                    )
             }
         }
     }

@@ -50,6 +50,13 @@ class MusicViewModel(@ApplicationContext context: Context) : ViewModel() {
             it.toMusicItem(context)
         }
     }
+
+    fun getRandomSongs(limit : Int = 10, context: Context) : MutableList<MusicItem> {
+        val songs = _repository.getRandomSongs(limit);
+        return songs.map {
+            it.toMusicItem(context);
+        }.toMutableList();
+    }
 }
 
 fun PlaylistSongsIdsToIdList(ids : String) : List<Int> {

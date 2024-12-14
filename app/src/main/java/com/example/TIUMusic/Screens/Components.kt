@@ -104,6 +104,7 @@ import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.Login.UserViewModel
 import com.example.TIUMusic.MainActivity
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -1311,11 +1312,14 @@ fun NowPlayingSheet(
                                 mediaViewModel.updatePlayerPosition(newPosition.toLong() * 1000L);
                             },
                             onChangeSong = { isNextSong ->
-                                if (!isNextSong && currentPositionState >= 5) {
-                                    mediaViewModel.updatePlayerPosition(0);
+                                if (!isNextSong && currentPositionState / 1000f >= 5) {
+                                    mediaViewModel.player.seekTo(0);
                                 }
                                 else {
-                                    mediaViewModel.player.seekToNextMediaItem()
+                                    if (isNextSong)
+                                        mediaViewModel.player.seekToNextMediaItem()
+                                    else
+                                        mediaViewModel.player.seekToPreviousMediaItem()
                                 }
                             },
                             visualizerViewModel = visualizerViewModel,

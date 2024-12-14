@@ -22,5 +22,8 @@ interface MusicDao {
 
     @Query("SELECT * FROM Song WHERE id IN (:ids) ORDER BY id ASC")
     fun getSongsByIds(ids : List<Int>) : List<Song>;
+
+    @Query("SELECT * FROM Song WHERE id IN (SELECT id FROM SONG ORDER BY RANDOM() LIMIT :limit)")
+    fun getRandomSongs(limit : Int) : List<Song>;
 }
 

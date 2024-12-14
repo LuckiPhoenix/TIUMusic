@@ -28,6 +28,7 @@ data class Song(
     val albumId : Int?,
     val albumTrack : Int,
     val duration : Float,
+    val releaseDate : String
 ) {
     fun toMusicItem(context : Context) : MusicItem {
         return MusicItem(

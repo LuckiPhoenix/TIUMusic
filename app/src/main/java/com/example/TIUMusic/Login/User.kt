@@ -31,6 +31,14 @@ data class User(
     var playlists: MutableList<Playlist> = mutableListOf() // New field for playlists
 )
 
+@Entity(primaryKeys = arrayOf("userEmail", "songId"))
+data class ListenHistory(
+    var userEmail : String,
+    var songId: Int,
+    var listenCount : Int = 0,
+    var lastListenDate : String,
+)
+
 // New Playlist data class
 data class Playlist(
     val id: String, // Auto-generated ID
