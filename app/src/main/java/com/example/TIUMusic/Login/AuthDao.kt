@@ -55,6 +55,12 @@ interface AuthDao {
             "WHERE userEmail = :userEmail AND songId = :songId")
     suspend fun updateUserListenTo(userEmail : String, songId: Int);
 
+    @Query("SELECT songId FROM ListenHistory WHERE userEmail = :userEmail ORDER BY lastListenDate DESC LIMIT :limit")
+    suspend fun getRecentListenedSongs(userEmail: String, limit : Int) : List<Int>;
+
+    @Query("SELECT songId FROM ListenHistory WHERE userEmail = :userEmail ORDER BY listenCount DESC LIMIT :limit")
+    suspend fun getMostListenedSongs(userEmail: String, limit : Int) : List<Int>;
+
     @Upsert
     suspend fun insertListenHistory(listenHistory: ListenHistory);
 }
@@ -92,6 +98,8 @@ interface UserRepository {
     suspend fun authenticate(email: String, password: String): User?
     suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean;
     suspend fun updateUserListenTo(userEmail : String, songId: Int);
+    suspend fun getMostListenedSongs(userEmail: String, limit : Int = 10) : List<Int>;
+    suspend fun getRecentListenedSongs(userEmail: String, limit : Int = 10) : List<Int>;
     suspend fun insertListenHistory(listenHistory: ListenHistory);
 }
 
@@ -103,6 +111,8 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun authenticate(email: String, password: String): User? = authDao.authenticate(email, password)
     override suspend fun userHasListenTo(userEmail : String, songId : Int) : Boolean = authDao.userHasListenTo(userEmail, songId)
     override suspend fun updateUserListenTo(userEmail : String, songId: Int) = authDao.updateUserListenTo(userEmail, songId);
+    override suspend fun getRecentListenedSongs(userEmail: String, limit : Int) : List<Int> = authDao.getRecentListenedSongs(userEmail, limit);
+    override suspend fun getMostListenedSongs(userEmail: String, limit : Int) : List<Int> = authDao.getMostListenedSongs(userEmail, limit);
     override suspend fun insertListenHistory(listenHistory: ListenHistory) = authDao.insertListenHistory(listenHistory);
 }
 @Module

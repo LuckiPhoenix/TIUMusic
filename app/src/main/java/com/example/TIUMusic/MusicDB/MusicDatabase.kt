@@ -29,23 +29,9 @@ abstract class MusicDatabase : RoomDatabase() {
                     .allowMainThreadQueries()
                     .fallbackToDestructiveMigration()
                     .build()
-                instance.openHelper.readableDatabase.let {
-                    val test = it.query("SELECT * FROM Song");
-                    Log.d("MusicDB", "Database Found");
-                }
                 INSTANCE = instance;
                 return instance;
             }
         }
     }
-}
-
-class MusicRepository(private val musicDao : MusicDao) {
-    val readAllData : List<Song> = musicDao.getAllSongs();
-    val albums : List<Album> = musicDao.getAllAlbums();
-    val playlist : List<GlobalPlaylist> = musicDao.getAllPlaylist();
-
-    fun getSongsByIds(ids : List<Int>) : List<Song> = musicDao.getSongsByIds(ids);
-    fun getSongsByAlbumId(albumId: Int) : List<Song> = musicDao.getSongsInAlbumById(albumId);
-    fun getRandomSongs(limit : Int) : List<Song> = musicDao.getRandomSongs(limit);
 }

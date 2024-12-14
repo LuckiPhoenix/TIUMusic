@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
@@ -46,6 +47,7 @@ import com.example.TIUMusic.SongData.MoodItem
 import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.Utils.isPlaylistRandomUUID
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun TopPlaylistBar(
@@ -327,10 +329,14 @@ fun PlaylistScreen(
             TODO();
         }
         else if (playlistItem.type == MusicItemType.Album) {
-            currentPlaylist = musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context);
+            musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context).collectLatest {
+                currentPlaylist = it;
+            };
         }
         else if (playlistItem.type == MusicItemType.GlobalPlaylist) {
-            currentPlaylist = musicViewModel.getSongsWithIds(playlistItem.playlistSongsIds, context);
+            musicViewModel.getSongsWithIds(playlistItem.playlistSongsIds, context).collectLatest {
+                currentPlaylist = it;
+            };
         }
     }
 

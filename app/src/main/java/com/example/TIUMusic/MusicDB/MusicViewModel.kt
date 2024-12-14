@@ -1,62 +1,62 @@
 package com.example.TIUMusic.MusicDB
 
 import android.content.Context
+import android.provider.Settings.Global
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.TIUMusic.SongData.MusicItem
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 class MusicViewModel(@ApplicationContext context: Context) : ViewModel() {
-    val readAllData : List<Song>;
-    val playlist : List<GlobalPlaylist>;
+
+    private var _allSongs = MutableStateFlow<List<Song>>(listOf());
+    val allSongs = _allSongs.asStateFlow();
+
+    private var _playlists = MutableStateFlow<List<GlobalPlaylist>>(listOf());
+    val playlist = _playlists.asStateFlow();
+
+    private var _albums = MutableStateFlow<List<Album>>(listOf());
+    val albums = _albums.asStateFlow();
+
     private val _repository : MusicRepository;
 
     init {
         val musicDao = MusicDatabase.getDatabase(context).musicDao();
         _repository = MusicRepository(musicDao);
-        readAllData = _repository.readAllData;
-        playlist = _repository.playlist;
-
-        playlist.firstOrNull()?.let {
-            Log.d("MusicViewModel",
-                it.songsIds
-                    .filter { !(it == ' ' || it == '\n') }
-                    .split(',')
-                    .toString())
-        };
     }
 
-    fun getAlbums(context : Context) : List<Album> {
-        return _repository.albums;
+    fun getAlbums() {
+        viewModelScope.launch {
+            _albums.value = _repository.getAllAlbums();
+        }
     }
 
-    fun getSongsInAlbum(albumId : Int, context : Context) : List<MusicItem> {
+    fun getSongsInAlbum(albumId : Int, context : Context) : Flow<List<MusicItem>> = flow {
         val songs = _repository.getSongsByAlbumId(albumId);
-        return songs.map {
-            it.toMusicItem(context)
-        }
+        emit(songs.map { it.toMusicItem(context) })
     }
 
-    fun getSongsWithIds(ids : List<Int>, context: Context) : List<MusicItem> {
+    fun getSongsWithIds(ids : List<Int>, context: Context) : Flow<List<MusicItem>> = flow {
         val songs = _repository.getSongsByIds(ids);
-        return songs.map {
-            it.toMusicItem(context)
-        }
+        emit(songs.map{ it.toMusicItem(context) })
     }
 
-    fun getSongsWithIds(ids : String, context: Context) : List<MusicItem> {
+    fun getSongsWithIds(ids : String, context: Context) : Flow<List<MusicItem>> = flow {
         val songs = _repository.getSongsByIds(PlaylistSongsIdsToIdList(ids));
-        return songs.map {
-            it.toMusicItem(context)
-        }
+        emit(songs.map { it.toMusicItem(context) })
     }
 
-    fun getRandomSongs(limit : Int = 10, context: Context) : MutableList<MusicItem> {
+    fun getRandomSongs(limit : Int = 10, context: Context) : Flow<List<MusicItem>> = flow {
         val songs = _repository.getRandomSongs(limit);
-        return songs.map {
-            it.toMusicItem(context);
-        }.toMutableList();
+        emit(songs.map { it.toMusicItem(context) });
     }
+
 }
 
 fun PlaylistSongsIdsToIdList(ids : String) : List<Int> {

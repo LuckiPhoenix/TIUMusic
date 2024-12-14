@@ -27,6 +27,7 @@ import com.example.TIUMusic.MusicDB.MusicViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class PlayerViewModel : ViewModel() {
@@ -70,10 +71,16 @@ class PlayerViewModel : ViewModel() {
         if (expandPlayer)
             setShouldExpand(1);
         _mediaViewModel.value?.setShuffled(false);
-        val radio = musicViewModel.getRandomSongs(10, context);
-        radio.add(0, item);
-        setPlaylist(radio);
-        playSongInPlaylistAtIndex(0, context, expandPlayer);
+        setPlaylist(listOf(item));
+        playSongInPlaylistAtIndex(0, context, expandPlayer, true);
+        viewModelScope.launch {
+            musicViewModel.getRandomSongs(10, context).collectLatest {
+                val radio = it.toMutableList();
+                radio.add(0, item);
+                setPlaylist(radio);
+                playSongInPlaylistAtIndex(0, context, expandPlayer, false);
+            };
+        }
     }
 
     fun setMediaViewModel(viewModel : MediaViewModel, authViewModel: UserViewModel) {
@@ -96,10 +103,10 @@ class PlayerViewModel : ViewModel() {
         return false;
     }
 
-    fun playSongInPlaylistAtIndex(index : Int?, context: Context, expandPlayer: Boolean = false) {
+    fun playSongInPlaylistAtIndex(index : Int?, context: Context, expandPlayer: Boolean = false, reset : Boolean = true) {
         if (index != null && playlist.value != null) {
             if (playlist.value != null)
-                _mediaViewModel.value?.setPlaylist(context, playlist.value!!, index);
+                _mediaViewModel.value?.setPlaylist(context, playlist.value!!, index, reset);
             if (expandPlayer)
                 setShouldExpand(1);
         }

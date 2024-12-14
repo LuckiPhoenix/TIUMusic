@@ -110,8 +110,7 @@ class MediaViewModel @Inject constructor(
         player.setMediaSource(mediaSource);
     }
 
-    fun setPlaylist(context: Context, musicItem: List<MusicItem>, startIndex: Int = 0,
-    ) {
+    fun setPlaylist(context: Context, musicItem: List<MusicItem>, startIndex: Int = 0, reset : Boolean = false) {
         val videoItems: ArrayList<MediaSource> = arrayListOf()
         musicItem.forEach {
             val mediaMetaData = MediaMetadata.Builder()
@@ -137,7 +136,10 @@ class MediaViewModel @Inject constructor(
                 mediaSource
             )
         }
-        player.setMediaSources(videoItems, startIndex, 0);
+        if (reset)
+            player.setMediaSources(videoItems, startIndex, 0);
+        else
+            player.setMediaSources(videoItems, false);
     }
 
     fun updatePlaylist(action: ControlButtons) {

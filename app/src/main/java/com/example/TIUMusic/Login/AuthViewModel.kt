@@ -18,6 +18,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -81,6 +83,12 @@ class UserViewModel @Inject constructor(
 
     private val _playlist = MutableLiveData<Playlist?>()
     val playlist: LiveData<Playlist?> = _playlist
+
+    private val _mostListenedSongs = MutableStateFlow<List<Int>>(listOf());
+    val mostListenedSong = _mostListenedSongs.asStateFlow();
+
+    private val _recentListenedSongs = MutableStateFlow<List<Int>>(listOf());
+    val recentListenedSong = _recentListenedSongs.asStateFlow();
 
     // Check if user is already logged in on ViewModel initialization
     init {
@@ -269,6 +277,24 @@ class UserViewModel @Inject constructor(
                 currentUser.profilePicture = newProfilePicture
                 userRepository.insertAuth(currentUser)
                 _currentUser.postValue(currentUser) // Update LiveData
+            }
+        }
+    }
+
+    fun getMostListenedSong(limit : Int = 10) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                _mostListenedSongs.value = userRepository.getMostListenedSongs(currentUser.email, limit);
+            }
+        }
+    }
+
+    fun getRecentListenedSong(limit : Int = 10) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                _recentListenedSongs.value = userRepository.getRecentListenedSongs(currentUser.email, limit);
             }
         }
     }

@@ -157,7 +157,7 @@ public fun ExpandedPlayer(
     val currentUser by userViewModel.currentUser.observeAsState()
     val context = LocalContext.current;
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(musicItem.imageRId) {
         val bitmap = BitmapFactory.decodeResource(context.resources, musicItem.imageRId ?: R.drawable.tiumarksvg);
         if (bitmap != null) {
             avgColor = Color(bitmap.getPixel(0, 0));
