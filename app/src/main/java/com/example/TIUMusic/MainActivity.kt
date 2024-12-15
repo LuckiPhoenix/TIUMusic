@@ -1,11 +1,10 @@
 package com.example.TIUMusic
 
 import android.Manifest
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.wifi.WifiManager
-import android.net.wifi.WifiManager.WifiLock
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,16 +15,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
 import com.example.TIUMusic.Libs.YoutubeLib.YoutubeSettings
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Login.AppDatabase
-import com.example.TIUMusic.MusicDB.MusicViewModel
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.example.TIUMusic.ui.theme.TIUMusicTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
 
 object ViewModel {
     var playerViewModel: PlayerViewModel = PlayerViewModel();
@@ -44,9 +39,6 @@ class MainActivity : ComponentActivity() {
         public val applicationContext: Context
             get() = appContext;
 
-        private lateinit var _wifiLock : WifiLock;
-        public val wifiLock : WifiLock
-            get() = _wifiLock;
     }
 
     override fun onPause() {
@@ -72,11 +64,6 @@ class MainActivity : ComponentActivity() {
         // WE GON BLOW THE DATABASE UP
 //         deleteDatabase("app_database");
         appContext = this;
-        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
-        if (Build.VERSION.SDK_INT >= 34)
-            _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "mylock");
-        else
-            _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "mylock");
         requestPermissions(
             activity = this,
             onAccepted = { name ->
@@ -87,6 +74,7 @@ class MainActivity : ComponentActivity() {
                     }
                     Manifest.permission.POST_NOTIFICATIONS -> {
                         YoutubeSettings.NotificationEnabled = true;
+                        createNotificationChannel(this); // Remove this if use ytViewmodelInit
 //                        ViewModel.playerViewModel.ytViewModel.init(this);
                     }
                 }
@@ -112,6 +100,25 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+val MediaNotificationID = 0;
+val MediaChannelID = "Player";
+
+fun createNotificationChannel(context: Context): NotificationChannel {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is not in the Support Library.
+    val name = "TIUMusic"
+    val descriptionText = "Music Player"
+    val importance = NotificationManager.IMPORTANCE_NONE
+    val channel = NotificationChannel(MediaChannelID, name, importance).apply {
+        description = descriptionText
+    }
+    // Register the channel with the system.
+    val notificationManager: NotificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    notificationManager.createNotificationChannel(channel)
+    return channel;
 }
 
 fun hasPermissions(activity: ComponentActivity, permissions : Array<String>) : Boolean {

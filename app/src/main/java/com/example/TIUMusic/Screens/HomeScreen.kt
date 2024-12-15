@@ -46,60 +46,58 @@ fun HomeScreen(
     val recentListenedSongIds by userViewModel.recentListenedSong.collectAsState()
     var continuation by remember { mutableStateOf(false) }
     val fetchContinuationFunc = suspend {
-        val choose = Random.nextInt(1, 4);
+        val choose = Random.nextInt(0, 11);
         println("fetching $choose");
-        when (choose) {
-            1 -> {
-                musicViewModel.getRandomAlbums(5, context).collectLatest {
-                    continuation = false;
-                    if (it.isEmpty())
-                        return@collectLatest;
-                    val items = homeItems.toMutableList();
-                    items.add(
-                        HomeTest(
-                            contents = it,
-                            title = "Albums",
-                        )
+        if (choose in 0..1) {
+            musicViewModel.getRandomAlbums(5, context).collectLatest {
+                continuation = false;
+                if (it.isEmpty())
+                    return@collectLatest;
+                val items = homeItems.toMutableList();
+                items.add(
+                    HomeTest(
+                        contents = it,
+                        title = "Albums",
                     )
-                    homeItems = items;
-                };
-            }
-
-            2 -> {
-                musicViewModel.getRandomPlaylist(5, context).collectLatest {
-                    continuation = false;
-                    if (it.isEmpty())
-                        return@collectLatest;
-                    val items = homeItems.toMutableList();
-                    items.add(
-                        HomeTest(
-                            contents = it,
-                            title = "Playlists",
-                        )
+                )
+                homeItems = items;
+            };
+        }
+        else if (choose in 2..4) {
+            musicViewModel.getRandomPlaylist(5, context).collectLatest {
+                continuation = false;
+                if (it.isEmpty())
+                    return@collectLatest;
+                val items = homeItems.toMutableList();
+                items.add(
+                    HomeTest(
+                        contents = it,
+                        title = "Playlists",
                     )
-                    homeItems = items;
-                };
-            }
-
-            3 -> {
-                musicViewModel.getRandomSongs(10, context).collectLatest {
-                    continuation = false;
-                    if (it.isEmpty())
-                        return@collectLatest;
-                    val items = homeItems.toMutableList();
-                    items.add(
-                        HomeTest(
-                            contents = it,
-                            title = "Songs",
-                        )
+                )
+                homeItems = items;
+            };
+        }
+        else {
+            musicViewModel.getRandomSongs(10, context).collectLatest {
+                continuation = false;
+                if (it.isEmpty())
+                    return@collectLatest;
+                val items = homeItems.toMutableList();
+                items.add(
+                    HomeTest(
+                        contents = it,
+                        title = "Songs",
                     )
-                    homeItems = items;
-                };
-            }
+                )
+                homeItems = items;
+            };
         }
     }
 
     LaunchedEffect(continuation) {
+        if (homeItems.size >= 20)
+            return@LaunchedEffect;
         if (continuation) {
             delay(2000);
             repeat(3) {

@@ -1,38 +1,24 @@
 package com.example.TIUMusic.Libs.MediaPlayer
 
 import android.Manifest
-import android.R.attr.bitmap
 import android.app.Notification
-import android.app.PendingIntent
-import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.Player
-import androidx.media3.session.MediaController
 import androidx.media3.session.MediaSession
-import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerNotificationManager
-import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.example.TIUMusic.Libs.YoutubeLib.MediaNotificationID
-import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.MediaChannelID
+import com.example.TIUMusic.MediaNotificationID
 import com.example.TIUMusic.R
-import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
 
 /**
  * A wrapper class for ExoPlayer's PlayerNotificationManager.
@@ -55,7 +41,7 @@ class MediaNotificationManager(
     private var notificationBuilder : Notification.Builder;
 
     init {
-        notificationBuilder = Notification.Builder(context, NOW_PLAYING_CHANNEL_ID)
+        notificationBuilder = Notification.Builder(context, MediaChannelID)
             .setSmallIcon(R.drawable.tiumusicmark)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setStyle(Notification.MediaStyle().setMediaSession(mediaSession.platformToken))
@@ -75,11 +61,10 @@ class MediaNotificationManager(
                 return@with
             }
             // notificationId is a unique int for each notification that you must define.
-            notify(NOW_PLAYING_NOTIFICATION_ID, notificationBuilder.build());
+            notify(MediaNotificationID, notificationBuilder.build());
         }
 
     }
-
 
     /**
      * Hides the notification.
@@ -92,7 +77,8 @@ class MediaNotificationManager(
      * @param player The player instance for which the notification is shown.
      */
     fun showNotificationForPlayer(title : String, artist : String, albumArt : Int?) {
-        notificationBuilder = Notification.Builder(context, NOW_PLAYING_CHANNEL_ID)
+        println("Hello");
+        notificationBuilder = Notification.Builder(context, MediaChannelID)
             .setSmallIcon(R.drawable.tiumusicmark)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setContentTitle(title)
@@ -116,7 +102,7 @@ class MediaNotificationManager(
                 return@with
             }
             // notificationId is a unique int for each notification that you must define.
-            notify(NOW_PLAYING_NOTIFICATION_ID, notificationBuilder.build());
+            notify(MediaNotificationID, notificationBuilder.build());
         }
     }
 }

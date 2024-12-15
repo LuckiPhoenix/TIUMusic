@@ -24,8 +24,11 @@ fun getResource(name : String) : Uri {
     return Uri.parse("android.resource://$pkgName:$name");
 }
 
-fun nameToRID(name : String, type : String, context: Context) : Int {
-    return context.resources.getIdentifier(name, type, context.packageName);
+fun nameToRID(name : String, type : String, context: Context) : Int? {
+    val id = context.resources.getIdentifier(name, type, context.packageName);
+    if (id == 0)
+        return null;
+    return id;
 }
 
 //Library Playlists

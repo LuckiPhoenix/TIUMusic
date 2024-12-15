@@ -27,6 +27,8 @@ import coil3.request.SuccessResult
 import coil3.toBitmap
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.MediaChannelID
+import com.example.TIUMusic.MediaNotificationID
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.PlayerViewModel
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
@@ -96,8 +98,6 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
 
     var reloadDuration : Boolean = false;
 
-    var notificationChannel : NotificationChannel? = null;
-
     var notificationBuilder : Notification.Builder? = null;
 
     var mediaMetadata : YoutubeMetadata = YoutubeMetadata("", "");
@@ -147,8 +147,6 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         if (!VisualizerSettings.VisualizerEnabled || _mediaSession.value != null)
             return; // Just to be sure
         _mediaSession.value = MediaSession(context, "MusicService");
-
-        notificationChannel = createNotificationChannel(context);
 
         _mediaSession.value!!.setCallback(object : MediaSession.Callback() {
             override fun onPlay() {
@@ -256,8 +254,6 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         when (state) {
             PlayerConstants.PlayerState.PLAYING -> {
                 _ytHelper.value.isSeekBuffering = false;
-                if (!MainActivity.wifiLock.isHeld())
-                    MainActivity.wifiLock.acquire();
                 notificationBuilder?.setOngoing(true);
                 with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
                     if (ActivityCompat.checkSelfPermission(
@@ -276,8 +272,6 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
                 if (state == PlayerConstants.PlayerState.PAUSED ||
                     state == PlayerConstants.PlayerState.ENDED )
                     _ytHelper.value.isSeekBuffering = false;
-                if (MainActivity.wifiLock.isHeld())
-                    MainActivity.wifiLock.release();
                 notificationBuilder?.setOngoing(true);
                 with(NotificationManagerCompat.from(MainActivity.applicationContext)) {
                     if (ActivityCompat.checkSelfPermission(
@@ -334,7 +328,7 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         if (!VisualizerSettings.VisualizerEnabled)
             return;
         Log.d("Title", title);
-        notificationBuilder = Notification.Builder(context, notificationChannel!!.id)
+        notificationBuilder = Notification.Builder(context, MediaChannelID)
             .setSmallIcon(R.drawable.tiumusicmark)
             .setContentTitle(title)
             .setContentText(artist)
@@ -427,23 +421,4 @@ class YoutubeViewModel(val playerViewModel: PlayerViewModel) : ViewModel() {
         }
 
     }
-}
-
-
-val MediaNotificationID = 0;
-
-fun createNotificationChannel(context: Context): NotificationChannel {
-    // Create the NotificationChannel, but only on API 26+ because
-    // the NotificationChannel class is not in the Support Library.
-    val name = "TIUMusic"
-    val descriptionText = "Music Player"
-    val importance = NotificationManager.IMPORTANCE_NONE
-    val channel = NotificationChannel("Player", name, importance).apply {
-        description = descriptionText
-    }
-    // Register the channel with the system.
-    val notificationManager: NotificationManager =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    notificationManager.createNotificationChannel(channel)
-    return channel;
 }

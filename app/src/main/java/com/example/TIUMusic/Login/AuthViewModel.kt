@@ -81,6 +81,9 @@ class UserViewModel @Inject constructor(
     private val _resetPasswordStatus = MutableLiveData<Result<Boolean>>()
     val resetPasswordStatus: LiveData<Result<Boolean>> = _resetPasswordStatus
 
+    private val _userPlaylists = MutableStateFlow<List<Playlist>>(listOf());
+    val userPlaylists = _userPlaylists.asStateFlow();
+
     private val _playlist = MutableLiveData<Playlist?>()
     val playlist: LiveData<Playlist?> = _playlist
 
@@ -339,6 +342,7 @@ class UserViewModel @Inject constructor(
                     songs = mutableListOf()
                 )
                 currentUser.playlists.add(newPlaylist)
+                _userPlaylists.value = currentUser.playlists;
                 userRepository.insertAuth(currentUser)
                 _currentUser.postValue(currentUser) // Update LiveData
             }
@@ -351,6 +355,7 @@ class UserViewModel @Inject constructor(
             val currentUser = getCurrentUser()
             if (currentUser != null) {
                 currentUser.playlists.removeAll { it.id == playlistId }
+                _userPlaylists.value = currentUser.playlists;
                 userRepository.insertAuth(currentUser)
                 _currentUser.postValue(currentUser) // Update LiveData
             }
