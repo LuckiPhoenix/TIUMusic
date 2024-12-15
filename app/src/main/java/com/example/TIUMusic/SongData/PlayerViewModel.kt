@@ -83,14 +83,18 @@ class PlayerViewModel : ViewModel() {
         }
     }
 
-    fun setMediaViewModel(viewModel : MediaViewModel, authViewModel: UserViewModel) {
+    fun setMediaViewModel(viewModel : MediaViewModel?, authViewModel: UserViewModel?) {
         _mediaViewModel.value = viewModel;
+        resetPlaylist();
+        _musicItem.value = MusicItem.EMPTY;
         this.authViewModel = authViewModel;
-        _mediaViewModel.value!!.mediaTransitionListener = { index ->
-            if (!playlist.value.isNullOrEmpty()) {
-                _musicItem.value = playlist.value!![index];
-                if (musicItem.value.songId != null)
-                    authViewModel.listenTo(musicItem.value.songId!!);
+        if (_mediaViewModel.value != null) {
+            _mediaViewModel.value!!.mediaTransitionListener = { index ->
+                if (!playlist.value.isNullOrEmpty()) {
+                    _musicItem.value = playlist.value!![index];
+                    if (musicItem.value.songId != null)
+                        authViewModel?.listenTo(musicItem.value.songId!!);
+                }
             }
         }
     }

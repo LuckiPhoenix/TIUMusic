@@ -78,11 +78,12 @@ class MediaViewModel @Inject constructor(
 
         // val musicViewModel = MusicViewModel(context);
         setupPlayer(context);
+
+        Log.d(TAG, "Player Started $player");
     }
 
     private fun setupPlayer(context: Context) {
         onStart(context)
-
 
         player.playWhenReady = true
         player.prepare()
@@ -108,6 +109,10 @@ class MediaViewModel @Inject constructor(
         val mediaSource =
             ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
         player.setMediaSource(mediaSource);
+    }
+
+    fun clearPlayer() {
+        player.clearMediaItems();
     }
 
     fun setPlaylist(context: Context, musicItem: List<MusicItem>, startIndex: Int = 0, reset : Boolean = false) {

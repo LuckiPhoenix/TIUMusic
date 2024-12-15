@@ -31,7 +31,9 @@ fun AudioPlayerView(viewModel: MediaViewModel) {
 
     DisposableEffect(Unit) {
         // Disposes the player when the composable is removed from the composition
-        onDispose { viewModel.onDestroy() }
+        onDispose {
+            viewModel.onDestroy()
+        }
     }
 
     // Implementing ExoPlayer

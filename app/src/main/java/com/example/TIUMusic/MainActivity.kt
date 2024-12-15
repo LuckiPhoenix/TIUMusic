@@ -13,6 +13,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.TIUMusic.Libs.MediaPlayer.AudioPlayerView
+import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerSettings
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube.ytMusic
@@ -92,6 +95,8 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             TIUMusicTheme {
+                val mediaViewModel : MediaViewModel = hiltViewModel()
+                AudioPlayerView(mediaViewModel)
                 NavHost(
                     playerViewModel = ViewModel.playerViewModel,
                     visualizerViewModel = ViewModel.visualizerViewModel,

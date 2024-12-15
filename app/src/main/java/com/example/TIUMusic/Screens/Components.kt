@@ -69,6 +69,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -1257,8 +1258,11 @@ fun NowPlayingSheet(
     val mediaViewModel: MediaViewModel = hiltViewModel()
     val authViewModel : UserViewModel = hiltViewModel()
 
-    LaunchedEffect(mediaViewModel, authViewModel) {
+    DisposableEffect (mediaViewModel, authViewModel) {
         playerViewModel.setMediaViewModel(mediaViewModel, authViewModel);
+        onDispose {
+            playerViewModel.mediaViewModel.value?.clearPlayer();
+        }
     }
 
     val uiState by mediaViewModel.uiState.collectAsStateWithLifecycle()
@@ -1279,8 +1283,6 @@ fun NowPlayingSheet(
         playerViewModel.setDuration(totalDurationState / 1000f);
         playerViewModel.setPlaying(isPlayingState);
     }
-
-    AudioPlayerView(mediaViewModel)
 
     Box(
         modifier = modifier
