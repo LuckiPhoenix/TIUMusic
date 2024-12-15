@@ -394,12 +394,30 @@ class UserViewModel @Inject constructor(
                 if (index >= 0) {
                     val list = currentUser.playlists[index];
                     list.songs.add(song)
-                    if (picture != null)
+                    if (picture != null && list.songs.isEmpty())
                         list.picture = picture;
                     currentUser.playlists[index] = list;
+
                     userRepository.insertAuth(currentUser)
                     _currentUser.postValue(currentUser) // Update LiveData
                 }
+            }
+        }
+    }
+
+    fun createAndAddSongToPlaylist(title: String, song: Int, picture: Int? = null) {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                val newPlaylist = Playlist(
+                    id = UUID.randomUUID().toString(),
+                    title = title,
+                    picture = picture,
+                    songs = mutableListOf(song)
+                )
+                currentUser.playlists.add(newPlaylist)
+                userRepository.insertAuth(currentUser)
+                _currentUser.value = (currentUser) // Update LiveData
             }
         }
     }

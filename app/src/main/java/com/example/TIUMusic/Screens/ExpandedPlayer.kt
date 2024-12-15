@@ -143,6 +143,7 @@ public fun ExpandedPlayer(
     navController: NavController,
     userViewModel: UserViewModel = hiltViewModel()
 ) {
+    var showPlaylistDialog by remember { mutableStateOf(false) } // use for creating user's playlist
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -152,11 +153,12 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
+    var playlistMusicItem by remember { mutableStateOf(MusicItem.EMPTY) }
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
 //    val syncedLine by playerViewModel.syncedLine.collectAsState()
     val currentUser by userViewModel.currentUser.observeAsState()
     val context = LocalContext.current;
-    
+
     LaunchedEffect(Unit) {
         userViewModel.refreshUser();
     }
@@ -315,18 +317,32 @@ public fun ExpandedPlayer(
         if(showUserPlaylistSheet == true){
             currentUser?.playlists?.let {
                 UserPlaylistBottomSheet(
-                    onDismissRequest = { showUserPlaylistSheet = false},
-                    it,
+                    onDismissRequest = { showUserPlaylistSheet = false },
+                    playlists = it,
                     onAdding = {id ->
                         if (musicItem.songId != null) {
                             userViewModel.addSongToPlaylist(id, musicItem.songId, musicItem.imageRId)
                             Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
                         }
+                    },
+                    onCreateNewPlaylist = {
+                        showPlaylistDialog = true;
+                        playlistMusicItem = musicItem;
                     }
                 )
             }
         }
     }
+
+    InputDialog(
+        showDialog = showPlaylistDialog,
+        onDismiss = {
+            showPlaylistDialog = false
+        },
+        onConfirm = {
+            if (playlistMusicItem.songId != null)
+                userViewModel.createAndAddSongToPlaylist(it, playlistMusicItem.songId!!, playlistMusicItem.imageRId)
+        })
 }
 fun startTimer(duration: Duration) {
     //sleep timer
@@ -608,6 +624,7 @@ fun SleepTimerSheet(
 @Composable
 fun UserPlaylistBottomSheet(
     onDismissRequest: () -> Unit,
+    onCreateNewPlaylist: () -> Unit,
     playlists: List<Playlist>,
     onAdding: (id: String) -> Unit
     ) {
@@ -638,6 +655,7 @@ fun UserPlaylistBottomSheet(
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clickable {
+                    onCreateNewPlaylist()
                     onDismissRequest()
                     showBottomSheet = false
                 }

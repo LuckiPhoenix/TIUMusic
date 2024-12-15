@@ -69,16 +69,16 @@ class MusicViewModel @Inject constructor(@ApplicationContext context: Context) :
     private suspend fun search(match : String, filter : Int, context: Context) : List<MusicItem> {
         val result = mutableListOf<MusicItem>();
         if ((filter and SEARCH_FILTER_SONG) != 0) {
-            val songs = _repository.searchSongs(match, 3).map { it.toMusicItem(context) };
+            val songs = _repository.searchSongs(match, 6).map { it.toMusicItem(context) };
             result.addAll(songs);
         }
         if ((filter and SEARCH_FILTER_ALBUM) != 0) {
-            val albums = _repository.searchAlbum(match, 2).map { it.toMusicItem(context) };
+            val albums = _repository.searchAlbum(match, 6).map { it.toMusicItem(context) };
             result.addAll(albums);
             println(albums);
         }
         if ((filter and SEARCH_FILTER_PLAYLIST) != 0) {
-            val playlists = _repository.searchPlaylist(match, 2).map { it.toMusicItem(context) };
+            val playlists = _repository.searchPlaylist(match, 6).map { it.toMusicItem(context) };
             result.addAll(playlists)
         }
         searching = false;
