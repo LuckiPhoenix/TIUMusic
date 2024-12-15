@@ -314,8 +314,10 @@ public fun ExpandedPlayer(
                     onDismissRequest = { showUserPlaylistSheet = false},
                     it.playlists,
                     onAdding = {id ->
-                        userViewModel.addSongToPlaylist(id, musicItem)
-                        Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
+                        if (musicItem.songId != null) {
+                            userViewModel.addSongToPlaylist(id, musicItem.songId, musicItem.imageRId)
+                            Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
+                        }
                     }
                 )
             }

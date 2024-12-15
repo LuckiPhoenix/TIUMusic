@@ -203,7 +203,7 @@ fun NavHost(
                 }
                 composable("library") { LibraryScreen(navController,
                     onItemClick = { it ->
-                        musicItemNav = musicItem;
+                        musicItemNav = it;
                         navController.navigate("playlist/${it.playlistId}")
                         Log.d("LogNav", "TYPE = 2")
                     },

@@ -347,6 +347,7 @@ fun PersonalPlaylistScreen(
     LaunchedEffect(Unit) {
         ytmusicViewModel.SongListSample(playlistItem.playlistId)
     }
+
     Scaffold(
         topBar = { TopPersonalPlaylistBar(
             "Favourite",

@@ -321,12 +321,20 @@ fun PlaylistScreen(
 ) {
     val context = LocalContext.current;
     var showPersonalPlaylistMenu by remember { mutableStateOf(false) }
+    val userPlaylist by userViewModel.playlist.observeAsState()
     var currentPlaylist by remember { mutableStateOf(listOf<MusicItem>()) }
+
+    LaunchedEffect(userPlaylist) {
+        if (userPlaylist?.songs != null) {
+            musicViewModel.getSongsWithIds(userPlaylist?.songs!!.toList(), context).collectLatest {
+                currentPlaylist = it;
+            };
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (isPlaylistRandomUUID(playlistItem.playlistId)) {
-            ytmusicViewModel.SongListSample(playlistItem.playlistId);
-            TODO();
+            userViewModel.getPlaylistById(playlistItem.playlistId);
         }
         else if (playlistItem.type == MusicItemType.Album) {
             musicViewModel.getSongsInAlbum(playlistItem.playlistId.toInt(), context).collectLatest {

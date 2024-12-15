@@ -972,7 +972,7 @@ fun AlbumCard(
     imageSize: Dp,
     onClick: () -> Unit = {}
 ) {
-    val painter = rememberAsyncImagePainter(item.imageUrl);
+    // val painter = rememberAsyncImagePainter(item.imageUrl);
     Column(
         modifier = modifier
             .clickable(

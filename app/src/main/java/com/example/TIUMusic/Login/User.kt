@@ -44,7 +44,7 @@ data class Playlist(
     val id: String, // Auto-generated ID
     var title: String, // Playlist title
     var picture: Int? = null, // Optional image for the playlist
-    var songs: MutableList<MusicItem> = mutableListOf(), // List of songs
+    var songs: MutableList<Int> = mutableListOf(), // List of songs
     var description: String = "",
 )
 

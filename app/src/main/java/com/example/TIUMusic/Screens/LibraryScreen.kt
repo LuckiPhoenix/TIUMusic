@@ -339,10 +339,11 @@ fun LibraryScreen(navController: NavController,
                             val musicItem = MusicItem(
                                 title = item.title,
                                 videoId = "",
-                                type = MusicItemType.GlobalPlaylist,
+                                type = MusicItemType.UserPlaylist,
                                 playlistId = item.id,
                                 artist = item.description,
                                 imageUrl = item.picture.toString(),
+                                imageRId = item.picture
                             )
                             AlbumCard(
                                 item = musicItem,

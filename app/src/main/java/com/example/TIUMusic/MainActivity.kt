@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // WE GON BLOW THE DATABASE UP
-        // deleteDatabase("app_database");
+//         deleteDatabase("app_database");
         appContext = this;
         val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
         if (Build.VERSION.SDK_INT >= 34)

@@ -370,23 +370,30 @@ class UserViewModel @Inject constructor(
     }
 
     // Add a song to a playlist
-    fun addSongToPlaylist(playlistId: String, song: MusicItem) {
+    fun addSongToPlaylist(playlistId: String, song: Int, picture: Int? = null) {
         viewModelScope.launch {
             val currentUser = getCurrentUser()
             if (currentUser != null) {
-                currentUser.playlists.find { it.id == playlistId }?.songs?.add(song)
-                userRepository.insertAuth(currentUser)
-                _currentUser.postValue(currentUser) // Update LiveData
+                val index = currentUser.playlists.indexOfFirst { it.id == playlistId }
+                if (index >= 0) {
+                    val list = currentUser.playlists[index];
+                    list.songs.add(song)
+                    if (picture != null)
+                        list.picture = picture;
+                    currentUser.playlists[index] = list;
+                    userRepository.insertAuth(currentUser)
+                    _currentUser.postValue(currentUser) // Update LiveData
+                }
             }
         }
     }
 
     // Remove a song from a playlist
-    fun removeSongFromPlaylist(playlistId: String, songId: String) {
+    fun removeSongFromPlaylist(playlistId: String, songId: Int) {
         viewModelScope.launch {
             val currentUser = getCurrentUser()
             if (currentUser != null) {
-                currentUser.playlists.find { it.id == playlistId }?.songs?.removeAll { it.videoId == songId }
+                currentUser.playlists.find { it.id == playlistId }?.songs?.removeAll { it == songId }
                 userRepository.insertAuth(currentUser)
                 _currentUser.postValue(currentUser) // Update LiveData
             }
