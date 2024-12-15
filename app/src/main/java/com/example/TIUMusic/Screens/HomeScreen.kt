@@ -34,7 +34,7 @@ data class HomeTest(
 fun HomeScreen(
     navController: NavHostController,
     ytMusicViewModel: YtmusicViewModel,
-    musicViewModel : MusicViewModel = MusicViewModel(LocalContext.current),
+    musicViewModel : MusicViewModel = hiltViewModel(),
     userViewModel: UserViewModel = hiltViewModel(),
     onTabSelected: (Int) -> Unit = {},
     onItemClick: (MusicItem) -> Unit = {},
@@ -107,6 +107,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) {
+        userViewModel.clearPrevListenSongList();
         userViewModel.getMostListenedSong();
         userViewModel.getRecentListenedSong();
         delay(1000);
@@ -116,22 +117,13 @@ fun HomeScreen(
     }
 
     LaunchedEffect(mostListenedSongsIds) {
-        musicViewModel.getSongsWithIds(mostListenedSongsIds, context).collectLatest { songs ->
-            val mostListenedSong = mostListenedSongsIds.mapIndexed { index, id ->
-                val found = songs.binarySearch { b ->
-                    val bId = b.songId ?: 0;
-                    if (id < bId) 1;
-                    else if (id > bId) -1;
-                    else 0;
-                }
-                songs[found];
-            };
-            if (mostListenedSong.isNotEmpty()) {
+        musicViewModel.getSongsOrderedWithIds(mostListenedSongsIds, context).collectLatest { songs ->
+            if (songs.isNotEmpty()) {
                 val items = homeItems.toMutableList();
                 items.add(
                     HomeTest(
                         title = "Most Listened",
-                        contents = mostListenedSong
+                        contents = songs
                     )
                 )
                 homeItems = items;
@@ -141,22 +133,13 @@ fun HomeScreen(
     }
 
     LaunchedEffect(recentListenedSongIds) {
-        musicViewModel.getSongsWithIds(recentListenedSongIds, context).collectLatest { songs ->
-            val recentListenedSong = recentListenedSongIds.mapIndexed { index, id ->
-                val found = songs.binarySearch { b ->
-                    val bId = b.songId ?: 0;
-                    if (id < bId) 1;
-                    else if (id > bId) -1;
-                    else 0;
-                }
-                songs[found];
-            };
-            if (recentListenedSong.isNotEmpty()) {
+        musicViewModel.getSongsOrderedWithIds(recentListenedSongIds, context).collectLatest { songs ->
+            if (songs.isNotEmpty()) {
                 val items = homeItems.toMutableList();
                 items.add(
                     HomeTest(
                         title = "Recently",
-                        contents = recentListenedSong
+                        contents = songs
                     )
                 )
                 homeItems = items;

@@ -8,36 +8,17 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.media3.common.Player
 import androidx.media3.session.MediaSession
-import androidx.media3.ui.PlayerNotificationManager
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
 import com.example.TIUMusic.MediaChannelID
 import com.example.TIUMusic.MediaNotificationID
 import com.example.TIUMusic.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 
-/**
- * A wrapper class for ExoPlayer's PlayerNotificationManager.
- * It sets up the notification shown to the user during audio playback and provides track metadata,
- * such as track title and icon image.
- * @param context The context used to create the notification.
- * @param sessionToken The session token used to build MediaController.
- * @param player The ExoPlayer instance.
- * @param notificationListener The listener for notification events.
- */
+
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class MediaNotificationManager(
     private val context: Context,
-    private val mediaSession: MediaSession,
-    private val player: Player,
-    notificationListener: PlayerNotificationManager.NotificationListener
+    private val mediaSession: MediaSession
 ) {
-    private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private var notificationBuilder : Notification.Builder;
 
     init {
@@ -51,31 +32,24 @@ class MediaNotificationManager(
         if (Build.VERSION.SDK_INT >= 30)
             notificationBuilder.setFlag(Notification.FLAG_NO_CLEAR, true);
 
-        with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                println("nope");
-                return@with
-            }
-            // notificationId is a unique int for each notification that you must define.
-            notify(MediaNotificationID, notificationBuilder.build());
-        }
+//        with(NotificationManagerCompat.from(context)) {
+//            if (ActivityCompat.checkSelfPermission(
+//                    context,
+//                    Manifest.permission.POST_NOTIFICATIONS
+//                ) != PackageManager.PERMISSION_GRANTED
+//            ) {
+//                println("nope");
+//                return@with
+//            }
+//            // notificationId is a unique int for each notification that you must define.
+//            notify(MediaNotificationID, notificationBuilder.build());
+//        }
 
     }
 
-    /**
-     * Hides the notification.
-     */
     fun hideNotification() {
     }
 
-    /**
-     * Shows the notification for the given player.
-     * @param player The player instance for which the notification is shown.
-     */
     fun showNotificationForPlayer(title : String, artist : String, albumArt : Int?) {
         println("Hello");
         notificationBuilder = Notification.Builder(context, MediaChannelID)
@@ -106,25 +80,3 @@ class MediaNotificationManager(
         }
     }
 }
-
-/**
- * The size of the large icon for the notification in pixels.
- */
-const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
-
-/**
- * The channel ID for the notification.
- */
-const val NOW_PLAYING_CHANNEL_ID = "media.NOW_PLAYING"
-
-/**
- * The notification ID.
- */
-const val NOW_PLAYING_NOTIFICATION_ID = 0xb339 // Arbitrary number used to identify our notification
-
-/**
- * Default options for Glide.
- */
-private val glideOptions = RequestOptions()
-    .fallback(R.drawable.tiumarksvg)
-    .diskCacheStrategy(DiskCacheStrategy.DATA)

@@ -32,7 +32,7 @@ fun NewScreen(
     navController: NavController,
     onTabSelected: (Int) -> Unit,
     onItemClick: (MusicItem) -> Unit,
-    musicViewModel: MusicViewModel = MusicViewModel(LocalContext.current),
+    musicViewModel: MusicViewModel = hiltViewModel(),
     ytmusicViewModel: YtmusicViewModel,
     playerViewModel: PlayerViewModel
 ) {

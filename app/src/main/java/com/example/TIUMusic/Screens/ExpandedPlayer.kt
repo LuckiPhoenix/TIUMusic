@@ -152,11 +152,14 @@ public fun ExpandedPlayer(
             repeatMode = RepeatMode.Restart
         )
     )
-    val userPlaylists by userViewModel.userPlaylists.collectAsState()
     var avgColor : Color by remember { mutableStateOf(Color.Transparent) }
 //    val syncedLine by playerViewModel.syncedLine.collectAsState()
     val currentUser by userViewModel.currentUser.observeAsState()
     val context = LocalContext.current;
+    
+    LaunchedEffect(Unit) {
+        userViewModel.refreshUser();
+    }
 
     LaunchedEffect(musicItem.imageRId) {
         val bitmap = BitmapFactory.decodeResource(context.resources, musicItem.imageRId ?: R.drawable.tiumarksvg);
@@ -310,16 +313,18 @@ public fun ExpandedPlayer(
             )
         }
         if(showUserPlaylistSheet == true){
-            UserPlaylistBottomSheet(
-                onDismissRequest = { showUserPlaylistSheet = false},
-                userPlaylists,
-                onAdding = {id ->
-                    if (musicItem.songId != null) {
-                        userViewModel.addSongToPlaylist(id, musicItem.songId, musicItem.imageRId)
-                        Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
+            currentUser?.playlists?.let {
+                UserPlaylistBottomSheet(
+                    onDismissRequest = { showUserPlaylistSheet = false},
+                    it,
+                    onAdding = {id ->
+                        if (musicItem.songId != null) {
+                            userViewModel.addSongToPlaylist(id, musicItem.songId, musicItem.imageRId)
+                            Log.d("LogNav", "Add musicId : ${musicItem.videoId} to $id")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

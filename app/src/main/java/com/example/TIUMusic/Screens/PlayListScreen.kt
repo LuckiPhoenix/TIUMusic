@@ -99,6 +99,7 @@ fun TopPlaylistBar(
 fun PlaylistMenuBottomSheet(
     navController: NavController,
     musicItem: MusicItem,
+    onDeletePlaylistClick : (String) -> Unit,
     onPlayNextClick : () -> Unit,
     onSortByClick: (String) -> Unit,
     onDismiss: () -> Unit
@@ -235,7 +236,11 @@ fun PlaylistMenuBottomSheet(
                     Text(text = "Are you sure you want to delete ${musicItem.title} from your library?")
                 },
                 confirmButton = {
-                    TextButton(onClick = { /* Delete logic */ setShowDeleteConfirmation(false) }) {
+                    TextButton(onClick = {
+                        /* Delete logic */
+                        onDeletePlaylistClick(musicItem.playlistId)
+                        setShowDeleteConfirmation(false)
+                    }) {
                         Text("Delete")
                     }
                 },
@@ -311,7 +316,7 @@ fun PlaylistScreen(
     playlistItem: MusicItem,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    musicViewModel: MusicViewModel = MusicViewModel(LocalContext.current),
+    musicViewModel: MusicViewModel = hiltViewModel(),
     onSongClick: (MusicItem, Int, List<MusicItem>) -> Unit,
     onShuffleClick : (List<MusicItem>) -> Unit,
     onPlayClick: (List<MusicItem>) -> Unit,
@@ -326,7 +331,7 @@ fun PlaylistScreen(
 
     LaunchedEffect(userPlaylist) {
         if (userPlaylist?.songs != null) {
-            musicViewModel.getSongsWithIds(userPlaylist?.songs!!.toList(), context).collectLatest {
+            musicViewModel.getSongsOrderedWithIds(userPlaylist?.songs!!.toList(), context).collectLatest {
                 currentPlaylist = it;
             };
         }
@@ -342,7 +347,7 @@ fun PlaylistScreen(
             };
         }
         else if (playlistItem.type == MusicItemType.GlobalPlaylist) {
-            musicViewModel.getSongsWithIds(playlistItem.playlistSongsIds, context).collectLatest {
+            musicViewModel.getSongsOrderedWithIds(playlistItem.playlistSongsIds, context).collectLatest {
                 currentPlaylist = it;
             };
         }
@@ -493,6 +498,12 @@ fun PlaylistScreen(
                         else -> {}
                     }
                     currentPlaylist = tempPlaylist;
+                },
+                onDeletePlaylistClick = { playlistId ->
+                    if (isPlaylistRandomUUID(playlistId))
+                        userViewModel.removePlaylist(playlistId)
+                    navController.popBackStack()
+                    showPersonalPlaylistMenu = false;
                 }
             )
         }
@@ -697,6 +708,8 @@ fun AlbumScreen(
                         else -> {}
                     }
                     currentAlbum = tempPlaylist;
+                },
+                onDeletePlaylistClick = {
                 }
             )
         }

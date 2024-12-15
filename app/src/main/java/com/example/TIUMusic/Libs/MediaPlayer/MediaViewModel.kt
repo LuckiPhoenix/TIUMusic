@@ -184,27 +184,13 @@ class MediaViewModel @Inject constructor(
         mediaSession = MediaSession.Builder(context, player)
             .setSessionActivity(sessionActivityPendingIntent!!).build()
 
-        /**
-         * The notification manager will use our player and media session to decide when to post
-         * notifications. When notifications are posted or removed our listener will be called, this
-         * allows us to promote the service to foreground (required so that we're not killed if
-         * the main UI is not visible).
-         */
         notificationManager =
             MediaNotificationManager(
                 context,
-                mediaSession,
-                player,
-                PlayerNotificationListener()
+                mediaSession
             )
-
-
-//        notificationManager.showNotificationForPlayer(player)
     }
 
-    /**
-     * Destroy audio notification
-     */
     fun onDestroy() {
         onClose()
         player.release()
@@ -221,16 +207,11 @@ class MediaViewModel @Inject constructor(
             release()
         }
 
-        // Hide notification
-//        notificationManager.hideNotification()
 
         // Free ExoPlayer resources.
         player.removeListener(playerListener)
     }
 
-    /**
-     * Listen for notification events.
-     */
     private inner class PlayerNotificationListener :
         PlayerNotificationManager.NotificationListener {
         override fun onNotificationPosted(
@@ -246,9 +227,6 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Listen to events from ExoPlayer.
-     */
     private val playerListener = object : Player.Listener {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -306,9 +284,6 @@ class MediaViewModel @Inject constructor(
 
 private const val TAG = "Media3AppTag"
 
-/**
- * Sealed interface representing the different states of the player UI.
- */
 sealed interface PlayerUIState {
     /**
      * Represents the state when the player UI displays a list of tracks.

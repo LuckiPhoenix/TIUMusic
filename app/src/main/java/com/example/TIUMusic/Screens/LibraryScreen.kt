@@ -69,6 +69,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -93,8 +96,6 @@ fun LibraryScreen(navController: NavController,
                   modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     val windowSize = rememberWindowSize()
-
-    val userPlaylists by ytmusicViewModel.userPlaylists.collectAsState()
     var showUsernameDialog by remember { mutableStateOf(false) } // use for username update
     var showProfileImageDialog by remember { mutableStateOf(false) } // use for profile image update
     var showPlaylistDialog by remember { mutableStateOf(false) } // use for creating user's playlist
@@ -110,8 +111,19 @@ fun LibraryScreen(navController: NavController,
     val collapsedTitleSize = Dimensions.collapsedTitleSize()
     val bottomNavHeight = 56.dp // Define bottom nav height
 
+    val currentUser by userViewModel.currentUser.observeAsState()
+    val username: String = currentUser?.fullName ?: "User"
+    var isPressed by remember { mutableStateOf(false) }
+    val buttonWidth by animateDpAsState(
+        targetValue = if (isPressed) 300.dp else 80.dp,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = EaseInOut
+        )
+    )
+
     LaunchedEffect(Unit) {
-        ytmusicViewModel.getUserPlaylists(true);
+        userViewModel.refreshUser();
     }
 
     // Animation values
@@ -148,16 +160,7 @@ fun LibraryScreen(navController: NavController,
         isScrolled = scrollState.value > expandedHeight.value
     }
 
-    val currentUser by userViewModel.currentUser.observeAsState()
-    val username: String = currentUser?.fullName ?: "User"
-    var isPressed by remember { mutableStateOf(false) }
-    val buttonWidth by animateDpAsState(
-        targetValue = if (isPressed) 300.dp else 80.dp,
-        animationSpec = tween(
-            durationMillis = 1000,
-            easing = EaseInOut
-        )
-    )
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundColor
@@ -354,17 +357,6 @@ fun LibraryScreen(navController: NavController,
                                 }
                             )
                         }
-                    }
-                    //Remote Playlist from Youtube
-                    items(userPlaylists) { item ->
-                        AlbumCard(
-                            item = item,
-                            modifier = Modifier,
-                            imageSize = 180.dp,
-                            onClick = {
-                                onItemClick(item)
-                            }
-                        )
                     }
                     item {Spacer(modifier = Modifier.height(88.dp))}
                 }

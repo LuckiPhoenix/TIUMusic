@@ -197,8 +197,7 @@ fun NavHost(
                                     Log.d("LogNav", "TYPE = 3")
                                 }
                             }
-                        },
-                        searchViewModel = ytmusicViewModel
+                        }
                     )
                 }
                 composable("library") { LibraryScreen(navController,

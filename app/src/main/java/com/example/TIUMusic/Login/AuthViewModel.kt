@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
@@ -76,13 +77,11 @@ class UserViewModel @Inject constructor(
     val userAuthStatus: LiveData<Result<User?>> = _userAuthStatus
 
     private val _currentUser = MutableLiveData<User?>()
-    val currentUser: LiveData<User?> = _currentUser
+    val currentUser: LiveData<User?>
+        get() = _currentUser
 
     private val _resetPasswordStatus = MutableLiveData<Result<Boolean>>()
     val resetPasswordStatus: LiveData<Result<Boolean>> = _resetPasswordStatus
-
-    private val _userPlaylists = MutableStateFlow<List<Playlist>>(listOf());
-    val userPlaylists = _userPlaylists.asStateFlow();
 
     private val _playlist = MutableLiveData<Playlist?>()
     val playlist: LiveData<Playlist?> = _playlist
@@ -146,6 +145,11 @@ class UserViewModel @Inject constructor(
 
     private fun isValidPassword(password: String): Boolean {
         return password.length >= 6
+    }
+
+    fun clearPrevListenSongList() {
+        _mostListenedSongs.value = listOf();
+        _recentListenedSongs.value = listOf();
     }
 
     fun insertUser(user: User) {
@@ -267,6 +271,15 @@ class UserViewModel @Inject constructor(
         }
     }
 
+    fun refreshUser() {
+        viewModelScope.launch {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                _currentUser.postValue(currentUser);
+            }
+        }
+    }
+
     fun updateProfilePicture(newProfilePicture: String?) {
         viewModelScope.launch {
             val currentUser = getCurrentUser()
@@ -342,9 +355,8 @@ class UserViewModel @Inject constructor(
                     songs = mutableListOf()
                 )
                 currentUser.playlists.add(newPlaylist)
-                _userPlaylists.value = currentUser.playlists;
                 userRepository.insertAuth(currentUser)
-                _currentUser.postValue(currentUser) // Update LiveData
+                _currentUser.value = (currentUser) // Update LiveData
             }
         }
     }
@@ -355,9 +367,8 @@ class UserViewModel @Inject constructor(
             val currentUser = getCurrentUser()
             if (currentUser != null) {
                 currentUser.playlists.removeAll { it.id == playlistId }
-                _userPlaylists.value = currentUser.playlists;
                 userRepository.insertAuth(currentUser)
-                _currentUser.postValue(currentUser) // Update LiveData
+                _currentUser.value = (currentUser) // Update LiveData
             }
         }
     }

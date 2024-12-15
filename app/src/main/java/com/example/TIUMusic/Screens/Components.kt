@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -97,16 +98,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.example.TIUMusic.Libs.MediaPlayer.AudioPlayerView
 import com.example.TIUMusic.Libs.MediaPlayer.MediaViewModel
 import com.example.TIUMusic.Libs.Visualizer.VisualizerViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
-import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
-import com.example.TIUMusic.Login.User
 import com.example.TIUMusic.Login.UserViewModel
-import com.example.TIUMusic.MainActivity
+import com.example.TIUMusic.MusicDB.MusicViewModel
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_ALBUM
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_ALL
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_PLAYLIST
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_SONG
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.MusicItemType
@@ -116,6 +117,7 @@ import com.example.TIUMusic.ui.theme.ArtistNameColor
 import com.example.TIUMusic.ui.theme.BackgroundColor
 import com.example.TIUMusic.ui.theme.PrimaryColor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /*
@@ -244,7 +246,7 @@ fun ScrollableScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScrollableSearchScreen(
-    searchViewModel: YtmusicViewModel,
+    musicViewModel: MusicViewModel,
     onClick: (MusicItem) -> Unit,
     onTabSelected: (Int) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
@@ -297,6 +299,15 @@ fun ScrollableSearchScreen(
         isScrolled = scrollState.value > expandedHeight.value
     }
 
+    val context = LocalContext.current;
+    val searchSuggestions = listOf("Songs", "Albums", "Playlists")
+    val searchResults by musicViewModel.searchResult.collectAsState()
+    var searchFilter by remember { mutableStateOf(SEARCH_FILTER_ALL) }
+
+    var searchText by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = BackgroundColor
@@ -316,15 +327,12 @@ fun ScrollableSearchScreen(
                 )
             }
 
-            var text by remember { mutableStateOf("") }
-            var active by remember { mutableStateOf(false) }
 
-            val searchResults by searchViewModel.searchResults.collectAsState()
-            val searchSuggests by searchViewModel.searchSuggests.collectAsState()
-            val isLoading by searchViewModel.loading.collectAsState()
-
-            val searchSuggestions = listOf("Top results", "Songs", "Albums", "Playlists", "Artists" )
-            var selectedSearchSuggestion = searchViewModel.searchFiler.collectAsState()
+//            val searchResults by searchViewModel.searchResults.collectAsState()
+//            val searchSuggests by searchViewModel.searchSuggests.collectAsState()
+//            val isLoading by searchViewModel.loading.collectAsState()
+//
+//            var selectedSearchSuggestion = searchViewModel.searchFiler.collectAsState()
 
             Box(
                 modifier = Modifier
@@ -351,19 +359,17 @@ fun ScrollableSearchScreen(
                         )
                     }
                     SearchBar(
-                        query = text,
+                        query = searchText,
                         onQueryChange = {
-                            text = it
-                            searchViewModel.suggestSearch(it) // Gửi truy vấn tìm kiếm
-                            searchViewModel.performSearch(it)
+                            searchText = it
+                            musicViewModel.searchSave(searchText, searchFilter, context);
                         },
                         onSearch = {
                             active = false
-                            searchViewModel.performSearch(text)
+                            musicViewModel.searchSave(searchText, searchFilter, context);
                         },
                         active = active,
                         onActiveChange = {
-                            searchViewModel.updateSearchFilter("Top results")
                             active = it
                         },
                         placeholder = {
@@ -378,14 +384,14 @@ fun ScrollableSearchScreen(
                                 contentDescription = "Search Icon",
                                 modifier = Modifier.clickable {
                                     active = false
-                                    searchViewModel.performSearch(text)
+                                    musicViewModel.searchSave(searchText, searchFilter, context);
                                 }
                             )
                         },
                         trailingIcon = {
-                            if(text != ""){
+                            if(searchText != ""){
                                 IconButton(onClick = {
-                                    text = ""
+                                    searchText = ""
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.Clear,
@@ -422,87 +428,83 @@ fun ScrollableSearchScreen(
                                 )
                             ),
                         shape = RoundedCornerShape(8.dp)
-                    ) { searchSuggests.forEach{
-                            Row(
-                                modifier = Modifier
-                                    .padding(all = 10.dp)
-                                    .clickable(onClick = {
-                                        text = it
-                                        active = false
-                                        searchViewModel.performSearch(it)
-                                    }),
-                                verticalAlignment = Alignment.CenterVertically
-                            ){
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search Icon",
-                                    modifier = Modifier
-                                        .width(20.dp)
-                                        .height(20.dp),
-                                    tint = Color.Gray
-                                )
-                                Text(
-                                    text = it,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(all = 4.dp),
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
+                    ) {
+//                        searchSuggests.forEach{
+//                            Row(
+//                                modifier = Modifier
+//                                    .padding(all = 10.dp)
+//                                    .clickable(onClick = {
+//                                        text = "TODO"
+//                                        active = false
+////                                        searchViewModel.performSearch(it)
+//                                    }),
+//                                verticalAlignment = Alignment.CenterVertically
+//                            ){
+//                                Icon(
+//                                    imageVector = Icons.Default.Search,
+//                                    contentDescription = "Search Icon",
+//                                    modifier = Modifier
+//                                        .width(20.dp)
+//                                        .height(20.dp),
+//                                    tint = Color.Gray
+//                                )
+//                                Text(
+//                                    text = "TODO",
+//                                    color = Color.White,
+//                                    fontWeight = FontWeight.Bold,
+//                                    modifier = Modifier.padding(all = 4.dp),
+//                                    fontSize = 16.sp
+//                                )
+//                            }
+//                        }
                         searchResults.forEach {
-                            if(it.type == MusicItemType.Song){
-                                Row(modifier = Modifier
-                                    .padding(all = 10.dp)
-                                    .clickable(onClick = {
-                                        onClick(it)
-                                        active = false
-                                    }),
-                                    verticalAlignment = Alignment.CenterVertically) {
-                                    var thumbnailURL = it.imageUrl;
-                                    if (it.videoId != "")
-                                        thumbnailURL = getYoutubeSmallThumbnail(it.videoId);
-                                    AsyncImage(
-                                        model = thumbnailURL,
-                                        contentDescription = "Album art for",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .width(50.dp)
-                                            .height(50.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(Color(0xFF282828))
-                                    )
+                            Row(modifier = Modifier
+                                .padding(all = 10.dp)
+                                .clickable(onClick = {
+                                    onClick(it)
+                                    active = false
+                                }),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                Image(
+                                    painter = painterResource(it.imageRId ?: R.drawable.tiumarksvg),
+                                    contentDescription = "Album art for",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .width(50.dp)
+                                        .height(50.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFF282828))
+                                )
 
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 10.dp)
-                                            .width(0.dp)
-                                            .weight(1F)
-                                    ) {
-                                        var type = ""
-                                        when (it.type){
-                                            MusicItemType.Song -> type += "Song • "
-                                            MusicItemType.GlobalPlaylist -> type += "Playlist • "
-                                            MusicItemType.Album -> type += "Album • "
-                                            else -> {}
-                                        }
-                                        it.title.let { it1 ->
-                                            Text(
-                                                text = it1,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White,
-                                                fontSize = 16.sp,
-                                                modifier = Modifier.padding(all = 4.dp)
-                                            )
-                                        }
-                                        it.artist.let { it1 ->
-                                            Text(
-                                                text = type + it1,
-                                                fontSize = 14.sp,
-                                                color = Color.Gray,
-                                                modifier = Modifier.padding(4.dp)
-                                            )
-                                        }
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 10.dp)
+                                        .width(0.dp)
+                                        .weight(1F)
+                                ) {
+                                    var type = ""
+                                    when (it.type){
+                                        MusicItemType.Song -> type += "Song • "
+                                        MusicItemType.GlobalPlaylist -> type += "Playlist • "
+                                        MusicItemType.Album -> type += "Album • "
+                                        else -> {}
+                                    }
+                                    it.title.let { it1 ->
+                                        Text(
+                                            text = it1,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.padding(all = 4.dp)
+                                        )
+                                    }
+                                    it.artist.let { it1 ->
+                                        Text(
+                                            text = type + it1,
+                                            fontSize = 14.sp,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(4.dp)
+                                        )
                                     }
                                 }
                             }
@@ -517,17 +519,42 @@ fun ScrollableSearchScreen(
                                 .padding(top = 10.dp)
                                 .height(30.dp)
                         ) {
-                            items(searchSuggestions) { item ->
+                            itemsIndexed(searchSuggestions) { index, item ->
+                                var contain = false;
+                                when (index) {
+                                    0 -> contain = (searchFilter and SEARCH_FILTER_SONG) != 0;
+                                    1 -> contain = (searchFilter and SEARCH_FILTER_ALBUM) != 0;
+                                    2 -> contain = (searchFilter and SEARCH_FILTER_PLAYLIST) != 0;
+                                }
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            searchViewModel.updateSearchFilter(item)
-                                            searchViewModel.performSearch(text)
+                                            when (index) {
+                                                0 -> {
+                                                    if ((searchFilter and SEARCH_FILTER_SONG) != 0)
+                                                        searchFilter = searchFilter and (SEARCH_FILTER_SONG).inv();
+                                                    else
+                                                        searchFilter = searchFilter or SEARCH_FILTER_SONG;
+                                                }
+                                                1 -> {
+                                                    if ((searchFilter and SEARCH_FILTER_ALBUM) != 0)
+                                                        searchFilter = searchFilter and (SEARCH_FILTER_ALBUM).inv();
+                                                    else
+                                                        searchFilter = searchFilter or SEARCH_FILTER_ALBUM;
+                                                };
+                                                2 -> {
+                                                    if ((searchFilter and SEARCH_FILTER_PLAYLIST) != 0)
+                                                        searchFilter = searchFilter and (SEARCH_FILTER_PLAYLIST).inv();
+                                                    else
+                                                        searchFilter = searchFilter or SEARCH_FILTER_PLAYLIST;
+                                                };
+                                            }
+                                            musicViewModel.searchSave(searchText, searchFilter, context);
                                         },
                                     shape = RoundedCornerShape(12.dp),
                                     colors = CardColors(
-                                        Color.Gray.copy(alpha = if (selectedSearchSuggestion.value == item) 0.8F else 0.2F),
+                                        Color.Gray.copy(alpha = if (contain) 0.8F else 0.2F),
                                         Color.White.copy(alpha = 0.8F),
                                         Color.Gray,
                                         Color.Black

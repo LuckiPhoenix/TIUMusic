@@ -1,5 +1,6 @@
 package com.example.TIUMusic.Screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,10 +56,15 @@ import coil3.compose.AsyncImage
 import com.example.TIUMusic.Libs.YoutubeLib.YouTube
 import com.example.TIUMusic.Libs.YoutubeLib.YtmusicViewModel
 import com.example.TIUMusic.Libs.YoutubeLib.getYoutubeSmallThumbnail
+import com.example.TIUMusic.MusicDB.MusicViewModel
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_ALBUM
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_PLAYLIST
+import com.example.TIUMusic.MusicDB.SEARCH_FILTER_SONG
 import com.example.TIUMusic.R
 import com.example.TIUMusic.SongData.MusicItem
 import com.example.TIUMusic.SongData.MusicItemType
 import com.example.TIUMusic.SongData.toMusicItemsList
+import kotlinx.coroutines.flow.collectLatest
 
 val heightItemCategorySearch = 140.dp
 
@@ -67,96 +74,85 @@ fun SearchScreen(
     onTabSelected: (Int) -> Unit,
     onClick: (MusicItem) -> Unit,
     modifier: Modifier = Modifier,
-    searchViewModel: YtmusicViewModel
+    musicViewModel: MusicViewModel = hiltViewModel(),
 ) {
-    val searchResults by searchViewModel.searchResults.collectAsState()
-    LaunchedEffect(Unit) {
-        searchViewModel.fetchMoodAndGenres()
-    }
+
+    val searchResults by musicViewModel.searchResult.collectAsState()
 
     ScrollableSearchScreen (
-        searchViewModel = searchViewModel,
         onClick = onClick,
-        onTabSelected = onTabSelected
+        onTabSelected = onTabSelected,
+        musicViewModel = musicViewModel
     ) {paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            if(searchResults.isEmpty()){
-                Spacer(modifier = Modifier.height(40.dp))
-                MoodScreen(searchViewModel, navController = navController, onClick = onClick)
-            }
-            else{
-                Spacer(modifier = Modifier.height(75.dp))
-                searchResults.forEach {
-                    Column(modifier = Modifier.clickable(
-                        onClick = { onClick(it) }
-                    )) {
-                        Row(modifier = Modifier.padding(all = 10.dp),
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically) {
-                            var thumbnailURL = it.imageUrl;
-                            if (it.videoId != "")
-                                thumbnailURL = getYoutubeSmallThumbnail(it.videoId);
-                            AsyncImage(
-                                model = thumbnailURL,
-                                contentDescription = "Album art for",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .width(50.dp)
-                                    .height(50.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF282828))
-                            )
+            Spacer(modifier = Modifier.height(75.dp))
+            searchResults.forEach {
+                Column(modifier = Modifier.clickable(
+                    onClick = { onClick(it) }
+                )) {
+                    Row(modifier = Modifier.padding(all = 10.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(it.imageRId ?: R.drawable.tiumarksvg),
+                            contentDescription = "Album art for",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .width(50.dp)
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF282828))
+                        )
 
-                            Column(
-                                modifier = Modifier
-                                    .padding(start = 10.dp)
-                                    .width(0.dp)
-                                    .weight(1F)
-                            ) {
-                                var type = ""
-                                when (it.type){
-                                    MusicItemType.Song -> type += "Song • "
-                                    MusicItemType.GlobalPlaylist -> type += "Playlist • "
-                                    MusicItemType.Album -> type += "Album • "
-                                    MusicItemType.Artist -> type += "Artist • "
-                                    else -> {}
-                                }
-                                Text(
-                                    text = it.title,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(all = 4.dp)
-                                )
-                                Text(
-                                    text = type + it.artist,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontSize = 14.sp,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(4.dp)
-                                )
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                                .width(0.dp)
+                                .weight(1F)
+                        ) {
+                            var type = ""
+                            when (it.type){
+                                MusicItemType.Song -> type += "Song • "
+                                MusicItemType.GlobalPlaylist -> type += "Playlist • "
+                                MusicItemType.Album -> type += "Album • "
+                                MusicItemType.Artist -> type += "Artist • "
+                                else -> {}
                             }
-
-                            Icon(
-                                modifier = Modifier.padding(all = 10.dp),
-                                painter = painterResource(R.drawable.baseline_more_vert_24),
-                                contentDescription = "Suggestion Icon",
-                                tint = Color.White
+                            Text(
+                                text = it.title,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(all = 4.dp)
+                            )
+                            Text(
+                                text = type + it.artist,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(4.dp)
                             )
                         }
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 10.dp, bottom = 4.dp)
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .background(Color.Gray)
-                        ) {}
+
+                        Icon(
+                            modifier = Modifier.padding(all = 10.dp),
+                            painter = painterResource(R.drawable.baseline_more_vert_24),
+                            contentDescription = "Suggestion Icon",
+                            tint = Color.White
+                        )
                     }
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 10.dp, bottom = 4.dp)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color.Gray)
+                    ) {}
                 }
             }
         }

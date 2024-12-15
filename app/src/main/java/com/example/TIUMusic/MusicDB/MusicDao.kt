@@ -40,6 +40,15 @@ interface MusicDao {
 
     @Query("SELECT * FROM Song WHERE id IN (SELECT id FROM Song ORDER BY RANDOM() LIMIT :limit) ORDER BY RANDOM()")
     suspend fun getRandomSongs(limit : Int) : List<Song>;
+
+    @Query("SELECT * FROM Song WHERE (LOWER(title) LIKE LOWER(:match) OR LOWER(artist) LIKE LOWER(:match)) LIMIT :limit")
+    suspend fun searchSongs(match : String, limit: Int) : List<Song>;
+
+    @Query("SELECT * FROM Album WHERE (LOWER(title) LIKE LOWER(:match) OR LOWER(artist) LIKE LOWER(:match)) LIMIT :limit")
+    suspend fun searchAlbum(match : String, limit: Int) : List<Album>;
+
+    @Query("SELECT * FROM GlobalPlaylist WHERE (LOWER(title) LIKE LOWER(:match) OR LOWER(artist) LIKE LOWER(:match)) LIMIT :limit")
+    suspend fun searchPlaylist(match : String, limit: Int) : List<GlobalPlaylist>;
 }
 
 class MusicRepository(private val musicDao : MusicDao) {
@@ -55,4 +64,7 @@ class MusicRepository(private val musicDao : MusicDao) {
     suspend fun getRandomSongs(limit : Int) : List<Song> = musicDao.getRandomSongs(limit);
     suspend fun getRandomPlaylists(limit : Int) : List<GlobalPlaylist> = musicDao.getRandomPlaylists(limit);
     suspend fun getRandomAlbums(limit : Int) : List<Album> = musicDao.getRandomAlbums(limit);
+    suspend fun searchSongs(match : String, limit: Int) : List<Song> = musicDao.searchSongs("%$match%", limit);
+    suspend fun searchAlbum(match : String, limit: Int) : List<Album> = musicDao.searchAlbum("%$match%", limit);
+    suspend fun searchPlaylist(match : String, limit: Int) : List<GlobalPlaylist> = musicDao.searchPlaylist("%$match%", limit);
 }
