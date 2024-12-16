@@ -458,7 +458,7 @@ fun LibraryScreen(navController: NavController,
 
             InputDialog(showUsernameDialog, {showUsernameDialog = false}, {userViewModel.updateUsername(it)})
 
-            InputDialog(showPlaylistDialog, {showPlaylistDialog = false}, {userViewModel.addPlaylist(it)})
+            InputPlaylistDialog(showPlaylistDialog, {showPlaylistDialog = false}, {userViewModel.addPlaylist(it)})
 
             if (showProfileImageDialog) {
                 ProfilePictureDialog(
@@ -513,6 +513,51 @@ fun InputDialog(
             text = {
                 Column {
                     Text("My new Username is: ")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = userInput,
+                        onValueChange = { userInput = it },
+                        label = { Text("input") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onConfirm(userInput.text)
+                        onDismiss()
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun InputPlaylistDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    if (showDialog) {
+        var userInput by remember { mutableStateOf(TextFieldValue("")) }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Enter your new playlist", fontSize = 18.sp) },
+            text = {
+                Column {
+                    Text("My new playlist is: ")
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = userInput,
