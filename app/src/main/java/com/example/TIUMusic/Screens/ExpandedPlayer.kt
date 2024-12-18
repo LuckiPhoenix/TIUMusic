@@ -347,6 +347,7 @@ fun PlayMenuBottomSheet(
     val currentUser by userViewModel.currentUser.observeAsState()
     var isFavorite by remember { mutableStateOf(false) }
     val (showEditPlaylistSheet, setShowEditPlaylistSheet) = remember { mutableStateOf(false) }
+    var showPlaylistDialog by remember { mutableStateOf(false) }
     ModalBottomSheet(
         containerColor = Color.Black,
         shape = RoundedCornerShape(0.dp),
@@ -530,6 +531,9 @@ fun PlayMenuBottomSheet(
                 color = Color.White
             )
         }
+        if(showPlaylistDialog){
+            InputPlaylistDialog(showPlaylistDialog, {showPlaylistDialog = false}, {userViewModel.addPlaylist(it)})
+        }
         if(showEditPlaylistSheet) {
             var text by remember { mutableStateOf("") }
             val context = LocalContext.current
@@ -559,7 +563,7 @@ fun PlayMenuBottomSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .clickable {  },
+                            .clickable { showPlaylistDialog = true },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
