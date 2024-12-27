@@ -75,25 +75,25 @@ This project was developed as part of a course requirement at UIT.
   <table>
     <tr>
       <td width="33%">
-        <img src="assets/1.png" alt="Home Screen"/>
+        <img src="Assets/1.png" alt="Home Screen"/>
         <p align="center"><b>Home Screen</b></p>
       </td>
       <td width="33%">
-        <img src="assets/2.png" alt="New Screen"/>
+        <img src="Assets/2.png" alt="New Screen"/>
         <p align="center"><b>Music Player</b></p>
       </td>
       <td width="33%">
-        <img src="assets/3.png" alt="Library Screen"/>
+        <img src="Assets/3.png" alt="Library Screen"/>
         <p align="center"><b>Playlist View</b></p>
       </td>
     </tr>
     <tr>
       <td width="33%">
-        <img src="assets/4.png" alt="Search Interface"/>
+        <img src="Assets/4.png" alt="Search Interface"/>
         <p align="center"><b>Search Interface</b></p>
       </td>
       <td width="33%">
-        <img src="assets/5.png" alt="Music Player"/>
+        <img src="Assets/5.png" alt="Music Player"/>
         <p align="center"><b>Library View</b></p>
       </td>
     </tr>
