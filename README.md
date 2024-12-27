@@ -72,32 +72,24 @@ This project was developed as part of a course requirement at UIT.
 ## 📱 Screenshots
 
 <div align="center">
-  <table>
-    <tr>
-      <td width="33%">
-        <img src="Assets/1.png" alt="Home Screen"/>
-        <p align="center"><b>Home Screen</b></p>
-      </td>
-      <td width="33%">
-        <img src="Assets/2.png" alt="New Screen"/>
-        <p align="center"><b>Music Player</b></p>
-      </td>
-      <td width="33%">
-        <img src="Assets/3.png" alt="Library Screen"/>
-        <p align="center"><b>Playlist View</b></p>
-      </td>
-    </tr>
-    <tr>
-      <td width="33%">
-        <img src="Assets/4.png" alt="Search Interface"/>
-        <p align="center"><b>Search Interface</b></p>
-      </td>
-      <td width="33%">
-        <img src="Assets/5.png" alt="Music Player"/>
-        <p align="center"><b>Library View</b></p>
-      </td>
-    </tr>
-  </table>
+  <p align="center"><i>Experience TIU Music's sleek and intuitive interface</i></p>
+
+<kbd><img width="250" src="Assets/1.png" alt="Home Screen" /></kbd>
+&nbsp;&nbsp;&nbsp;
+<kbd><img width="250" src="Assets/2.png" alt="Music Player" /></kbd>
+&nbsp;&nbsp;&nbsp;
+<kbd><img width="250" src="Assets/3.png" alt="Playlist View" /></kbd>
+
+  <br/>
+  <br/>
+
+<kbd><img width="250" src="Assets/4.png" alt="Search Interface" /></kbd>
+&nbsp;&nbsp;&nbsp;
+<kbd><img width="250" src="Assets/5.png" alt="Library View" /></kbd>
+
+  <p align="center">
+    <sup><strong>From left to right:</strong> Home Screen • Music Player • Playlist View • Search Interface • Library View</sup>
+  </p>
 </div>
 
 ## 🛠 Tech Stack
