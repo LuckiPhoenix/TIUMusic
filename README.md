@@ -17,6 +17,14 @@
 
 TIU Music is an innovative Android music streaming application developed by students at UIT (University of Information Technology, Vietnam National University - Ho Chi Minh City). Inspired by Apple Music's design, this native Android app leverages YouTube Music's API to provide seamless music searching, storing, and streaming.
 
+## 🛑 Disclaimer
+
+**IMPORTANT NOTICE**: This application is a student project developed for academic purposes only. As of December 2024:
+
+- The project is **discontinued**
+- It was created solely for academic purposes and is not intended for commercial distribution. The repository is archived and maintained for educational reference only.
+- No further development or updates will be made. Therefore, no maintenance or bug fixes will be provided.
+- Users should note that the app is not officially supported and may contain unaddressed issues. Not intended for production use.
 
 ## 📚 Academic Project
 
@@ -56,6 +64,37 @@ This project was developed as part of a course requirement at UIT.
         <b>Smart Playlists</b>
         <br/>
         <sub>Seamless music synchronization via Youtube Music</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+## 📱 Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="33%">
+        <img src="assets/1.png" alt="Home Screen"/>
+        <p align="center"><b>Home Screen</b></p>
+      </td>
+      <td width="33%">
+        <img src="assets/2.png" alt="New Screen"/>
+        <p align="center"><b>Music Player</b></p>
+      </td>
+      <td width="33%">
+        <img src="assets/3.png" alt="Library Screen"/>
+        <p align="center"><b>Playlist View</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td width="33%">
+        <img src="assets/4.png" alt="Search Interface"/>
+        <p align="center"><b>Search Interface</b></p>
+      </td>
+      <td width="33%">
+        <img src="assets/5.png" alt="Music Player"/>
+        <p align="center"><b>Library View</b></p>
       </td>
     </tr>
   </table>
