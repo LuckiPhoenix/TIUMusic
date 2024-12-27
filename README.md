@@ -72,23 +72,22 @@ This project was developed as part of a course requirement at UIT.
 ## 📱 Screenshots
 
 <div align="center">
-  <p align="center"><i>Experience TIU Music's sleek and intuitive interface</i></p>
 
 <kbd><img width="250" src="Assets/1.png" alt="Home Screen" /></kbd>
 &nbsp;&nbsp;&nbsp;
-<kbd><img width="250" src="Assets/2.png" alt="Music Player" /></kbd>
+<kbd><img width="250" src="Assets/2.png" alt="New Screen" /></kbd>
 &nbsp;&nbsp;&nbsp;
-<kbd><img width="250" src="Assets/3.png" alt="Playlist View" /></kbd>
+<kbd><img width="250" src="Assets/3.png" alt="Library Screen" /></kbd>
 
   <br/>
   <br/>
 
 <kbd><img width="250" src="Assets/4.png" alt="Search Interface" /></kbd>
 &nbsp;&nbsp;&nbsp;
-<kbd><img width="250" src="Assets/5.png" alt="Library View" /></kbd>
+<kbd><img width="250" src="Assets/5.png" alt="Music Player" /></kbd>
 
   <p align="center">
-    <sup><strong>From left to right:</strong> Home Screen • Music Player • Playlist View • Search Interface • Library View</sup>
+    <sup><strong>In Clock-wise Order:</strong> Home Screen • New Screen • Library Screen • Search Interface • Music Player</sup>
   </p>
 </div>
 
