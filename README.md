@@ -162,7 +162,7 @@ graph TD
 ### Configuration Steps
 1. Clone the Repository
 ```bash
-git clone https://github.com/LwkPhoenix/TIUMusic.git
+git clone https://github.com/LuckiPhoenix/TIUMusic.git
 cd TIUMusic
 ```
 
